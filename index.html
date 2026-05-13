@@ -4253,6 +4253,79 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
   z-index: 20; transition: opacity 0.6s; font-family: 'Noto Serif JP', serif;
 }
 .aurum-viz-loader.gone { opacity: 0; pointer-events: none; }
+
+/* ════════════════════════════════════════════════════════
+   Google 認証ゲート
+   ════════════════════════════════════════════════════════ */
+.aurum-google-gate {
+  background: linear-gradient(135deg, rgba(197,160,89,0.08), rgba(0,0,0,0.3));
+  border: 1px solid rgba(197,160,89,0.3);
+  border-radius: 4px;
+  padding: 20px 18px;
+}
+.aurum-google-btn-wrap {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+.aurum-google-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(74,222,128,0.1);
+  border: 1px solid rgba(74,222,128,0.4);
+  border-radius: 4px;
+  color: #4ade80;
+  font-size: 11px;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.04em;
+}
+.aurum-google-verified span { font-weight: 500; }
+
+/* ════════════════════════════════════════════════════════
+   LIVE フィード起動ボタン (Active Users下)
+   ════════════════════════════════════════════════════════ */
+.aurum-live-feed-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: linear-gradient(135deg, #F3D078 0%, #C5A059 50%, #8C6A30 100%);
+  color: #050505;
+  font-family: 'Noto Serif JP', serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 4px 14px rgba(197, 160, 89, 0.28), 0 0 0 1px rgba(197, 160, 89, 0.3);
+  animation: aurumLiveFeedPulse 2.4s ease-in-out infinite;
+}
+.aurum-live-feed-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(197, 160, 89, 0.5), 0 0 0 1px rgba(243, 208, 120, 0.6);
+  filter: brightness(1.08);
+}
+.aurum-live-feed-btn-dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: #ef4444;
+  box-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+  animation: aurumLiveDotPulse 1.2s ease-in-out infinite;
+}
+@keyframes aurumLiveFeedPulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(197, 160, 89, 0.28), 0 0 0 1px rgba(197, 160, 89, 0.3); }
+  50%      { box-shadow: 0 4px 14px rgba(197, 160, 89, 0.35), 0 0 0 4px rgba(197, 160, 89, 0.18); }
+}
+@keyframes aurumLiveDotPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.85); }
+}
 </style>
 </head>
 
@@ -4325,20 +4398,20 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <!-- 統計カード -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-5">
         <div class="user-stat-card">
-          <div class="lab">Started</div>
-          <div class="val small" id="user-detail-start">2026/01/01</div>
+          <div class="lab">開始資金</div>
+          <div class="val small" id="user-detail-capital">¥-</div>
+        </div>
+        <div class="user-stat-card">
+          <div class="lab">利益</div>
+          <div class="val green" id="user-detail-profit">¥0</div>
         </div>
         <div class="user-stat-card">
           <div class="lab">Total ROI</div>
           <div class="val green" id="user-detail-total">+0%</div>
         </div>
         <div class="user-stat-card">
-          <div class="lab">Avg Weekly</div>
-          <div class="val" id="user-detail-weekly">+0%</div>
-        </div>
-        <div class="user-stat-card">
-          <div class="lab">Status</div>
-          <div class="val small" id="user-detail-status">ACTIVE</div>
+          <div class="lab">運用開始</div>
+          <div class="val small" id="user-detail-start">2026/01/01</div>
         </div>
       </div>
 
@@ -4558,10 +4631,15 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 
   <section id="testimonials-strip" class="py-8 md:py-10 px-4 border-y border-[#C5A059]/15 bg-[#0A0F1C]/60 relative z-10 backdrop-blur-sm">
     <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center">
-      <div class="sp-fade-up">
-        <div class="text-[9px] text-gray-500 tracking-[0.25em] uppercase mb-2">Active Users</div>
-        <div class="text-2xl md:text-3xl serif text-[#C5A059]"><span class="roi-count" data-target="1147">0</span></div>
+      <div class="sp-fade-up cursor-pointer group relative" onclick="aurumOpenLiveFeed()" title="ライブフィードを表示">
+        <div class="text-[9px] text-gray-500 tracking-[0.25em] uppercase mb-2 group-hover:text-[#C5A059] transition">Active Users</div>
+        <div class="text-2xl md:text-3xl serif text-[#C5A059] group-hover:text-[#F3D078] transition"><span class="roi-count" data-target="1147">0</span></div>
         <div class="text-[8px] text-gray-600 tracking-widest mt-1">運用中アカウント</div>
+        <button type="button" onclick="event.stopPropagation(); aurumOpenLiveFeed();" class="aurum-live-feed-btn mt-2.5">
+          <span class="aurum-live-feed-btn-dot"></span>
+          <span>LIVE フィードを開く</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
       </div>
       <div class="sp-fade-up" style="--sp-delay: 0.1s">
         <div class="text-[9px] text-gray-500 tracking-[0.25em] uppercase mb-2">Monthly ROI</div>
@@ -5562,12 +5640,18 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
         </div>
 
         <form id="aurum-step-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-step-form-target">
+          <!-- honeypot: 人間には見えない、ボットが埋めると弾く -->
+          <div aria-hidden="true" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">
+            <label>Website (do not fill)<input type="text" name="website_hp" tabindex="-1" autocomplete="off"></label>
+          </div>
+          <input type="hidden" name="form_loaded_at" id="aurum-step-form-loaded-at">
           <input type="hidden" name="System" id="step-system-select">
           <input type="hidden" name="Source" value="quick-3step">
 
           <!-- STEP 1: 基本情報 -->
           <div class="step-panel" data-step-panel="1">
             <h4 class="text-[11px] text-[#C5A059] tracking-[0.3em] uppercase mb-5 font-bold">基本情報</h4>
+
             <div class="space-y-4">
               <div>
                 <label class="step-label">システム選択 <span class="req">*</span></label>
@@ -5580,19 +5664,19 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
               </div>
               <div>
                 <label class="step-label">お名前 <span class="req">*</span></label>
-                <input type="text" name="Name" id="step-name" placeholder="山田 太郎" class="input-field text-sm" required>
+                <input type="text" name="Name" id="step-name" placeholder="山田 太郎 (必須)" class="input-field text-sm" required aria-required="true">
               </div>
               <div>
                 <label class="step-label">Email <span class="req">*</span></label>
-                <input type="email" name="Email" id="step-email" placeholder="example@email.com" class="input-field text-sm" required>
+                <input type="email" name="Email" id="step-email" placeholder="example@email.com (実在するもの)" class="input-field text-sm" required aria-required="true">
               </div>
               <div>
                 <label class="step-label">Instagram ID <span class="req">*</span></label>
-                <input type="text" name="Instagram_ID" id="step-instagram" placeholder="@your_instagram" class="input-field text-sm" required>
+                <input type="text" name="Instagram_ID" id="step-instagram" placeholder="@your_instagram (必須)" class="input-field text-sm" required aria-required="true" pattern="@?[a-zA-Z0-9._]{1,30}" title="Instagram IDを入力してください">
               </div>
             </div>
             <div class="step-nav">
-              <button type="button" class="step-btn-next" onclick="aurumStepNext()">次へ <span>›</span></button>
+              <button type="button" class="step-btn-next" id="step-btn-next-1" onclick="aurumStepNext()">次へ <span>›</span></button>
             </div>
           </div>
 
@@ -5988,11 +6072,16 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
     </div>
 
     <form id="application-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-form-target" class="space-y-2">
+      <!-- honeypot: 人間には見えない、ボットが埋めると弾く -->
+      <div aria-hidden="true" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">
+        <label>Website (do not fill)<input type="text" name="website_hp" tabindex="-1" autocomplete="off"></label>
+      </div>
+      <input type="hidden" name="form_loaded_at" id="aurum-form-loaded-at">
       <input type="hidden" id="system-select" name="System" required>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
-        <input type="text" name="Name" placeholder="お名前" required class="input-field text-sm md:col-span-1">
-        <input type="email" name="Email" placeholder="Email" required class="input-field text-sm md:col-span-1">
-        <input type="text" name="Instagram_ID" placeholder="instagramID" required class="input-field text-sm md:col-span-2">
+        <input type="text" name="Name" id="main-name" placeholder="お名前 (必須)" required aria-required="true" class="input-field text-sm md:col-span-1">
+        <input type="email" name="Email" id="main-email" placeholder="Email (必須・実在するもの)" required aria-required="true" class="input-field text-sm md:col-span-1">
+        <input type="text" name="Instagram_ID" placeholder="Instagram ID (必須・例: @your_id)" required aria-required="true" pattern="@?[a-zA-Z0-9._]{1,30}" title="Instagram IDを入力してください (例: @your_id)" class="input-field text-sm md:col-span-2">
       </div>
       <hr class="border-white/10 my-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 pb-4">
@@ -6128,7 +6217,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
         <strong class="text-[#C5A059]">「特別なポートフォリオ設計」</strong>のご案内をご用意しております。
       </p>
       <p class="text-[10px] md:text-[11px] text-gray-500 leading-loose">
-        ご希望の方は、公式LINEまたはサポート窓口までお気軽にお知らせください。
+        ご希望の方は、公式Instagram (@huga_rux) または support 宛メールにてお気軽にお問い合わせください。
       </p>
     </div>
 
@@ -6164,7 +6253,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
     <div class="text-center mt-10 mb-8">
       <p class="text-[10px] text-gray-500 leading-loose tracking-wider mb-6">
         AURUM LUX は、正規ユーザー様の資産を守り、共に利益を追求するために万全の体制を整えております。<br>
-        ご不明な点はメールへのご返信、または公式LINEへお気軽にご相談ください。
+        ご不明な点はメールへのご返信、または公式Instagram (@huga_rux) へお気軽にご相談ください。
       </p>
       <button onclick="switchView('view-lp', false)" class="btn-pill">TOP に戻る</button>
     </div>
@@ -6192,7 +6281,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
 
     <div class="mt-8 pt-6 border-t border-white/10">
       <p class="text-[10px] text-gray-500 leading-loose mb-4">
-        ※不明点は公式LINEまたはメール返信で個別にサポートいたします。<br>
+        ※不明点は公式Instagram (@huga_rux) またはメール返信で個別にサポートいたします。<br>
         ※既に他のVPSをご利用の方は、本マニュアルの「STEP 4」以降をご参照ください。
       </p>
       <button onclick="aurumCloseMT5Guide()" class="btn-pill w-full">閉じる</button>
@@ -6967,7 +7056,7 @@ window.aurumSessionSeed = (Math.random() * 1000) + (Date.now() % 1000);
    ════════════════════════════════════════════════════════════════ */
 
 // API エンドポイント (Google Apps Script ウェブアプリの URL)
-window.AURUM_API_ENDPOINT = "";
+window.AURUM_API_ENDPOINT = "https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec";
 
 // ライブデータの実体 (API取得後に充填される)
 window.AURUM_LIVE_DATA = {
@@ -11902,14 +11991,37 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
   const startDate = new Date(currentMonday);
   startDate.setDate(currentMonday.getDate() - startWeeksAgo * 7);
 
+  // 開始資金 (円) を現実的な分布で生成
+  //  7〜10万:25% / 10〜20万:30% / 20〜30万:20% (合計75%)
+  //  30〜50万:12% / 50〜100万:8% / 100万〜:5%
+  const capitalRoll = seededRandom(baseSeed + 30);
+  let initialCapital;
+  if (capitalRoll < 0.25)      initialCapital = 70000  + seededRandom(baseSeed+31) * 30000;   // 7-10万
+  else if (capitalRoll < 0.55) initialCapital = 100000 + seededRandom(baseSeed+32) * 100000;  // 10-20万
+  else if (capitalRoll < 0.75) initialCapital = 200000 + seededRandom(baseSeed+33) * 100000;  // 20-30万
+  else if (capitalRoll < 0.87) initialCapital = 300000 + seededRandom(baseSeed+34) * 200000;  // 30-50万
+  else if (capitalRoll < 0.95) initialCapital = 500000 + seededRandom(baseSeed+35) * 500000;  // 50-100万
+  else                         initialCapital = 1000000 + seededRandom(baseSeed+36) * 2000000;// 100-300万
+  initialCapital = Math.round(initialCapital / 1000) * 1000; // 千円単位に丸め
+
   // 週ごとのROI生成 (各週、シード固定)
   const weeklyBase = baseROI / 4.33; // 月利→週利
   const weeks = []; // [{weekIdx, date, weeklyROI, equity}]
-  let equity = 10000; // 元本$10,000基準
+  let equity = initialCapital;
   const equities = [equity];
 
   // ユーザー固有の運用スキル係数 (0.85〜1.25)
   const skillMultiplier = 0.85 + seededRandom(baseSeed + 7) * 0.4;
+
+  // TOP20ユーザー (userIndex 1〜20) は強運係数を加算 → 800万〜2000万円利益
+  // baseROIで計算: 月利40〜87% × 12ヶ月で年利 480〜1044%
+  // 例: 200万円 × 9倍 = 1800万円 利益
+  let topBoost = 1.0;
+  if (userIndex <= 20) {
+    topBoost = 1.45 + seededRandom(baseSeed + 21) * 0.35; // 1.45〜1.80
+  } else if (userIndex <= 50) {
+    topBoost = 1.20 + seededRandom(baseSeed + 22) * 0.20;
+  }
 
   for (let w = 0; w < startWeeksAgo + 1; w++) {
     const weekSeed = startMondaySeed + w + baseSeed;
@@ -11917,7 +12029,7 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
     const variance = 0.4 + seededRandom(weekSeed) * 1.3;
     const ddRoll = seededRandom(weekSeed + 100);
     const bigDdRoll = seededRandom(weekSeed + 200);
-    let weeklyROI = weeklyBase * variance * skillMultiplier;
+    let weeklyROI = weeklyBase * variance * skillMultiplier * topBoost;
     
     // 損失パターン (現実的な波):
     //  - 25%確率で小さな損失 (-0.3〜-1.5倍の週利幅)
@@ -11934,7 +12046,7 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
     if (w > 0) {
       equity = equity * (1 + weeklyROI / 100);
       // 元本の60%以下にはならないよう底打ち (清算リスク回避)
-      equity = Math.max(equity, 6000);
+      equity = Math.max(equity, initialCapital * 0.6);
       equities.push(equity);
     }
     
@@ -11948,7 +12060,7 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
     });
   }
 
-  const totalROI = ((equity - 10000) / 10000) * 100;
+  const totalROI = ((equity - initialCapital) / initialCapital) * 100;
   const avgWeekly = weeks.length > 1 ? totalROI / weeks.length : weeklyBase;
 
   // ID
@@ -11961,7 +12073,9 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
     id, sysKey, userIndex,
     startDate, startWeeksAgo, weeks,
     totalROI, avgWeekly,
-    currentEquity: equity, status
+    currentEquity: equity, status,
+    initialCapital,
+    profitJPY: equity - initialCapital
   };
 }
 
@@ -11976,8 +12090,15 @@ window.openCustomerModal = (sysKey) => {
   const sysData = window.AURUM_SYSTEMS[sysKey];
   if (!sysData) return;
 
-  const customerCount = sysData.customers;
-  const baseROI = sysData.roi;
+  // API応答前/未設定時のフォールバック値 (ランキング表示用)
+  const FALLBACK = {
+    order_flow:     { roi: 87, customers: 520 },
+    trend_scalping: { roi: 46, customers: 390 },
+    smc_grid:       { roi: 40, customers: 237 }
+  };
+  const fb = FALLBACK[sysKey] || { roi: 50, customers: 300 };
+  const customerCount = (sysData.customers && sysData.customers > 0) ? sysData.customers : fb.customers;
+  const baseROI       = (sysData.roi != null && !isNaN(sysData.roi))       ? sysData.roi       : fb.roi;
   const currentMondaySeed = getMondaySeed();
 
   // 全ユーザー生成 → ROIでソート → TOP100抽出
@@ -12001,9 +12122,9 @@ window.openCustomerModal = (sysKey) => {
   // テーブル組み立て
   const header = '<div class="grid grid-cols-12 gap-1 text-gray-500 font-bold border-b border-white/20 pb-2 mb-2 text-[9px] uppercase items-center">' +
     '<div class="col-span-1">#</div>' +
-    '<div class="col-span-5 md:col-span-4">User</div>' +
+    '<div class="col-span-4 md:col-span-3">User</div>' +
     '<div class="hidden md:block md:col-span-3">Start</div>' +
-    '<div class="col-span-3 md:col-span-2 text-right">Weekly</div>' +
+    '<div class="col-span-4 md:col-span-3 text-right">Profit (¥)</div>' +
     '<div class="col-span-3 md:col-span-2 text-right">Total</div>' +
     '</div>';
   let html = header;
@@ -12018,17 +12139,21 @@ window.openCustomerModal = (sysKey) => {
     const startStr = u.startDate.getFullYear() + "/" +
       ("0"+(u.startDate.getMonth()+1)).slice(-2) + "/" +
       ("0"+u.startDate.getDate()).slice(-2);
-    const statusClass = u.status === 'ACTIVE' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400';
+
+    // 利益表記 (万円単位、小数1桁)
+    const profitMan = u.profitJPY / 10000;
+    const profitStr = (profitMan >= 0 ? "+" : "") + profitMan.toFixed(profitMan >= 100 ? 0 : 1) + "万";
+    const profitColor = u.profitJPY >= 0 ? "text-green-400" : "text-red-400";
 
     html += '<div class="grid grid-cols-12 gap-1 activity-row py-2.5 items-center" onclick="openUserDetail(\'' + sysKey + '\',' + idx + ')">' +
       '<div class="col-span-1"><span class="' + rankClass + '">' + rank + '</span></div>' +
-      '<div class="col-span-5 md:col-span-4 min-w-0">' +
+      '<div class="col-span-4 md:col-span-3 min-w-0">' +
         '<div class="text-white text-[10px] md:text-[11px] font-mono truncate">' + u.id + '</div>' +
         '<div class="md:hidden text-gray-500 text-[8px] tracking-wider">' + startStr + '</div>' +
       '</div>' +
       '<div class="hidden md:block md:col-span-3 text-gray-500 text-[10px]">' + startStr + '</div>' +
-      '<div class="col-span-3 md:col-span-2 text-[#C5A059] text-right text-[10px] md:text-[11px] tabular-nums">+' + u.avgWeekly.toFixed(1) + '%</div>' +
-      '<div class="col-span-3 md:col-span-2 text-[#C5A059] text-right text-[10px] md:text-[11px] font-bold tabular-nums">+' + u.totalROI.toFixed(1) + '%</div>' +
+      '<div class="col-span-4 md:col-span-3 ' + profitColor + ' text-right text-[10px] md:text-[11px] font-bold tabular-nums">' + profitStr + '</div>' +
+      '<div class="col-span-3 md:col-span-2 text-[#C5A059] text-right text-[10px] md:text-[11px] tabular-nums">+' + u.totalROI.toFixed(1) + '%</div>' +
     '</div>';
   });
 
@@ -12088,11 +12213,19 @@ window.openUserDetail = (sysKey, idx) => {
   // 統計
   const startStr = u.startDate.getFullYear() + "/" + ("0"+(u.startDate.getMonth()+1)).slice(-2) + "/" + ("0"+u.startDate.getDate()).slice(-2);
   document.getElementById("user-detail-start").textContent = startStr;
-  document.getElementById("user-detail-total").textContent = "+" + u.totalROI.toFixed(1) + "%";
-  document.getElementById("user-detail-weekly").textContent = "+" + u.avgWeekly.toFixed(1) + "%";
-  const statusEl = document.getElementById("user-detail-status");
-  statusEl.textContent = u.status;
-  statusEl.className = "val small " + (u.status === "ACTIVE" ? "green" : "");
+  document.getElementById("user-detail-total").textContent = (u.totalROI >= 0 ? "+" : "") + u.totalROI.toFixed(1) + "%";
+
+  // 開始資金 (万円表記)
+  const capitalMan = u.initialCapital / 10000;
+  document.getElementById("user-detail-capital").textContent = "¥" + (capitalMan >= 100 ? capitalMan.toFixed(0) : capitalMan.toFixed(1)) + "万";
+
+  // 利益 (万円表記)
+  const profitMan = u.profitJPY / 10000;
+  const profitEl = document.getElementById("user-detail-profit");
+  profitEl.textContent = (profitMan >= 0 ? "+¥" : "-¥") + Math.abs(profitMan >= 100 ? Math.round(profitMan) : Number(profitMan.toFixed(1))).toLocaleString() + "万";
+  profitEl.className = "val " + (u.profitJPY >= 0 ? "green" : "");
+  if (u.profitJPY < 0) profitEl.style.color = "#f87171";
+  else profitEl.style.color = "#4ade80";
 
   // 最近8週の内訳
   const weeksEl = document.getElementById("user-detail-weeks");
@@ -12135,7 +12268,7 @@ window.openUserDetail = (sysKey, idx) => {
       data: {
         labels: labels,
         datasets: [{
-          label: "Equity ($)",
+          label: "Equity (¥)",
           data: equityData,
           borderColor: "#C5A059",
           backgroundColor: grad,
@@ -12162,7 +12295,7 @@ window.openUserDetail = (sysKey, idx) => {
             bodyColor: "#fff",
             padding: 8,
             callbacks: {
-              label: function(ctx){ return "Equity: $" + ctx.parsed.y.toLocaleString(); }
+              label: function(ctx){ return "Equity: ¥" + ctx.parsed.y.toLocaleString(); }
             }
           }
         },
@@ -12174,7 +12307,7 @@ window.openUserDetail = (sysKey, idx) => {
           y: {
             ticks: {
               color: "#9ca3af", font: { size: isMobile ? 8 : 10 },
-              callback: function(v){ return "$" + (v/1000).toFixed(0) + "k"; }
+              callback: function(v){ return "¥" + (v/10000).toFixed(0) + "万"; }
             },
             grid: { color: "rgba(255,255,255,0.06)" }
           }
@@ -12483,33 +12616,12 @@ document.addEventListener("click", (e) => {
 })();
 
 /* ============================================================
-   E3. リーディングモード切替 (ダーク/ライト)
+   E3. リーディングモード切替 — 無効化済み (月マークボタン削除)
    ============================================================ */
 (function readingModeToggle(){
-  const style = document.createElement("style");
-  style.textContent = [
-    "body.aurum-reading-mode { background-color: #1a1a1a !important; }",
-    "body.aurum-reading-mode .text-gray-300 { color: #e0dcd0 !important; }",
-    "body.aurum-reading-mode .text-gray-400 { color: #c8c3b5 !important; }",
-    "body.aurum-reading-mode .text-gray-500 { color: #a8a396 !important; }",
-    "body.aurum-reading-mode .glass { background: rgba(26, 26, 26, 0.85) !important; }",
-    "body.aurum-reading-mode #canvas-container { opacity: 0.4 !important; }",
-    "#reading-mode-toggle { position: fixed; right: 16px; bottom: 160px; z-index: 45; width: 44px; height: 44px; border-radius: 50%; background: rgba(10,15,28,0.75); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border: 1px solid rgba(197,160,89,0.4); color: #C5A059; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 18px rgba(0,0,0,0.45), 0 0 10px rgba(197,160,89,0.1), inset 0 1px 1px rgba(255,255,255,0.06); transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1); }",
-    "#reading-mode-toggle:hover { background: rgba(10,15,28,0.95); border-color: #F3D078; color: #F3D078; box-shadow: 0 6px 22px rgba(0,0,0,0.55), 0 0 28px rgba(197,160,89,0.35), inset 0 1px 1px rgba(255,255,255,0.1); transform: translateY(-2px) scale(1.04); }",
-    "#reading-mode-toggle svg { width: 18px; height: 18px; transition: transform 0.3s; }",
-    "#reading-mode-toggle:hover svg { transform: scale(1.08); }",
-    "@media (max-width: 768px) { #reading-mode-toggle { right: 12px; bottom: 146px; width: 40px; height: 40px; } #reading-mode-toggle svg { width: 16px; height: 16px; } }"
-  ].join("\n");
-  document.head.appendChild(style);
-  const btn = document.createElement("button");
-  btn.id = "reading-mode-toggle";
-  btn.setAttribute("aria-label", "リーディングモード切替");
-  btn.title = "Reading mode (目に優しい色)";
-  btn.innerHTML = '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>';
-  btn.addEventListener("click", () => {
-    document.body.classList.toggle("aurum-reading-mode");
-  });
-  document.body.appendChild(btn);
+  // ボタン生成を停止。既存DOM上の残骸があれば削除
+  var existing = document.getElementById("reading-mode-toggle");
+  if (existing) existing.remove();
 })();
 
 /* ============================================================
@@ -13210,6 +13322,17 @@ window.aurumGoToSystemSelect = function(ev){
           <label class="block text-[9px] text-[#C5A059] tracking-[0.25em] uppercase mb-1.5">メールアドレス <span class="text-red-400">*</span></label>
           <input type="email" name="setup_email" required class="w-full bg-black/50 border border-[#C5A059]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#C5A059]" placeholder="例: you@example.com">
         </div>
+        <div>
+          <label class="block text-[9px] text-[#C5A059] tracking-[0.25em] uppercase mb-1.5">導入希望システム <span class="text-red-400">*</span></label>
+          <select name="setup_system" required class="w-full bg-black/50 border border-[#C5A059]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#C5A059]">
+            <option value="">-- 選択してください --</option>
+            <option value="Order Flow Structure">Order Flow Structure (推奨)</option>
+            <option value="Trend Scalping">Trend Scalping</option>
+            <option value="SMC Grid">SMC Grid</option>
+            <option value="Multi (複数併用)">複数併用 (相談したい)</option>
+            <option value="未定 (相談)">まだ決めていない (相談したい)</option>
+          </select>
+        </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[9px] text-[#C5A059] tracking-[0.25em] uppercase mb-1.5">DooPrime ID <span class="text-red-400">*</span></label>
@@ -13318,6 +13441,531 @@ document.addEventListener("keydown", function(e){
   });
 })();
 </script>
+
+<!-- ════════════════════════════════════════════════════════
+     LIVE FEED — 稼働ユーザー累計利益 + リアルタイムエントリー
+     平日 10:00〜23:00 のみ更新 / 0.2秒ごと1件 / MAX 20000
+     ════════════════════════════════════════════════════════ -->
+<style>
+.aurum-livefeed-modal {
+  position: fixed; inset: 0; z-index: 10002;
+  display: none; align-items: stretch;
+  background: rgba(5,5,5,0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.aurum-livefeed-modal.active { display: flex; }
+.aurum-lf-wrap {
+  width: 100%; max-width: 1240px;
+  margin: auto;
+  display: flex; flex-direction: column;
+  height: 100vh;
+  padding: 14px 14px 12px;
+}
+.aurum-lf-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(197,160,89,0.2);
+  flex-shrink: 0;
+}
+.aurum-lf-title-block { min-width: 0; }
+.aurum-lf-title {
+  font-family: 'Noto Serif JP', serif;
+  color: #fff; font-size: 14px;
+  letter-spacing: 0.2em;
+}
+.aurum-lf-status {
+  font-size: 9px; letter-spacing: 0.2em;
+  color: #9aa0aa; text-transform: uppercase;
+  margin-top: 2px;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.aurum-lf-status .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4ade80; box-shadow: 0 0 8px rgba(74,222,128,0.6);
+  animation: lfpulse 2s ease-in-out infinite;
+}
+.aurum-lf-status .dot.paused { background: #6b7280; box-shadow: none; animation: none; }
+@keyframes lfpulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+.aurum-lf-close {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #C5A059; background: transparent; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; line-height: 1;
+  transition: all 0.2s;
+}
+.aurum-lf-close:hover { background: rgba(197,160,89,0.15); transform: rotate(90deg); }
+
+.aurum-lf-stats {
+  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px; margin: 10px 0;
+  flex-shrink: 0;
+}
+.aurum-lf-stat {
+  background: rgba(15,19,30,0.7);
+  border: 1px solid rgba(197,160,89,0.2);
+  padding: 8px 10px; border-radius: 4px;
+  text-align: center;
+}
+.aurum-lf-stat .lab {
+  font-size: 8px; color: #9aa0aa;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.aurum-lf-stat .val {
+  font-size: 14px; color: #C5A059;
+  font-family: monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.aurum-lf-cols {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px; flex: 1; min-height: 0;
+}
+.aurum-lf-col {
+  background: rgba(15,19,30,0.6);
+  border: 1px solid rgba(197,160,89,0.15);
+  border-radius: 4px;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.aurum-lf-col-head {
+  padding: 10px 12px;
+  background: rgba(0,0,0,0.45);
+  border-bottom: 1px solid rgba(197,160,89,0.15);
+  display: flex; align-items: baseline; justify-content: space-between;
+  flex-shrink: 0;
+}
+.aurum-lf-col-head .h {
+  font-family: 'Noto Serif JP', serif;
+  color: #C5A059; font-size: 11px;
+  letter-spacing: 0.15em;
+}
+.aurum-lf-col-head .c {
+  font-size: 9px; color: #9aa0aa;
+  font-family: monospace;
+  letter-spacing: 0.1em;
+}
+.aurum-lf-col-body {
+  flex: 1; min-height: 0;
+  overflow-y: auto;
+  padding: 6px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(197,160,89,0.3) transparent;
+}
+.aurum-lf-col-body::-webkit-scrollbar { width: 4px; }
+.aurum-lf-col-body::-webkit-scrollbar-thumb {
+  background: rgba(197,160,89,0.25); border-radius: 2px;
+}
+
+.aurum-lf-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 8px; padding: 6px 8px;
+  border-bottom: 1px dotted rgba(197,160,89,0.08);
+  font-size: 10px;
+  align-items: center;
+  animation: lfslide 0.4s cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes lfslide {
+  from { opacity: 0; transform: translateY(-6px); background: rgba(197,160,89,0.18); }
+  to   { opacity: 1; transform: translateY(0); background: transparent; }
+}
+.aurum-lf-row .t {
+  color: #6b7280; font-family: monospace;
+  font-size: 9px; letter-spacing: 0.04em;
+}
+.aurum-lf-row .id {
+  color: #d2cdc4; font-family: monospace;
+  font-size: 9.5px; letter-spacing: 0.02em;
+  min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.aurum-lf-row .id .sys {
+  display: inline-block; padding: 1px 5px;
+  background: rgba(197,160,89,0.12);
+  color: #C5A059; font-size: 7.5px;
+  border-radius: 2px; margin-right: 4px;
+  letter-spacing: 0.08em;
+}
+.aurum-lf-row .v {
+  color: #4ade80; font-family: monospace;
+  font-weight: 700; text-align: right;
+  font-size: 10.5px; letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.aurum-lf-row .v.minus { color: #f87171; }
+
+.aurum-lf-empty {
+  text-align: center; padding: 30px 16px;
+  color: #6b7280; font-size: 10px;
+  letter-spacing: 0.04em; line-height: 1.8;
+}
+
+@media (max-width: 720px) {
+  .aurum-lf-cols { grid-template-columns: 1fr; }
+  .aurum-lf-stats { grid-template-columns: 1fr 1fr; }
+  .aurum-lf-stats .aurum-lf-stat:nth-child(3) { grid-column: 1 / -1; }
+  .aurum-lf-title { font-size: 12px; letter-spacing: 0.15em; }
+  .aurum-lf-row { padding: 5px 6px; }
+}
+</style>
+
+<div id="aurum-livefeed-modal" class="aurum-livefeed-modal" role="dialog" aria-modal="true">
+  <div class="aurum-lf-wrap">
+    <div class="aurum-lf-header">
+      <div class="aurum-lf-title-block">
+        <div class="aurum-lf-title">LIVE PERFORMANCE FEED</div>
+        <div class="aurum-lf-status">
+          <span class="dot" id="aurum-lf-dot"></span>
+          <span id="aurum-lf-status-text">LIVE · Updating every 10s</span>
+        </div>
+      </div>
+      <button onclick="aurumCloseLiveFeed()" class="aurum-lf-close" aria-label="閉じる">&times;</button>
+    </div>
+
+    <div class="aurum-lf-stats">
+      <div class="aurum-lf-stat">
+        <div class="lab">Total Entries</div>
+        <div class="val" id="aurum-lf-total">0</div>
+      </div>
+      <div class="aurum-lf-stat">
+        <div class="lab">Cumulative Profit</div>
+        <div class="val" id="aurum-lf-cumprofit">¥0</div>
+      </div>
+      <div class="aurum-lf-stat">
+        <div class="lab">Active Now</div>
+        <div class="val" id="aurum-lf-active">0</div>
+      </div>
+    </div>
+
+    <div class="aurum-lf-cols">
+      <div class="aurum-lf-col">
+        <div class="aurum-lf-col-head">
+          <span class="h">個人 (累計利益)</span>
+          <span class="c"><span id="aurum-lf-cnt-user">0</span> users</span>
+        </div>
+        <div id="aurum-lf-users" class="aurum-lf-col-body"></div>
+      </div>
+      <div class="aurum-lf-col">
+        <div class="aurum-lf-col-head">
+          <span class="h">エントリー (リアルタイム)</span>
+          <span class="c"><span id="aurum-lf-cnt-entry">0</span> entries</span>
+        </div>
+        <div id="aurum-lf-entries" class="aurum-lf-col-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   LIVE FEED 制御
+   - 平日 10:00-23:00 JST のみ更新 (10秒に5件)
+   - 個人 (累計利益) と エントリー (リアルタイム利益) を別々にフィード
+   - エントリー利益: 0.05円〜50万円, 0.05〜20万が約70%
+   - MAX 20,000件 / コラム
+   ════════════════════════════════════════════════════════════════ */
+(function() {
+  var TICK_INTERVAL_MS = 200;     // 0.2秒
+  var ENTRIES_PER_TICK_INITIAL = 300;
+  var ENTRIES_PER_TICK_NORMAL = 1;   // 1tickあたり1件
+  var MAX_ROWS = 20000;
+  var SYSTEMS = ["Order Flow", "Trend Scalping", "SMC Grid"];
+
+  var state = {
+    timer: null,
+    users: [],     // {id, sys, profit, time}
+    entries: [],   // {id, sys, val, time, isLoss}
+    cumProfit: 0,
+    activeNow: 0,
+    open: false,
+    initialLoaded: false
+  };
+
+  function isUpdateWindow() {
+    var d = new Date();
+    var day = d.getDay();
+    if (day === 0 || day === 6) return false; // 日曜・土曜
+    var h = d.getHours();
+    return h >= 10 && h < 23;
+  }
+
+  function randomUserId() {
+    // エントリーのほとんどは Order Flow (80%)
+    // 残り20%を Trend Scalping / SMC Grid で半々
+    var r = Math.random();
+    var sys;
+    if (r < 0.80)      sys = "Order Flow";
+    else if (r < 0.90) sys = "Trend Scalping";
+    else               sys = "SMC Grid";
+    var prefix = sys.charAt(0);
+    var num = 1000 + Math.floor(Math.random() * 9000);
+    return { id: "AU_" + prefix + "_" + num, sys: sys };
+  }
+
+  // 利益分布 (システム別 1エントリー):
+  //  Order Flow:     50円〜8,000円   (上限8,000円)
+  //  Trend Scalping: 50円〜3,600円   (上限3,600円)
+  //  SMC Grid:       50円〜3,600円   (上限3,600円)
+  //  損失も10%混入
+  function randomEntryAmount(sys) {
+    var lossRoll = Math.random();
+    var sign = (lossRoll < 0.20) ? -1 : 1;
+    var r = Math.random();
+    var amount;
+
+    if (sys === "Trend Scalping" || sys === "SMC Grid") {
+      // 上限 3,600円
+      if (r < 0.50)      amount = 50 + Math.random() * 950;        // 50〜1,000円
+      else if (r < 0.85) amount = 1000 + Math.random() * 1500;     // 1,000〜2,500円
+      else               amount = 2500 + Math.random() * 1100;     // 2,500〜3,600円
+    } else {
+      // Order Flow: 上限 8,000円
+      if (r < 0.45)      amount = 50 + Math.random() * 1950;       // 50〜2,000円
+      else if (r < 0.80) amount = 2000 + Math.random() * 3000;     // 2,000〜5,000円
+      else               amount = 5000 + Math.random() * 3000;     // 5,000〜8,000円
+    }
+    return Math.round(amount) * sign;
+  }
+
+  // 個人累計利益: システム別
+  //  Order Flow:     5万〜500万 (現状通り、大きな利益が積み上がる)
+  //  Trend Scalping: 5万〜10万未満 (コツコツ・上限10万未満)
+  //  SMC Grid:       5万〜10万未満 (コツコツ・上限10万未満)
+  function randomUserProfit(sys) {
+    if (sys === "Trend Scalping" || sys === "SMC Grid") {
+      // 10万円未満
+      var r = Math.random();
+      if (r < 0.40)      return Math.round(10000 + Math.random() * 30000);  // 1万〜4万
+      else if (r < 0.75) return Math.round(40000 + Math.random() * 30000);  // 4万〜7万
+      else               return Math.round(70000 + Math.random() * 29000);  // 7万〜9.9万
+    } else {
+      // Order Flow
+      var r = Math.random();
+      if (r < 0.40)      return Math.round(50000 + Math.random() * 250000);     // 5〜30万
+      else if (r < 0.75) return Math.round(300000 + Math.random() * 700000);    // 30〜100万
+      else if (r < 0.92) return Math.round(1000000 + Math.random() * 1500000);  // 100〜250万
+      else               return Math.round(2500000 + Math.random() * 2500000);  // 250〜500万
+    }
+  }
+
+  function fmtJPY(v) {
+    var sign = v < 0 ? "-" : "+";
+    var abs = Math.abs(v);
+    if (abs >= 10000) {
+      var man = abs / 10000;
+      return sign + "¥" + (man >= 100 ? Math.round(man).toLocaleString() : man.toFixed(1)) + "万";
+    }
+    return sign + "¥" + abs.toLocaleString();
+  }
+
+  function fmtTime(d) {
+    return ("0" + d.getHours()).slice(-2) + ":" +
+           ("0" + d.getMinutes()).slice(-2) + ":" +
+           ("0" + d.getSeconds()).slice(-2);
+  }
+
+  function renderRow(row) {
+    var cls = row.val < 0 ? "v minus" : "v";
+    return '<div class="aurum-lf-row">' +
+      '<span class="t">' + fmtTime(row.time) + '</span>' +
+      '<span class="id"><span class="sys">' + row.sys + '</span>' + row.id + '</span>' +
+      '<span class="' + cls + '">' + fmtJPY(row.val) + '</span>' +
+    '</div>';
+  }
+
+  function pushEntries(count) {
+    var now = new Date();
+    var newUsers = [];
+    var newEntries = [];
+    for (var i = 0; i < count; i++) {
+      var u = randomUserId();
+      var userRow = {
+        id: u.id, sys: u.sys,
+        val: randomUserProfit(u.sys),
+        time: new Date(now.getTime() - i * 50)
+      };
+      state.users.unshift(userRow);
+      newUsers.push(userRow);
+
+      var ent = randomEntryAmount(u.sys);
+      var entryRow = {
+        id: u.id, sys: u.sys,
+        val: ent,
+        time: new Date(now.getTime() - i * 30)
+      };
+      state.entries.unshift(entryRow);
+      newEntries.push(entryRow);
+
+      if (ent > 0) state.cumProfit += ent;
+    }
+    if (state.users.length > MAX_ROWS) state.users.length = MAX_ROWS;
+    if (state.entries.length > MAX_ROWS) state.entries.length = MAX_ROWS;
+    state.activeNow = Math.min(1147, 800 + Math.floor(Math.random() * 350));
+    appendRows(newUsers, newEntries);
+    updateStats();
+  }
+
+  // 統計のみ更新 (高頻度tick用)
+  function updateStats() {
+    var totalEl = document.getElementById("aurum-lf-total");
+    var profEl  = document.getElementById("aurum-lf-cumprofit");
+    var actEl   = document.getElementById("aurum-lf-active");
+    var cuEl    = document.getElementById("aurum-lf-cnt-user");
+    var ceEl    = document.getElementById("aurum-lf-cnt-entry");
+    if (totalEl) totalEl.textContent = state.entries.length.toLocaleString();
+    if (profEl)  profEl.textContent  = fmtJPY(state.cumProfit);
+    if (actEl)   actEl.textContent   = state.activeNow.toLocaleString();
+    if (cuEl)    cuEl.textContent    = state.users.length.toLocaleString();
+    if (ceEl)    ceEl.textContent    = state.entries.length.toLocaleString();
+  }
+
+  // DOM増分追加: 新しい行を先頭に挿入、末尾は300件超で削除
+  function appendRows(newUsers, newEntries) {
+    var userBox  = document.getElementById("aurum-lf-users");
+    var entryBox = document.getElementById("aurum-lf-entries");
+    if (!userBox || !entryBox) return;
+
+    // empty placeholder 除去
+    var emptyU = userBox.querySelector(".aurum-lf-empty");
+    if (emptyU) userBox.innerHTML = "";
+    var emptyE = entryBox.querySelector(".aurum-lf-empty");
+    if (emptyE) entryBox.innerHTML = "";
+
+    // 先頭に挿入 (新しい順)
+    for (var i = newUsers.length - 1; i >= 0; i--) {
+      userBox.insertAdjacentHTML("afterbegin", renderRow(newUsers[i]));
+    }
+    for (var j = newEntries.length - 1; j >= 0; j--) {
+      entryBox.insertAdjacentHTML("afterbegin", renderRow(newEntries[j]));
+    }
+    // 末尾300件超は削除
+    while (userBox.children.length > 300) userBox.removeChild(userBox.lastElementChild);
+    while (entryBox.children.length > 300) entryBox.removeChild(entryBox.lastElementChild);
+  }
+
+  // 全件再描画 (初回/モーダル再オープン用)
+  function renderAll() {
+    updateStats();
+    var usersHtml   = state.users.slice(0, 300).map(renderRow).join("");
+    var entriesHtml = state.entries.slice(0, 300).map(renderRow).join("");
+    document.getElementById("aurum-lf-users").innerHTML = usersHtml ||
+      '<div class="aurum-lf-empty">フィード待機中...</div>';
+    document.getElementById("aurum-lf-entries").innerHTML = entriesHtml ||
+      '<div class="aurum-lf-empty">フィード待機中...</div>';
+  }
+
+  function tick() {
+    if (!state.open) return;
+    if (!isUpdateWindow()) {
+      // 営業時間外
+      var statusEl = document.getElementById("aurum-lf-status-text");
+      var dotEl = document.getElementById("aurum-lf-dot");
+      if (statusEl) statusEl.textContent = "PAUSED · 平日 10:00〜23:00 のみ更新";
+      if (dotEl) dotEl.classList.add("paused");
+      return;
+    }
+    var statusEl = document.getElementById("aurum-lf-status-text");
+    var dotEl = document.getElementById("aurum-lf-dot");
+    if (statusEl) statusEl.textContent = "LIVE · リアルタイム更新中";
+    if (dotEl) dotEl.classList.remove("paused");
+    pushEntries(ENTRIES_PER_TICK_NORMAL);
+  }
+
+  window.aurumOpenLiveFeed = function() {
+    var modal = document.getElementById("aurum-livefeed-modal");
+    if (!modal) return;
+    state.open = true;
+    modal.classList.add("active");
+    document.body.style.overflow = "hidden";
+
+    // 初回ロード時に5件
+    if (!state.initialLoaded) {
+      state.initialLoaded = true;
+      pushEntries(ENTRIES_PER_TICK_INITIAL);
+    } else {
+      renderAll();
+    }
+
+    // 営業時間チェック (初期表示更新)
+    if (isUpdateWindow()) {
+      var statusEl = document.getElementById("aurum-lf-status-text");
+      var dotEl = document.getElementById("aurum-lf-dot");
+      if (statusEl) statusEl.textContent = "LIVE · リアルタイム更新中";
+      if (dotEl) dotEl.classList.remove("paused");
+    } else {
+      var statusEl2 = document.getElementById("aurum-lf-status-text");
+      var dotEl2 = document.getElementById("aurum-lf-dot");
+      if (statusEl2) statusEl2.textContent = "PAUSED · 平日 10:00〜23:00 のみ更新";
+      if (dotEl2) dotEl2.classList.add("paused");
+    }
+
+    if (state.timer) clearInterval(state.timer);
+    state.timer = setInterval(tick, TICK_INTERVAL_MS);
+  };
+
+  window.aurumCloseLiveFeed = function() {
+    var modal = document.getElementById("aurum-livefeed-modal");
+    if (!modal) return;
+    state.open = false;
+    modal.classList.remove("active");
+    document.body.style.overflow = "";
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+  };
+
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") {
+      var m = document.getElementById("aurum-livefeed-modal");
+      if (m && m.classList.contains("active")) window.aurumCloseLiveFeed();
+    }
+  });
+})();
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   フォーム不正対策:
+   1. honeypot (website_hp) → ボットが埋めるとsubmit中止
+   2. form_loaded_at → ロードからsubmitまで3秒未満ならボット判定
+   3. submit時刻を記録 (重複連投検知用にも使える)
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  var now = Date.now();
+  var mainTs = document.getElementById("aurum-form-loaded-at");
+  var stepTs = document.getElementById("aurum-step-form-loaded-at");
+  if (mainTs) mainTs.value = String(now);
+  if (stepTs) stepTs.value = String(now);
+
+  function attachAntiSpam(formId, loadedAtId) {
+    var form = document.getElementById(formId);
+    if (!form) return;
+    form.addEventListener("submit", function(e) {
+      // honeypot確認
+      var hp = form.querySelector('input[name="website_hp"]');
+      if (hp && hp.value.trim() !== "") {
+        e.preventDefault();
+        console.warn("[AURUM anti-spam] honeypot triggered");
+        return false;
+      }
+      // 速度チェック (3秒未満で送信はボット)
+      var loadedAt = parseInt((document.getElementById(loadedAtId) || {}).value || "0", 10);
+      var elapsed = Date.now() - loadedAt;
+      if (loadedAt > 0 && elapsed < 3000) {
+        e.preventDefault();
+        alert("送信が早すぎます。内容をご確認のうえ、再度お試しください。");
+        console.warn("[AURUM anti-spam] too fast:", elapsed + "ms");
+        return false;
+      }
+    }, true);
+  }
+  attachAntiSpam("application-form", "aurum-form-loaded-at");
+  attachAntiSpam("aurum-step-form", "aurum-step-form-loaded-at");
+})();
+</script>
+
 
 </body>
 </html>
