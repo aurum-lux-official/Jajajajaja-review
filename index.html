@@ -6307,8 +6307,8 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
           <div class="flex gap-3">
             <span class="text-[#C5A059] text-sm shrink-0">02</span>
             <div>
-              <div class="text-[12px] text-white mb-1 font-medium">エントリーの根拠づくり</div>
-              <div class="text-[10px] text-gray-400 leading-relaxed">なぜそこで入るのか、自分の言葉で説明できる判断軸を一緒に作ります。</div>
+              <div class="text-[12px] text-white mb-1 font-medium">出来高分析によるエントリー手法</div>
+              <div class="text-[10px] text-gray-400 leading-relaxed">SNSに掲載中の出来高（ボリューム）分析によるエントリー手法を直接指導。なぜそこで入るのか、自分の言葉で説明できる判断軸を一緒に作ります。</div>
             </div>
           </div>
           <div class="flex gap-3">
@@ -15715,7 +15715,10 @@ window.aurumToGasParams = function (form) {
   var p = new URLSearchParams();
   var els = form.elements;
   for (var i = 0; i < els.length; i++) {
-    if (els[i].name) p.append(els[i].name, els[i].value);
+    if (!els[i].name) continue;
+    /* action は受信側で別ルートに迂回される可能性があるため request_type として送る */
+    if (els[i].name === "action") { p.append("request_type", els[i].value); continue; }
+    p.append(els[i].name, els[i].value);
   }
   var g = function (n) {
     var el = form.querySelector('[name="' + n + '"]');
