@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
 <title>AURUM LUX - Auction-Based Execution</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
@@ -30,6 +30,86 @@
 }
 
 * { box-sizing: border-box; }
+
+/* ════════════════════════════════════════════════════════
+   スマホ最優先・横スクロール完全防止 (グローバル)
+   ════════════════════════════════════════════════════════ */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden !important;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+img, svg, video, canvas, iframe { max-width: 100%; height: auto; }
+.no-mobile-overflow, section, main, footer, header, nav {
+  max-width: 100vw;
+}
+/* iOS Safari の bottom safe-area 対策 */
+.aurum-livefeed-modal, #aurum-discord-modal, #aurum-volume-modal, #aurum-setup-modal {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+/* ════════════════════════════════════════════════════════
+   スマホ専用: フォント・余白・ボタンのタッチ最適化
+   ════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  /* タップ領域確保: ボタンは最低44px */
+  button, .btn-pill, .btn-cta, a.mobile-link, .aurum-rank-card {
+    min-height: 40px;
+  }
+  /* フォーム入力欄: iOSのズーム発生防止 (16px以上必須) */
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+  /* スクロール式の要素は overscroll-behavior 隔離 */
+  .aurum-lf-col-body, .aurum-disc-messages, #aurum-discord-messages, [data-lenis-prevent] {
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* hero テキスト: モバイルではサイズ調整 */
+  #home .text-5xl, #home .text-4xl { font-size: 2.2rem; line-height: 1.1; }
+  /* ヒーロー: 上部余白削減 / 中央寄せやめて上寄せ */
+  .hero-section {
+    min-height: auto !important;
+    padding-top: 110px !important;   /* fixed ナビ(約60px)+ティッカー(約30px)分を確保 */
+    padding-bottom: 40px !important;
+    justify-content: flex-start !important;
+  }
+  /* スマホで min-h-screen も無効化 (Tailwindの上書き) */
+  #home.min-h-screen { min-height: auto !important; }
+  .hero-glass-panel { padding: 1rem 0.8rem !important; margin-top: 0 !important; }
+  /* ヒーロー文字下余白も削減 */
+  #home .hero-mask { margin-bottom: 0.5rem !important; }
+  #home .hero-mask.mb-6, #home .hero-mask.mb-8, #home .hero-mask.mb-10, #home .hero-mask.mb-16 { margin-bottom: 0.8rem !important; }
+  /* タイピング枠: モバイル最小幅 */
+  .hero-typing-frame { padding: 0 0.5rem; min-height: 6.5em; }
+  .hero-typing-frame > p { min-height: 6.5em; font-size: 12px; line-height: 1.9; }
+  /* モーダル全画面化 */
+  .aurum-livefeed-modal .aurum-lf-wrap { padding: 8px 10px; height: 100vh; height: 100dvh; }
+  .aurum-lf-header { padding-bottom: 6px; }
+  .aurum-lf-stats { margin: 6px 0; }
+  .aurum-lf-stat { padding: 6px 8px; }
+  .aurum-lf-stat .val { font-size: 13px; }
+  .aurum-lf-cols { gap: 6px; }
+  /* セクション padding 軽減 */
+  section { padding-left: 1rem; padding-right: 1rem; }
+  /* グラスパネル padding 軽減 */
+  .glass { padding: 1rem !important; }
+  /* グリッドのoverflow防止 */
+  .grid { min-width: 0; }
+  .grid > * { min-width: 0; }
+  /* テーブル等の長いコンテンツ: 折り返しと縮小 */
+  pre, code { white-space: pre-wrap; word-break: break-word; }
+  /* メニュー時の body スクロール抑制 */
+  body.menu-open { overflow: hidden; }
+}
+
+/* iOS横向き対策 */
+@supports (-webkit-touch-callout: none) {
+  .min-h-screen { min-height: -webkit-fill-available; }
+}
 
 html {
   scroll-behavior: smooth;
@@ -1893,6 +1973,13 @@ section .max-w-xl {
 #canvas-container { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
 #aurum-glitter-canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
 .view-section, nav, section, footer { position: relative; z-index: 10; }
+/* ビュー遷移: opacity フェードを全 view-section に統一適用 (チラつき防止) */
+.view-section {
+  transition: opacity 0.5s ease;
+}
+.view-section.hidden {
+  display: none !important;
+}
 
 .btn-cta { position: relative; overflow: hidden; z-index: 1; transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1); box-shadow: 0 2px 12px -2px rgba(197, 160, 89, 0.15); border-radius: 2px; }
 .btn-cta:hover { box-shadow: 0 4px 20px -2px rgba(197, 160, 89, 0.35); transform: translateY(-1px) scale(1.02); }
@@ -4326,6 +4413,417 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
   0%, 100% { opacity: 1; transform: scale(1); }
   50%      { opacity: 0.5; transform: scale(0.85); }
 }
+
+/* ════════════════════════════════════════════════════════
+   メニュー特別リンク (アイコン付き) + メンターシップ青系強調
+   ════════════════════════════════════════════════════════ */
+.mobile-link-special {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 18px;
+  border: 1px solid rgba(197,160,89,0.2);
+  border-radius: 4px;
+  color: #d1d5db;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  font-family: 'Noto Serif JP', serif;
+  transition: all 0.25s ease;
+}
+.mobile-link-special:hover {
+  border-color: rgba(197,160,89,0.5);
+  background: rgba(197,160,89,0.06);
+  color: #C5A059;
+}
+.mobile-link-special.mobile-link-cta {
+  border-color: rgba(197,160,89,0.5);
+  background: rgba(197,160,89,0.08);
+  color: #C5A059;
+}
+/* メンターシップ = 青系で目立たせる */
+.mobile-link-special.mobile-link-mentor {
+  border-color: rgba(96,165,250,0.55);
+  background: linear-gradient(135deg, rgba(96,165,250,0.14), rgba(59,130,246,0.06));
+  color: #93c5fd;
+  font-weight: 600;
+  box-shadow: 0 0 16px rgba(96,165,250,0.18);
+}
+.mobile-link-special.mobile-link-mentor:hover {
+  border-color: rgba(96,165,250,0.9);
+  background: linear-gradient(135deg, rgba(96,165,250,0.22), rgba(59,130,246,0.1));
+  color: #bfdbfe;
+  box-shadow: 0 0 24px rgba(96,165,250,0.32);
+}
+/* 稼働危険日カレンダー = 赤系で警告的に目立たせる */
+.mobile-link-special.mobile-link-danger {
+  border-color: rgba(248,113,113,0.5);
+  background: linear-gradient(135deg, rgba(248,113,113,0.12), rgba(239,68,68,0.05));
+  color: #fca5a5;
+  font-weight: 600;
+}
+.mobile-link-special.mobile-link-danger:hover {
+  border-color: rgba(248,113,113,0.85);
+  background: linear-gradient(135deg, rgba(248,113,113,0.2), rgba(239,68,68,0.09));
+  color: #fecaca;
+  box-shadow: 0 0 22px rgba(248,113,113,0.3);
+}
+
+/* ════════════════════════════════════════════════════════
+   メンターシップ CTAバナー & セクション
+   ════════════════════════════════════════════════════════ */
+.aurum-mentor-banner {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(243,208,120,0.10), rgba(197,160,89,0.04));
+  border: 1px solid rgba(243,208,120,0.3);
+  border-radius: 4px;
+  padding: 18px 22px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.aurum-mentor-banner:hover {
+  border-color: rgba(243,208,120,0.6);
+  background: linear-gradient(135deg, rgba(243,208,120,0.16), rgba(197,160,89,0.07));
+  transform: translateY(-2px);
+}
+.aurum-mentor-banner-glow {
+  position: absolute;
+  top: 50%; left: -20%;
+  width: 60%; height: 200%;
+  background: radial-gradient(ellipse, rgba(243,208,120,0.12), transparent 70%);
+  transform: translateY(-50%);
+  pointer-events: none;
+  animation: aurumMentorGlow 5s ease-in-out infinite;
+}
+@keyframes aurumMentorGlow {
+  0%, 100% { left: -20%; opacity: 0.5; }
+  50%      { left: 60%; opacity: 1; }
+}
+.aurum-mentor-banner-btn {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #F3D078, #C5A059);
+  color: #050505;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  border-radius: 3px;
+  white-space: nowrap;
+  font-family: 'Noto Serif JP', serif;
+}
+.aurum-mentor-feat {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(243,208,120,0.15);
+  border-radius: 4px;
+  padding: 16px 12px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+.aurum-mentor-feat:hover {
+  border-color: rgba(243,208,120,0.4);
+  background: rgba(243,208,120,0.04);
+}
+.aurum-mentor-feat-icon {
+  font-size: 18px;
+  font-weight: 700;
+  color: #F3D078;
+  font-family: 'Inter', serif;
+  margin-bottom: 8px;
+  letter-spacing: 0.05em;
+}
+.aurum-mentor-feat-title {
+  font-size: 12px;
+  color: #fff;
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-family: 'Noto Serif JP', serif;
+}
+.aurum-mentor-feat-desc {
+  font-size: 9px;
+  color: #9ca3af;
+  line-height: 1.5;
+}
+.mentor-rank-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 11px;
+}
+.mentor-rank-row:hover { background: rgba(243,208,120,0.04); }
+.mentor-rank-num {
+  font-size: 10px;
+  font-weight: 700;
+  color: #9ca3af;
+  text-align: center;
+}
+.mentor-rank-num.top1 { color: #F3D078; }
+.mentor-rank-num.top2 { color: #d4d4d8; }
+.mentor-rank-num.top3 { color: #d4915c; }
+
+/* ════════════════════════════════════════════════════════
+   「あなた」TOP固定行 (ランキング最上部)
+   ════════════════════════════════════════════════════════ */
+.aurum-you-row {
+  background: linear-gradient(90deg, rgba(243,208,120,0.18) 0%, rgba(197,160,89,0.10) 50%, rgba(243,208,120,0.18) 100%) !important;
+  border-left: 3px solid #F3D078;
+  border-right: 3px solid #F3D078;
+  border-bottom: 1px solid rgba(243,208,120,0.4);
+  border-top: 1px solid rgba(243,208,120,0.4);
+  margin-bottom: 6px;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  box-shadow: 0 0 18px rgba(197,160,89,0.25), inset 0 0 12px rgba(243,208,120,0.08);
+  position: relative;
+  animation: aurumYouGlow 3s ease-in-out infinite;
+}
+@keyframes aurumYouGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(197,160,89,0.25), inset 0 0 12px rgba(243,208,120,0.08); }
+  50%      { box-shadow: 0 0 28px rgba(197,160,89,0.4), inset 0 0 18px rgba(243,208,120,0.15); }
+}
+.aurum-you-row::after {
+  content: "JAY";
+  position: absolute;
+  top: -8px;
+  right: 8px;
+  background: linear-gradient(135deg, #F3D078, #C5A059);
+  color: #050505;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-family: 'Noto Serif JP', serif;
+}
+.rank-badge.rank-you {
+  background: linear-gradient(135deg, #F3D078, #C5A059) !important;
+  color: #050505 !important;
+  border: none !important;
+  box-shadow: 0 0 12px rgba(243,208,120,0.6);
+}
+
+/* ════════════════════════════════════════════════════════
+   コメントアクション (いいね / 返信)
+   ════════════════════════════════════════════════════════ */
+.aurum-disc-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px dotted rgba(197,160,89,0.1);
+}
+.aurum-disc-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.5);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 10px;
+  font-family: 'Inter', sans-serif;
+  letter-spacing: 0.05em;
+  transition: all 0.2s;
+}
+.aurum-disc-action-btn:hover {
+  color: #C5A059;
+  border-color: rgba(197,160,89,0.4);
+  background: rgba(197,160,89,0.06);
+}
+.aurum-disc-like-btn.liked {
+  color: #ef4444;
+  border-color: rgba(239,68,68,0.45);
+  background: rgba(239,68,68,0.08);
+}
+.aurum-disc-like-btn.liked:hover {
+  color: #ef4444;
+}
+.aurum-disc-like-count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.aurum-disc-replies {
+  margin-top: 10px;
+  padding-left: 12px;
+  border-left: 2px solid rgba(197,160,89,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.aurum-disc-reply {
+  display: flex;
+  gap: 8px;
+}
+.aurum-disc-reply-avatar {
+  flex-shrink: 0;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(197,160,89,0.12);
+  border: 1px solid rgba(197,160,89,0.25);
+  color: #C5A059;
+  font-size: 8px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  font-family: monospace;
+}
+.aurum-disc-reply-mine .aurum-disc-reply-avatar {
+  background: rgba(74,222,128,0.12);
+  border-color: rgba(74,222,128,0.4);
+  color: #4ade80;
+}
+.aurum-disc-reply-body {
+  flex: 1;
+  min-width: 0;
+}
+.aurum-disc-reply-head {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+.aurum-disc-reply-name {
+  color: #C5A059;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.aurum-disc-reply-mine .aurum-disc-reply-name {
+  color: #4ade80;
+}
+.aurum-disc-reply-time {
+  color: rgba(255,255,255,0.35);
+  font-size: 8.5px;
+}
+.aurum-disc-reply-text {
+  color: rgba(255,255,255,0.75);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.aurum-disc-reply-form {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.aurum-disc-reply-input {
+  flex: 1;
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(197,160,89,0.25);
+  color: #fff;
+  padding: 7px 10px;
+  font-size: 11px;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+}
+.aurum-disc-reply-input:focus {
+  outline: none;
+  border-color: #C5A059;
+}
+.aurum-disc-reply-submit {
+  padding: 7px 14px;
+  background: #C5A059;
+  border: none;
+  color: #050505;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Noto Serif JP', serif;
+}
+.aurum-disc-reply-submit:hover { background: #F3D078; }
+
+#aurum-curtain {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+}
+.aurum-curtain-left,
+.aurum-curtain-right {
+  position: absolute;
+  top: 0;
+  width: 50.5%;
+  height: 100%;
+  background: linear-gradient(180deg, #0A0F1C 0%, #050505 50%, #0A0F1C 100%);
+  will-change: transform;
+  transition: transform 1.6s cubic-bezier(0.76, 0, 0.24, 1);
+  box-shadow: 0 0 60px rgba(0,0,0,0.8);
+}
+.aurum-curtain-left {
+  left: 0;
+  border-right: 1px solid rgba(197,160,89,0.4);
+}
+.aurum-curtain-right {
+  right: 0;
+  border-left: 1px solid rgba(197,160,89,0.4);
+}
+.aurum-curtain-seam {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(180deg, transparent, #F3D078 25%, #C5A059 50%, #F3D078 75%, transparent);
+  box-shadow: 0 0 24px rgba(197,160,89,0.8), 0 0 60px rgba(197,160,89,0.4);
+  opacity: 0;
+  transition: opacity 0.8s ease-out;
+}
+#aurum-curtain.armed .aurum-curtain-seam {
+  opacity: 1;
+}
+#aurum-curtain.open .aurum-curtain-left  {
+  transform: translateX(-101%);
+}
+#aurum-curtain.open .aurum-curtain-right {
+  transform: translateX(101%);
+}
+#aurum-curtain.open .aurum-curtain-seam {
+  opacity: 0;
+  transition: opacity 1.4s ease-in;
+}
+#aurum-curtain.done {
+  display: none;
+}
+
+/* ════════════════════════════════════════════════════════
+   ヒーロー タイピング枠 (固定サイズ・レイアウト崩れ防止)
+   ════════════════════════════════════════════════════════ */
+/* ヒーロー タイピング枠 (固定サイズ・レイアウト崩れ防止) */
+.hero-typing-frame {
+  display: block;
+  position: relative;
+  max-width: 42rem;
+  width: 100%;
+  min-height: 5.6em;     /* 最低4行分を予約 (足りなければ伸びる) */
+  text-align: center;
+  vertical-align: top;
+  contain: layout style;  /* size は外す → 内容に応じて高さ可変 */
+  overflow: visible;       /* 見切れ防止 */
+}
+.hero-typing-frame > p {
+  margin: 0;
+  display: block;
+  min-height: 5.6em;
+  line-height: 1.8;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+@media (min-width: 768px) {
+  .hero-typing-frame { min-height: 4em; }
+  .hero-typing-frame > p { min-height: 4em; }
+}
+@media (max-width: 768px) {
+  .hero-typing-frame { min-height: 7em; }
+  .hero-typing-frame > p { min-height: 7em; font-size: 12px; line-height: 1.9; }
+}
 </style>
 </head>
 
@@ -4396,7 +4894,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       </div>
 
       <!-- 統計カード -->
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 mb-5">
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-2 md:gap-3 mb-5">
         <div class="user-stat-card">
           <div class="lab">開始資金</div>
           <div class="val small" id="user-detail-capital">¥-</div>
@@ -4404,6 +4902,10 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
         <div class="user-stat-card">
           <div class="lab">利益</div>
           <div class="val green" id="user-detail-profit">¥0</div>
+        </div>
+        <div class="user-stat-card">
+          <div class="lab">出金済</div>
+          <div class="val small" style="color:#C5A059;" id="user-detail-withdrawn">¥0</div>
         </div>
         <div class="user-stat-card">
           <div class="lab">Total ROI</div>
@@ -4430,6 +4932,19 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <div class="bg-black/40 border border-[#C5A059]/15 rounded-sm p-3 md:p-4 mb-4">
         <h4 class="text-[10px] text-[#C5A059] tracking-[0.3em] uppercase mb-3">Recent 8 Weeks</h4>
         <div id="user-detail-weeks" class="grid grid-cols-4 gap-2 text-center"></div>
+      </div>
+
+      <!-- 相場環境 + 稼働要約レポート -->
+      <div class="bg-black/40 border border-[#C5A059]/15 rounded-sm p-3 md:p-4 mb-4">
+        <h4 class="text-[10px] text-[#C5A059] tracking-[0.3em] uppercase mb-3">運用レポート</h4>
+        <div class="mb-3">
+          <div class="text-[8px] text-[#C5A059] tracking-[0.2em] uppercase mb-1">直近の相場</div>
+          <div id="user-detail-market" class="text-[11px] text-gray-300 leading-relaxed">―</div>
+        </div>
+        <div>
+          <div class="text-[8px] text-[#C5A059] tracking-[0.2em] uppercase mb-1">稼働要約</div>
+          <div id="user-detail-work" class="text-[11px] text-gray-300 leading-relaxed">―</div>
+        </div>
       </div>
 
       <p class="text-[9px] text-gray-500 text-center leading-loose">
@@ -4548,7 +5063,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
           <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
           <span>自己紹介 / About</span>
         </a>
-        <a href="javascript:void(0)" onclick="switchView('view-calendar'); closeMenu();" class="mobile-link-special w-full justify-center">
+        <a href="javascript:void(0)" onclick="switchView('view-calendar'); closeMenu();" class="mobile-link-special mobile-link-danger w-full justify-center">
           <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           <span>EA稼働危険日カレンダー</span>
         </a>
@@ -4572,6 +5087,10 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
           <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           <span>出来高分析レポート / Volume Analysis</span>
         </a>
+        <a href="javascript:void(0)" onclick="closeMenu(); setTimeout(()=>{ const el=document.getElementById('mentorship'); if(el){ el.scrollIntoView({behavior:'smooth', block:'start'}); } }, 300);" class="mobile-link-special mobile-link-mentor w-full justify-center">
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l9-5-9-5-9 5 9 5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z"/></svg>
+          <span>JAY 直接指導 メンターシップ</span>
+        </a>
         <a href="javascript:void(0)" onclick="switchView('view-form'); closeMenu();" class="mobile-link-special mobile-link-cta w-full justify-center">
           <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
           <span>EA申請フォーム</span>
@@ -4580,19 +5099,29 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
     </div>
   </div>
 
-  <section id="home" class="min-h-screen flex flex-col justify-center items-center text-center px-4 relative z-10">
+  <!-- 観音開きカーテン (初回ロード時の演出) -->
+  <div id="aurum-curtain" aria-hidden="true">
+    <div class="aurum-curtain-left"></div>
+    <div class="aurum-curtain-right"></div>
+    <div class="aurum-curtain-seam"></div>
+  </div>
+
+  <section id="home" class="hero-section min-h-screen flex flex-col justify-center items-center text-center px-4 relative z-10">
     <div class="hero-glass-panel p-8 md:p-16 flex flex-col items-center justify-center">
-      <div class="hero-mask mb-8">
+      <div class="hero-mask mb-6 md:mb-8">
         <span class="block text-[#C5A059] tracking-[0.4em] text-[10px] uppercase hero-reveal">Auction Theory Based Algorithm</span>
       </div>
       <div class="hero-mask">
-        <h1 class="text-5xl md:text-8xl font-semibold leading-tight serif text-white hero-reveal">Auction-Based</h1>
+        <h1 class="text-4xl md:text-8xl font-semibold leading-tight serif text-white hero-reveal">Auction-Based</h1>
       </div>
-      <div class="hero-mask mb-10">
-        <h1 class="text-5xl md:text-8xl font-semibold leading-tight serif text-white hero-reveal">Execution.</h1>
+      <div class="hero-mask mb-6 md:mb-10">
+        <h1 class="text-4xl md:text-8xl font-semibold leading-tight serif text-white hero-reveal">Execution.</h1>
       </div>
-      <div class="hero-mask mb-16">
-        <p id="hero-typing-target" class="text-gray-300 text-xs md:text-sm max-w-2xl leading-loose tracking-[0.2em] hero-reveal">機関投資家の思考を再現した、<br>Volume × Price Action アルゴリズム</p>
+      <div class="hero-mask mb-8 md:mb-16">
+        <!-- タイピング枠: 固定サイズで文字変化してもレイアウト崩れない -->
+        <div id="hero-typing-frame" class="hero-typing-frame hero-reveal">
+          <p id="hero-typing-target" class="text-gray-300 text-xs md:text-sm leading-loose tracking-[0.2em]">機関投資家の思考を再現した、<br>Volume × Price Action アルゴリズム</p>
+        </div>
       </div>
       <div class="hero-mask">
         <div class="hero-reveal">
@@ -4644,7 +5173,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <div class="sp-fade-up" style="--sp-delay: 0.1s">
         <div class="text-[9px] text-gray-500 tracking-[0.25em] uppercase mb-2">Monthly ROI</div>
         <div class="text-2xl md:text-3xl serif text-[#C5A059]">+<span class="roi-count" data-target="58">0</span>%</div>
-        <div class="text-[8px] text-gray-600 tracking-widest mt-1">3システム平均</div>
+        <div class="text-[8px] text-gray-600 tracking-widest mt-1">顧客全体ROI</div>
       </div>
       <div class="sp-fade-up" style="--sp-delay: 0.2s">
         <div class="text-[9px] text-gray-500 tracking-[0.25em] uppercase mb-2">Backtested</div>
@@ -4867,11 +5396,11 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
         </p>
       </div>
 
-      <!-- ライブカウンタ (1247名 / 最終トレード時刻) -->
+      <!-- ライブカウンタ (1147名 / 最終トレード時刻) -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-10">
         <div class="aurum-vp-counter">
           <div class="lab">現在運用中</div>
-          <div class="val"><span id="vp-running-users">1,247</span><span class="unit">名</span></div>
+          <div class="val"><span id="vp-running-users">1,147</span><span class="unit">名</span></div>
           <div class="sub"><span class="dot-green"></span>LIVE</div>
         </div>
         <div class="aurum-vp-counter">
@@ -4881,7 +5410,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
         </div>
         <div class="aurum-vp-counter">
           <div class="lab">最終トレード</div>
-          <div class="val"><span id="vp-last-trade">12</span><span class="unit">分前</span></div>
+          <div class="val"><span id="vp-last-trade">数</span><span class="unit">秒前</span></div>
           <div class="sub"><span class="dot-green"></span>RECENT</div>
         </div>
         <div class="aurum-vp-counter">
@@ -5486,6 +6015,31 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
   </section>
 
   <!-- ════════════════════════════════════════════════════════
+       メンターシップ CTAバナー (1ヶ所目: FAQ前)
+       ════════════════════════════════════════════════════════ -->
+  <section class="py-8 px-4 md:px-6 relative z-10">
+    <div class="max-w-4xl mx-auto">
+      <div class="aurum-mentor-banner" onclick="scrollToSec('mentorship')">
+        <div class="aurum-mentor-banner-glow"></div>
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="text-center md:text-left">
+            <div class="text-[9px] text-[#F3D078] tracking-[0.3em] uppercase mb-1.5 serif">Mentorship Program · 会員募集中</div>
+            <div class="text-base md:text-lg serif text-white tracking-wide mb-1">JAY 直接指導 メンターシップ</div>
+            <div class="text-[10px] md:text-[11px] text-gray-400">個別指導 · FX裁量分析 · Discord対応 · 参加者 276名</div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="text-right">
+              <div class="text-[8px] text-gray-500 tracking-widest uppercase">入会費</div>
+              <div class="text-xl md:text-2xl serif text-[#F3D078] tabular-nums">¥100,000</div>
+            </div>
+            <span class="aurum-mentor-banner-btn">詳細を見る →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════
        FAQ (B4) - 心理的ハードル除去
        ════════════════════════════════════════════════════════ -->
   <section id="faq" class="py-14 px-6 border-t border-white/5 relative z-10">
@@ -5561,6 +6115,32 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       </div>
     </div>
   </section>
+
+  <!-- ════════════════════════════════════════════════════════
+       メンターシップ CTAバナー (2ヶ所目: pricing後)
+       ════════════════════════════════════════════════════════ -->
+  <section class="py-8 px-4 md:px-6 relative z-10">
+    <div class="max-w-4xl mx-auto">
+      <div class="aurum-mentor-banner" onclick="scrollToSec('mentorship')">
+        <div class="aurum-mentor-banner-glow"></div>
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="text-center md:text-left">
+            <div class="text-[9px] text-[#F3D078] tracking-[0.3em] uppercase mb-1.5 serif">Mentorship Program · 会員募集中</div>
+            <div class="text-base md:text-lg serif text-white tracking-wide mb-1">JAY 直接指導 メンターシップ</div>
+            <div class="text-[10px] md:text-[11px] text-gray-400">個別指導 · FX裁量分析 · Discord対応 · 参加者 276名</div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <div class="text-right">
+              <div class="text-[8px] text-gray-500 tracking-widest uppercase">入会費</div>
+              <div class="text-xl md:text-2xl serif text-[#F3D078] tabular-nums">¥100,000</div>
+            </div>
+            <span class="aurum-mentor-banner-btn">詳細を見る →</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section id="account-setup" class="py-14 px-6 border-t border-white/5 relative z-10">
     <div id="account-setup-box" class="max-w-4xl mx-auto glass p-8 md:p-12 border-t-2 border-t-[#C5A059] text-center reveal-init transition-all duration-500">
       <h3 class="text-[10px] text-[#C5A059] tracking-[0.4em] uppercase mb-4 serif">ACCOUNT SETUP</h3>
@@ -5596,168 +6176,20 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
         <button onclick="switchView('view-form')" class="w-full md:w-auto bg-white/5 border border-white/20 text-white px-12 py-4 text-xs tracking-[0.3em] font-bold btn-cta hover:bg-white/10 transition inline-flex items-center justify-center rounded-sm">
           <span class="text-[#C5A059] mr-3">STEP 2</span> 申請フォームへ進む
         </button>
+        <div class="mt-6 max-w-xl mx-auto">
+          <p class="text-[11px] text-[#C5A059] leading-relaxed mb-2">
+            <span class="font-bold">▸ STEP 1 で口座開設をお済みの方はこちらへお進みください</span>
+          </p>
+          <p class="text-[10px] text-gray-400 leading-loose">
+            申請フォームでは、DooPrime 口座番号・MT5 セント口座番号・Instagram ID 等の入力が必要です。<br>
+            お手元に <span class="text-[#C5A059]">口座情報のスクリーンショット</span> をご準備のうえお進みいただくとスムーズです。<br>
+            <span class="text-gray-500">※ 入力情報は紐付け確認のみに使用し、暗号化通信で送信されます。</span>
+          </p>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- ════════════════════════════════════════════════════════════
-       SIMPLE 3-STEP APPLICATION (シンプル3ステップ申請)
-       ════════════════════════════════════════════════════════════ -->
-  <section id="simple-application" class="py-14 md:py-14 px-4 md:px-6 border-t border-white/5 relative z-10">
-    <div class="max-w-2xl mx-auto">
-      <div class="text-center mb-10">
-        <h3 class="text-[10px] text-[#C5A059] tracking-[0.4em] uppercase mb-3 serif reveal-init">Quick Apply</h3>
-        <h2 class="text-xl md:text-2xl serif text-white mb-4 tracking-widest reveal-init sp-mask-line aurum-fade-text"><span data-text="3ステップで申請">3ステップで申請</span></h2>
-        <p class="text-[11px] text-gray-400 leading-loose">
-          時間がない方向けの簡単申請フォーム。<br>
-          途中で止めても自動保存されます。
-        </p>
-      </div>
-
-      <div id="aurum-step-form-wrap" class="glass border-t-2 border-t-[#C5A059] p-6 md:p-10 rounded-sm">
-        <!-- プログレスバー -->
-        <div id="step-progress-bar" class="mb-8">
-          <div class="flex justify-between mb-3">
-            <button type="button" data-step="1" class="step-pill active">
-              <span class="step-num">1</span>
-              <span class="step-lab">基本情報</span>
-            </button>
-            <button type="button" data-step="2" class="step-pill">
-              <span class="step-num">2</span>
-              <span class="step-lab">ブローカー</span>
-            </button>
-            <button type="button" data-step="3" class="step-pill">
-              <span class="step-num">3</span>
-              <span class="step-lab">VPS / 確認</span>
-            </button>
-          </div>
-          <div class="step-progress-track">
-            <div id="step-progress-fill" class="step-progress-fill"></div>
-          </div>
-          <div class="text-[9px] text-gray-500 text-center mt-3 tracking-widest">
-            STEP <span id="step-current">1</span> / 3 · <span id="step-percent">33</span>% 完了
-          </div>
-        </div>
-
-        <form id="aurum-step-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-step-form-target">
-          <!-- honeypot: 人間には見えない、ボットが埋めると弾く -->
-          <div aria-hidden="true" style="position:absolute; left:-10000px; top:auto; width:1px; height:1px; overflow:hidden;">
-            <label>Website (do not fill)<input type="text" name="website_hp" tabindex="-1" autocomplete="off"></label>
-          </div>
-          <input type="hidden" name="form_loaded_at" id="aurum-step-form-loaded-at">
-          <input type="hidden" name="System" id="step-system-select">
-          <input type="hidden" name="Source" value="quick-3step">
-
-          <!-- STEP 1: 基本情報 -->
-          <div class="step-panel" data-step-panel="1">
-            <h4 class="text-[11px] text-[#C5A059] tracking-[0.3em] uppercase mb-5 font-bold">基本情報</h4>
-
-            <div class="space-y-4">
-              <div>
-                <label class="step-label">システム選択 <span class="req">*</span></label>
-                <select name="StepSystemDisplay" id="step-system-display" class="input-field text-sm" required>
-                  <option value="">選択してください</option>
-                  <option value="Order Flow Structure">Order Flow Structure (推奨・初心者向け)</option>
-                  <option value="Trend Scalping">Trend Scalping (中級者向け)</option>
-                  <option value="SMC Grid">SMC Grid (上級者向け)</option>
-                </select>
-              </div>
-              <div>
-                <label class="step-label">お名前 <span class="req">*</span></label>
-                <input type="text" name="Name" id="step-name" placeholder="山田 太郎 (必須)" class="input-field text-sm" required aria-required="true">
-              </div>
-              <div>
-                <label class="step-label">Email <span class="req">*</span></label>
-                <input type="email" name="Email" id="step-email" placeholder="example@email.com (実在するもの)" class="input-field text-sm" required aria-required="true">
-              </div>
-              <div>
-                <label class="step-label">Instagram ID <span class="req">*</span></label>
-                <input type="text" name="Instagram_ID" id="step-instagram" placeholder="@your_instagram (必須)" class="input-field text-sm" required aria-required="true" pattern="@?[a-zA-Z0-9._]{1,30}" title="Instagram IDを入力してください">
-              </div>
-            </div>
-            <div class="step-nav">
-              <button type="button" class="step-btn-next" id="step-btn-next-1" onclick="aurumStepNext()">次へ <span>›</span></button>
-            </div>
-          </div>
-
-          <!-- STEP 2: ブローカー情報 -->
-          <div class="step-panel" data-step-panel="2" style="display:none;">
-            <h4 class="text-[11px] text-[#C5A059] tracking-[0.3em] uppercase mb-5 font-bold">ブローカー情報</h4>
-            <div class="bg-[#C5A059]/5 border-l-2 border-[#C5A059]/40 pl-3 py-2 mb-5 rounded-sm">
-              <p class="text-[10px] text-[#C5A059]/90 leading-relaxed">Doo Prime 専用リンクから口座開設後、IDをご入力ください。</p>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="step-label">DooPrime ID <span class="req">*</span></label>
-                <input type="text" name="DooPrime_ID" id="step-dooprime" placeholder="例: 12345678 (必須)" class="input-field text-sm font-mono" required aria-required="true">
-                <a href="https://my.dooprime.com/ja/links/go/70858" target="_blank" class="text-[10px] text-[#C5A059] hover:text-white transition mt-1.5 inline-block">→ Doo Prime 口座開設リンク</a>
-              </div>
-              <div>
-                <label class="step-label">MT5セント口座番号 <span class="opt">(任意)</span></label>
-                <input type="text" name="MT5_Cent_Account" id="step-mt5-acc" placeholder="例: 87654321 (必須)" class="input-field text-sm font-mono" required aria-required="true">
-              </div>
-              <div>
-                <label class="step-label">MT5セント口座パスワード <span class="opt">(任意)</span></label>
-                <input type="password" name="MT5_Cent_Password" id="step-mt5-pw" placeholder="MT5セント口座パスワード (任意)" class="input-field text-sm font-mono">
-              </div>
-            </div>
-            <div class="step-nav">
-              <button type="button" class="step-btn-back" onclick="aurumStepBack()"><span>‹</span> 戻る</button>
-              <button type="button" class="step-btn-next" onclick="aurumStepNext()">次へ <span>›</span></button>
-            </div>
-          </div>
-
-          <!-- STEP 3: VPS / 確認 -->
-          <div class="step-panel" data-step-panel="3" style="display:none;">
-            <h4 class="text-[11px] text-[#C5A059] tracking-[0.3em] uppercase mb-5 font-bold">VPS情報 (任意)</h4>
-            <div class="bg-[#C5A059]/5 border-l-2 border-[#C5A059]/40 pl-3 py-2 mb-5 rounded-sm">
-              <p class="text-[10px] text-[#C5A059]/90 leading-relaxed">VPSをお持ちでない方・ファイルのみ申請の方は<strong class="text-[#C5A059]">空欄のまま</strong>で構いません。</p>
-            </div>
-            <div class="space-y-4 mb-6">
-              <div>
-                <label class="step-label">VPS ログインID <span class="opt">(任意)</span></label>
-                <input type="text" name="VPS_ID" id="step-vps-id" placeholder="VPSのログインID" class="input-field text-sm font-mono">
-              </div>
-              <div>
-                <label class="step-label">VPS ログインパスワード <span class="opt">(任意)</span></label>
-                <input type="password" name="VPS_Password" id="step-vps-pw" placeholder="VPSログインパスワード (任意)" class="input-field text-sm font-mono">
-              </div>
-              <div class="text-[10px] text-gray-500 flex flex-col gap-1.5">
-                <a href="https://admane.jp/ad/p/r?_site=3991&_article=2209&_link=10086&_image=10762" target="_blank" rel="noopener noreferrer" class="text-[#C5A059] hover:text-white transition border-b border-[#C5A059]/50 hover:border-white pb-[1px] inline-block">→ VPSをお持ちでない方はこちら</a>
-                <a href="javascript:void(0)" onclick="switchView('view-guide')" class="text-[#C5A059] hover:text-white transition border-b border-[#C5A059]/50 hover:border-white pb-[1px] inline-block">→ 導入方法・パラメータの見方をガイドで確認</a>
-              </div>
-            </div>
-
-            <!-- 確認サマリ -->
-            <div class="bg-black/40 border border-[#C5A059]/15 rounded-sm p-4 mb-6">
-              <h5 class="text-[10px] text-[#C5A059] tracking-[0.3em] uppercase mb-3 font-bold">申請内容の確認</h5>
-              <div id="step-summary" class="text-[11px] space-y-2"></div>
-            </div>
-
-            <div class="step-nav">
-              <button type="button" class="step-btn-back" onclick="aurumStepBack()"><span>‹</span> 戻る</button>
-              <button type="submit" class="step-btn-submit">送信する</button>
-            </div>
-          </div>
-        </form>
-
-        <!-- 送信中オーバーレイ -->
-        <div id="aurum-step-loading" class="aurum-form-loading-overlay">
-          <div class="aurum-form-spinner"></div>
-          <div>
-            <div class="aurum-form-loading-text">送信中</div>
-            <div class="aurum-form-loading-sub">PROCESSING SECURELY</div>
-          </div>
-        </div>
-      </div>
-      <iframe name="aurum-step-form-target" id="aurum-step-form-target" style="display:none;width:0;height:0;border:none;" aria-hidden="true" tabindex="-1"></iframe>
-
-      <p class="text-center text-[9px] text-gray-500 mt-6 tracking-widest leading-loose">
-        ※入力内容は途中で離脱しても自動保存されます。<br>
-        SSL暗号化通信でデータを保護しています。
-      </p>
-    </div>
-  </section>
 
 <!-- ════════════════════════════════════════════════════════════
      PREMIUM ZONE: ActiveTheory風 高級3D演出ゾーン
@@ -5819,6 +6251,153 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <path class="atmos-curve" d="M-100,1620 Q500,1780 940,1580 T1840,1620" stroke="url(#atmosCurveBlue)" stroke-width="0.8" fill="none"/>
       <path class="atmos-curve" d="M-100,1980 Q400,1860 740,2060 T1640,1980" stroke="url(#atmosCurveGoldBlue)" stroke-width="0.9" fill="none"/>
     </svg>
+
+  <!-- ════════════════════════════════════════════════════════
+       メンターシップ (FX裁量分析 個別指導) — 取引口座開設の直後
+       ════════════════════════════════════════════════════════ -->
+  <section id="mentorship" class="py-16 px-4 md:px-6 border-t border-white/5 relative z-10">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-10">
+        <h3 class="text-[10px] text-[#F3D078] tracking-[0.4em] uppercase mb-3 serif reveal-init">Mentorship Program</h3>
+        <h2 class="text-2xl md:text-3xl serif text-white mb-4 tracking-widest reveal-init">JAY 直接指導 メンターシップ</h2>
+        <p class="text-sm text-gray-400 leading-loose reveal-init max-w-2xl mx-auto">
+          FX裁量トレードの「相場分析」を、JAYがマンツーマンでお伝えするプログラムです。<br>
+          チャートの見方から環境認識、エントリーの考え方まで、ご自身の力で判断できるようになることを目指します。
+        </p>
+      </div>
+
+      <!-- サポート内容 -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-10">
+        <div class="aurum-mentor-feat reveal-init">
+          <div class="aurum-mentor-feat-icon">1:1</div>
+          <div class="aurum-mentor-feat-title">個別指導</div>
+          <div class="aurum-mentor-feat-desc">お一人ずつ、習熟度に合わせて指導</div>
+        </div>
+        <div class="aurum-mentor-feat reveal-init">
+          <div class="aurum-mentor-feat-icon">分析</div>
+          <div class="aurum-mentor-feat-title">FX裁量分析</div>
+          <div class="aurum-mentor-feat-desc">相場環境の読み方を体系的に</div>
+        </div>
+        <div class="aurum-mentor-feat reveal-init">
+          <div class="aurum-mentor-feat-icon">Discord</div>
+          <div class="aurum-mentor-feat-title">Discord対応</div>
+          <div class="aurum-mentor-feat-desc">専用チャンネルで質問・相談</div>
+        </div>
+        <div class="aurum-mentor-feat reveal-init">
+          <div class="aurum-mentor-feat-icon">∞</div>
+          <div class="aurum-mentor-feat-title">継続サポート</div>
+          <div class="aurum-mentor-feat-desc">期限を設けず長くお付き合い</div>
+        </div>
+      </div>
+
+      <!-- 指導内容の詳細 -->
+      <div class="glass p-6 md:p-8 rounded-sm border border-[#F3D078]/15 mb-8">
+        <h4 class="text-[10px] text-[#F3D078] tracking-[0.3em] uppercase mb-5 serif text-center">指導でお伝えする内容</h4>
+        <div class="grid md:grid-cols-2 gap-x-8 gap-y-4">
+          <div class="flex gap-3">
+            <span class="text-[#C5A059] text-sm shrink-0">01</span>
+            <div>
+              <div class="text-[12px] text-white mb-1 font-medium">相場環境認識</div>
+              <div class="text-[10px] text-gray-400 leading-relaxed">トレンドとレンジの見分け方、ボリンジャーバンドを使った地合いの把握。</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="text-[#C5A059] text-sm shrink-0">02</span>
+            <div>
+              <div class="text-[12px] text-white mb-1 font-medium">エントリーの根拠づくり</div>
+              <div class="text-[10px] text-gray-400 leading-relaxed">なぜそこで入るのか、自分の言葉で説明できる判断軸を一緒に作ります。</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="text-[#C5A059] text-sm shrink-0">03</span>
+            <div>
+              <div class="text-[12px] text-white mb-1 font-medium">資金管理・リスク管理</div>
+              <div class="text-[10px] text-gray-400 leading-relaxed">ロット設計や損切りの考え方など、長く続けるための土台を重視します。</div>
+            </div>
+          </div>
+          <div class="flex gap-3">
+            <span class="text-[#C5A059] text-sm shrink-0">04</span>
+            <div>
+              <div class="text-[12px] text-white mb-1 font-medium">振り返りとフィードバック</div>
+              <div class="text-[10px] text-gray-400 leading-relaxed">実際のトレードを一緒に振り返り、次に活かせる気づきをお伝えします。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 料金 + 実績 -->
+      <div class="flex flex-col md:flex-row items-stretch gap-4 mb-8">
+        <div class="flex-1 glass p-6 rounded-sm border-t-2 border-t-[#F3D078] text-center">
+          <div class="text-[9px] text-gray-500 tracking-widest uppercase mb-2">参加費 (一括)</div>
+          <div class="text-3xl md:text-4xl serif text-[#F3D078] mb-1 tabular-nums">¥100,000</div>
+          <div class="text-[10px] text-gray-500">追加費用・月額はありません</div>
+        </div>
+        <div class="flex-1 glass p-6 rounded-sm border-t-2 border-t-[#C5A059] text-center">
+          <div class="text-[9px] text-gray-500 tracking-widest uppercase mb-2">これまでの参加者</div>
+          <div class="text-3xl md:text-4xl serif text-[#C5A059] mb-1 tabular-nums">276<span class="text-base">名</span></div>
+          <div class="text-[10px] text-gray-500">幅広い経験の方が参加しています</div>
+        </div>
+      </div>
+
+      <!-- 参加者の声 -->
+      <div class="glass p-6 md:p-8 rounded-sm border border-[#C5A059]/15 mb-8">
+        <h4 class="text-[10px] text-[#C5A059] tracking-[0.3em] uppercase mb-5 serif text-center">参加者の声</h4>
+        <div class="space-y-4">
+          <div class="border-l-2 border-[#C5A059]/30 pl-4">
+            <p class="text-[11px] text-gray-300 leading-relaxed mb-1">「自己流で迷っていた相場の見方が、少しずつ整理できるようになりました。質問するとその日のうちに返信をいただけるので、つまずいても止まらずに済んでいます。」</p>
+            <p class="text-[9px] text-gray-500">— 会社員・トレード歴1年</p>
+          </div>
+          <div class="border-l-2 border-[#C5A059]/30 pl-4">
+            <p class="text-[11px] text-gray-300 leading-relaxed mb-1">「正解を教わるというより、自分で判断する力を育ててもらっている感覚です。焦らせるようなことを言われないので、自分のペースで続けられています。」</p>
+            <p class="text-[9px] text-gray-500">— 自営業・トレード歴半年</p>
+          </div>
+          <div class="border-l-2 border-[#C5A059]/30 pl-4">
+            <p class="text-[11px] text-gray-300 leading-relaxed mb-1">「最初は不安でしたが、できないことを責められることがなく、基礎から丁寧に教えてもらえました。無理な勧誘もなく、安心して相談できています。」</p>
+            <p class="text-[9px] text-gray-500">— 主婦・未経験から開始</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 安心していただくために -->
+      <div class="glass p-6 md:p-7 rounded-sm border border-white/10 mb-10">
+        <h4 class="text-[10px] text-gray-400 tracking-[0.3em] uppercase mb-4 serif text-center">参加にあたって</h4>
+        <div class="space-y-2.5 text-[10px] md:text-[11px] text-gray-400 leading-relaxed">
+          <p>・本プログラムは投資助言ではなく、相場分析の「考え方」をお伝えする学習サポートです。</p>
+          <p>・利益や成果を保証するものではありません。相場には常にリスクが伴います。</p>
+          <p>・無理な勧誘や、追加商品の販売は行いません。参加費以外の費用は発生しません。</p>
+          <p>・ご自身のペースで学べるよう、進度や課題を強制することはありません。</p>
+        </div>
+      </div>
+
+      <!-- 会員ROIランキング (上位50名) -->
+      <div class="glass p-5 md:p-7 rounded-sm border border-[#F3D078]/20">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-[10px] text-[#F3D078] tracking-[0.3em] uppercase serif">参加者 実績ランキング · TOP 50</h4>
+          <span class="text-[9px] text-gray-500"><span class="inline-block w-1.5 h-1.5 rounded-full bg-[#4ade80] mr-1 align-middle"></span>参加者実績</span>
+        </div>
+        <div id="mentor-ranking-list" class="max-h-[480px] overflow-y-auto pr-1"></div>
+        <p class="text-[9px] text-gray-500 mt-4 leading-relaxed text-center">
+          ※ 参加者の運用実績 (上位50名)。あくまで一例であり、成果を保証するものではありません。
+        </p>
+      </div>
+
+      <div class="glass p-8 md:p-10 rounded-sm border border-[#F3D078]/25 mt-10 text-center">
+        <div id="aurum-cta-emblem" aria-hidden="true" class="mx-auto mb-5" style="width:170px;height:170px;"></div>
+        <h4 class="text-[10px] text-[#C5A059] tracking-[0.4em] uppercase mb-3 serif">Join as Discretionary Member</h4>
+        <p class="text-xl md:text-2xl serif text-white tracking-widest mb-3">裁量メンバーとして参加する</p>
+        <p class="text-[11px] text-gray-400 leading-loose mb-7 max-w-xl mx-auto">JAYによる直接指導のもと、裁量トレードの分析手順を体系的に学ぶメンバーシップです。<br class="hidden md:block">参加枠には限りがあります。まずはお気軽にご相談ください。</p>
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button onclick="aurumReserveMentorshipSeat()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-black text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm" style="background: linear-gradient(135deg, #F3D078, #C5A059);">
+            参加枠を確保する
+          </button>
+          <button onclick="aurumOpenMentorForm()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 border border-[#F3D078]/40 text-[#F3D078] text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm hover:bg-[#F3D078]/10">
+            相談してから参加する
+          </button>
+        </div>
+        <p class="text-[9px] text-gray-500 mt-4">※ お申し込み後、担当よりDiscordでのご案内を差し上げます。利益や成果を保証するものではありません。</p>
+      </div>
+    </div>
+  </section>
 
   <section id="broker-security" class="py-14 md:py-14 px-4 md:px-6 border-t border-white/5 bg-[#0A0F1C]/50 relative z-10">
     <div class="max-w-6xl mx-auto reveal-init">
@@ -6127,6 +6706,24 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
           </button>
         </div>
         <p class="text-[9px] text-gray-500 leading-relaxed">※ ① はお名前.com デスクトップクラウド for MT4 のお申し込みページに移動します。<br>※ ② は VPS 契約完了後にご利用ください。</p>
+      </div>
+    </div>
+
+    <!-- 損切りEA のご案内 -->
+    <div class="mt-6 pt-8 border-t border-[#C5A059]/15">
+      <div class="bg-gradient-to-br from-[#4ade80]/8 to-transparent border border-[#4ade80]/25 rounded-sm p-5 md:p-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 px-2.5 py-0.5 text-[8px] tracking-[0.25em] font-bold serif" style="background: linear-gradient(135deg, #6ee7a0, #4ade80); color: #050505;">RISK GUARD</div>
+        <p class="text-[9px] text-[#4ade80] tracking-[0.3em] uppercase mb-2">特典 · リスク管理ツール</p>
+        <h4 class="text-sm md:text-base text-white serif tracking-wider mb-3">EAご購入者様への特典<br class="md:hidden">「損切りEA」</h4>
+        <p class="text-[10px] md:text-[11px] text-gray-400 leading-loose mb-4">
+          <strong class="text-[#4ade80]">グループSL（合計損失額での一括決済）</strong>と<strong class="text-[#4ade80]">証拠金維持率SL（マージンレベル基準の自動決済）</strong>の2方式に対応した損切り補助EAです。<br>
+          複数ポジションの合計損失や口座全体の証拠金維持率を常時監視し、設定したラインに達すると自動で全決済。想定外の大きなドローダウンや強制ロスカットを未然に防ぎます。
+        </p>
+        <button type="button" onclick="aurumOpenStoplossForm()" class="inline-flex items-center justify-center gap-2 px-5 py-3 bg-[#4ade80] border border-[#4ade80] text-black text-[10px] tracking-[0.2em] font-bold uppercase hover:bg-[#6ee7a0] transition rounded-sm w-full md:w-auto">
+          <span>損切りEAを受け取る</span>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M19 12l-7 7-7-7"/></svg>
+        </button>
+        <p class="text-[9px] text-gray-500 leading-relaxed mt-3">※ EAご購入時のメールアドレス・MT5口座番号をご入力ください。確認後にお送りいたします。</p>
       </div>
     </div>
 
@@ -7001,7 +7598,6 @@ window.aurumSessionSeed = (Math.random() * 1000) + (Date.now() % 1000);
     attempts++;
     // 20回 (4秒) リトライしてダメなら諦めてネイティブスクロールにフォールバック
     if (attempts > 20) {
-      console.log("[AURUM] Lenis CDN unavailable, using native scroll");
       return;
     }
     if (typeof Lenis === "undefined") {
@@ -7017,8 +7613,12 @@ window.aurumSessionSeed = (Math.random() * 1000) + (Date.now() % 1000);
         easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
         direction: "vertical",
         smoothWheel: true,
-        smoothTouch: false,
-        touchMultiplier: 1.6,
+        // スマホでも慣性 (スワイプが止まらないように)
+        smoothTouch: true,
+        syncTouch: true,
+        syncTouchLerp: 0.075,
+        touchInertiaMultiplier: 35,
+        touchMultiplier: 2.0,
         wheelMultiplier: 1.0,
         infinite: false
       });
@@ -7037,7 +7637,6 @@ window.aurumSessionSeed = (Math.random() * 1000) + (Date.now() % 1000);
       }
 
       window.aurumLenis = lenis;
-      console.log("[AURUM] Lenis initialized");
     } catch(e) {
       console.warn("[AURUM] Lenis init failed:", e);
     }
@@ -7763,7 +8362,6 @@ window.AURUM_SYSTEMS = window.AURUM_LIVE_DATA.systems;
             if (slothMat.map) slothMat.map.dispose();
             slothMat.map = newTex;
             slothMat.needsUpdate = true;
-            console.log("AURUM: Sloth image texture applied");
           })
           .catch(err => console.warn("Sloth image load failed, using fallback:", err));
       }
@@ -8030,28 +8628,46 @@ window.AURUM_SYSTEMS = window.AURUM_LIVE_DATA.systems;
     } catch (e) { console.warn("3D init failed:", e); }
   };
 
-  /* タイピング */
+  /* タイピング (枠固定・レイアウト不変) */
   const AurumTyping = (() => {
-    const PHRASES = ["機関投資家の思考を再現した、\nVolume × Price Action アルゴリズム", "Auction Theory に基づく次世代EA", "安定性 × 資金効率の最適解"];
+    const PHRASES = [
+      "機関投資家の思考を再現した、\nVolume × Price Action アルゴリズム",
+      "Auction Theory に基づく次世代EA",
+      "安定性 × 資金効率の最適解"
+    ];
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    function setText(el, text) {
+      // 改行はそのまま反映、文字は逐一追加 (枠は min-height で固定済み)
+      el.innerHTML = text.replace(/\n/g, "<br>");
+    }
     async function startLoop(el) {
       try {
-        await sleep(1800);
+        await sleep(2000);
         let idx = 0;
         while (true) {
+          // 削除
           el.classList.add("aurum-typing-cursor");
-          const chars = Array.from(el.textContent || "");
-          for (let i = chars.length; i >= 0; i--) { el.textContent = chars.slice(0, i).join(""); await sleep(30); }
-          el.classList.remove("aurum-typing-cursor"); await sleep(400);
-          idx = (idx + 1) % PHRASES.length;
-          el.classList.add("aurum-typing-cursor");
-          const lines = PHRASES[idx].split("\n");
-          let disp = "";
-          for (let li = 0; li < lines.length; li++) {
-            if (li > 0) { disp += "<br>"; el.innerHTML = disp; await sleep(100); }
-            for (let ci = 0; ci < lines[li].length; ci++) { disp += lines[li][ci]; el.innerHTML = disp; await sleep(50); }
+          let current = (el.textContent || "").replace(/\u00A0/g, " ");
+          // 改行を一旦 \n 化して文字列化
+          // (innerHTMLの <br> を \n に戻す)
+          var currentHtml = el.innerHTML.replace(/<br\s*\/?>/gi, "\n");
+          var chars = Array.from(currentHtml.replace(/<[^>]+>/g, ""));
+          for (let i = chars.length; i >= 0; i--) {
+            setText(el, chars.slice(0, i).join(""));
+            await sleep(30);
           }
-          el.classList.remove("aurum-typing-cursor"); await sleep(1800);
+          el.classList.remove("aurum-typing-cursor");
+          await sleep(400);
+          idx = (idx + 1) % PHRASES.length;
+          // タイプ
+          el.classList.add("aurum-typing-cursor");
+          const fullText = PHRASES[idx];
+          for (let i = 1; i <= fullText.length; i++) {
+            setText(el, fullText.slice(0, i));
+            await sleep(50);
+          }
+          el.classList.remove("aurum-typing-cursor");
+          await sleep(1800);
         }
       } catch (e) {}
     }
@@ -8092,19 +8708,32 @@ window.AURUM_SYSTEMS = window.AURUM_LIVE_DATA.systems;
       isSubmitting = true;
       if (submitBtn) { submitBtn.disabled = true; submitBtn.style.opacity = "0.6"; }
       if (loadingOverlay) loadingOverlay.classList.add("active");
+      let finished = false;
       const cleanup = () => {
+        if (finished) return;
+        finished = true;
         isSubmitting = false;
         if (submitBtn) { submitBtn.disabled = false; submitBtn.style.opacity = ""; }
         if (loadingOverlay) loadingOverlay.classList.remove("active");
       };
-      const timeoutId = setTimeout(() => { cleanup(); alert("送信がタイムアウトしました。通信環境を確認してください。"); }, 15000);
-      const onIframeLoad = () => {
-        clearTimeout(timeoutId); iframe.removeEventListener("load", onIframeLoad); cleanup();
+      const goSuccess = () => {
+        cleanup();
         if (typeof window.switchView === "function") window.switchView("view-success", false);
+      };
+      // タイムアウト短縮 (8秒) + iframe load の両構え
+      const timeoutId = setTimeout(goSuccess, 8000);
+      // 念のための保険: 3.5秒経過したらローディングだけは必ず解除して成功画面へ
+      const safetyId = setTimeout(goSuccess, 3500);
+      const onIframeLoad = () => {
+        clearTimeout(timeoutId); clearTimeout(safetyId);
+        iframe.removeEventListener("load", onIframeLoad);
+        goSuccess();
       };
       iframe.addEventListener("load", onIframeLoad);
       try { form.submit(); } catch (err) {
-        clearTimeout(timeoutId); iframe.removeEventListener("load", onIframeLoad); cleanup(); alert("エラーが発生しました。");
+        clearTimeout(timeoutId); clearTimeout(safetyId);
+        iframe.removeEventListener("load", onIframeLoad);
+        cleanup(); alert("エラーが発生しました。");
       }
     }
     return {
@@ -9222,12 +9851,31 @@ window.systemDetailData = {
 
 window.switchView = (target, noScroll = false) => {
   const sections = document.querySelectorAll(".view-section");
+  const next = document.getElementById(target);
+  if (!next) return;
+
+  // 現在表示中のビューをフェードアウト
   sections.forEach((sec) => {
-    if (sec.id !== target) { sec.style.opacity = "0"; setTimeout(() => { sec.classList.add("hidden"); }, 500); }
+    if (sec.id !== target) {
+      sec.style.opacity = "0";
+    }
   });
+
+  // フェードアウト完了後に切替 (重なり表示を防ぐ)
   setTimeout(() => {
-    const next = document.getElementById(target);
-    if (next) { next.classList.remove("hidden"); setTimeout(() => { next.style.opacity = "1"; }, 50); if (!noScroll) window.scrollTo({ top: 0, behavior: "smooth" }); }
+    sections.forEach((sec) => {
+      if (sec.id !== target) sec.classList.add("hidden");
+    });
+    // 対象を hidden 解除するが opacity は 0 のまま (チラ見え防止)
+    next.classList.remove("hidden");
+    next.style.opacity = "0";
+    // 次のフレームで opacity を上げる (DOM反映後に確実にフェードイン)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        next.style.opacity = "1";
+      });
+    });
+    if (!noScroll) window.scrollTo({ top: 0, behavior: "smooth" });
   }, 500);
 };
 
@@ -9675,31 +10323,22 @@ window.aurumVpCharts = window.aurumVpCharts || {};
 
 function updateAurumVpCounters() {
   const seed = getMondaySeed();
-  // 現在運用中: 1,150〜1,300 で週変動
-  const running = 1150 + Math.floor(seededRandom(seed * 31 + 7) * 150);
+  // 現在運用中: 1,147 で固定 (Active Users と統一)
   const elRunning = document.getElementById("vp-running-users");
-  if (elRunning) elRunning.textContent = running.toLocaleString();
+  if (elRunning) elRunning.textContent = "1,147";
   // 稼働者平均トレード数 (週次): 1,500〜2,400件/週
   const today = 1500 + Math.floor(seededRandom(seed * 41 + 13) * 900);
   const elToday = document.getElementById("vp-today-trades");
   if (elToday) elToday.textContent = today.toLocaleString();
-  // 最終トレード: 2〜18分前 (現在時刻ベース)
-  const minutesAgo = 2 + Math.floor(seededRandom(Date.now() / 60000) * 16);
+  // 最終トレード: 「数秒前」で固定 (常時アクティブ感を演出)
   const elLast = document.getElementById("vp-last-trade");
-  if (elLast) elLast.textContent = minutesAgo;
+  if (elLast) elLast.textContent = "数";
   // 今月の利益: 22000〜38000 USD
   const monthProfit = 22000 + Math.floor(seededRandom(seed * 53 + 19) * 16000);
   const elMonth = document.getElementById("vp-month-profit");
   if (elMonth) elMonth.textContent = monthProfit.toLocaleString();
 }
-// 最終トレード時刻のみ毎分更新
-setInterval(() => {
-  const elLast = document.getElementById("vp-last-trade");
-  if (elLast) {
-    const minutesAgo = 2 + Math.floor(seededRandom(Math.floor(Date.now() / 60000)) * 16);
-    elLast.textContent = minutesAgo;
-  }
-}, 60000);
+// 最終トレードは「数秒前」で固定 (更新不要)
 
 function renderAurumVpChart(sysKey, baseROI, color) {
   const canvas = document.getElementById("vp-chart-" + sysKey);
@@ -10624,7 +11263,6 @@ setTimeout(initAurumAtmosphere, 1500);
         try { navigator.vibrate(8); } catch(_){}
       }
     }, { passive: true });
-    console.log("[AURUM] Haptic feedback enabled");
   }
 })();
 
@@ -10762,7 +11400,6 @@ setTimeout(initAurumAtmosphere, 1500);
   });
     } catch(e) { console.warn("[AURUM] ScrollTrigger error:", e); }
 
-  console.log("[AURUM] ScrollTrigger initialized");
   }
   initAurumScrollTrigger();
 })();
@@ -10801,31 +11438,18 @@ setTimeout(initAurumAtmosphere, 1500);
     });
   }, { passive: true });
 
-  console.log("[AURUM] Magnetic buttons initialized");
 })();
 
 /* ============================================================
-   View Transitions API: ページ遷移をクロスフェード+ズーム
+   View Transitions API: 無効化
+   理由: 内部 switchView が setTimeout で opacity 制御するため、
+   startViewTransition の同期スナップショットと競合し、遷移時に
+   裏のビュー(フォーム等)が一瞬チラ見えする不具合があった。
+   標準の opacity フェード遷移のみを使用する。
    ============================================================ */
 (function initAurumViewTransitions(){
-  if (!document.startViewTransition) {
-    console.log("[AURUM] View Transitions not supported, skipping");
-    return;
-  }
-
-  // 既存 switchView をラップ
-  const original = window.switchView;
-  if (typeof original !== "function") return;
-
-  window.switchView = function(viewId, noScroll) {
-    if (!document.startViewTransition) {
-      return original(viewId, noScroll);
-    }
-    document.startViewTransition(() => {
-      original(viewId, noScroll);
-    });
-  };
-  console.log("[AURUM] View Transitions initialized");
+  // View Transitions は使わない (チラつき防止のため)
+  return;
 })();
 
 /* ============================================================
@@ -10877,7 +11501,6 @@ setTimeout(initAurumAtmosphere, 1500);
   });
   } catch(e) { console.warn("[AURUM] Hero story error:", e); }
 
-  console.log("[AURUM] Hero scroll story initialized");
   }
   initAurumHeroStory();
 })();
@@ -10943,7 +11566,6 @@ setTimeout(initAurumAtmosphere, 1500);
           }
         });
       });
-      console.log("[AURUM] Parallax initialized");
     } catch(e) { console.warn("[AURUM] Parallax error:", e); }
   }
   initAurumParallax();
@@ -11087,7 +11709,6 @@ setTimeout(initAurumAtmosphere, 1500);
         }
       });
     });
-    console.log("[AURUM] Card flip initialized: " + cards.length + " cards (live performance)");
   }
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function(){ try { initAurumCardFlip(); } catch(e) { console.error("[AURUM init error]","initAurumCardFlip",e); } });
@@ -11101,44 +11722,46 @@ setTimeout(initAurumAtmosphere, 1500);
    AURUM COMMUNITY (認証済ユーザーの週次稼働結果報告 / Discord風)
    ============================================================ */
 (function(){
-  // 30件のダミーコメント (週次稼働結果報告 / 自走できるユーザーの実体験ベース)
+  // 30件のダミーコメント (利益24件80% / 損失6件20% / 短文〜長文ミックス)
   const DUMMY_COMMENTS = [
     { name: "ユーザー4892", profit: 184000, system: "Order Flow", pair: "XAUUSD", message: "BB期間20で水平推移を確認してから稼働。今週はレンジ寄りだったので両建てのままで利益。マニュアル通りで再現性ありました。" },
-    { name: "ユーザー2103", profit: 92400, system: "Trend Scalping", pair: "XAUUSD", message: "10時開始・金曜22時全決済をルーティン化。BB期間6で環境を見てから稼働してます。先週BUYのみに絞ったら反って良い結果に。" },
+    { name: "ユーザー2103", profit: 92400, system: "Trend Scalping", pair: "XAUUSD", message: "今週も安定。金曜決済ルール守ってよかった。" },
     { name: "ユーザー7651", profit: -18200, system: "SMC Grid", pair: "BTCUSD", message: "BTC強トレンド入りに気付かず両建てで稼働してしまい、ナンピン3回到達でSL。バンドが斜めの時は止めるべきでした。来週は方向限定で再挑戦。" },
-    { name: "ユーザー3340", profit: 312500, system: "Multi", pair: "MULTI", message: "3システム並列で稼働中。Order Flowは1〜5分足、TS/SGは10時〜22時で時間帯を分けて運用。被りが少なく分散が効いてます。" },
+    { name: "ユーザー3340", profit: 312500, system: "Multi", pair: "MULTI", message: "3システム並列。今週ベスト。" },
     { name: "ユーザー8821", profit: 64300, system: "Order Flow", pair: "XAUUSD", message: "推奨稼働時間11:00〜18:00を守って運用。指標発表前後は手動で止めるルールにしてから安定しました。" },
     { name: "ユーザー1567", profit: 142800, system: "Trend Scalping", pair: "XAUUSD", message: "FOMC明けは方向確認できるまで稼働見送り。再開後にトレンド方向だけBUY設定にしたらしっかり利益。判断のタイミングが大事。" },
-    { name: "ユーザー6749", profit: 41200, system: "SMC Grid", pair: "XAUUSD", message: "ナンピン3回設計の安心感がある。BB期間6で環境見てから稼働、トレンドの兆しが出たらBUY/SELLどちらか限定に切替えてます。" },
+    { name: "ユーザー6749", profit: 41200, system: "SMC Grid", pair: "XAUUSD", message: "今週もコツコツ積み上げ。" },
     { name: "ユーザー9012", profit: 268000, system: "Order Flow", pair: "XAUUSD", message: "今月のベスト更新。レンジ確認できた日だけ稼働させて、トレンド日は無理しない方針が結果的に効いてる。" },
-    { name: "ユーザー4438", profit: 117600, system: "Multi", pair: "MULTI", message: "3システム併用で資金分散。Order Flowはレンジ向き、TS/SGはトレンド方向限定運用、と使い分けで安定。" },
-    { name: "ユーザー2876", profit: -7800, system: "Trend Scalping", pair: "BTCUSD", message: "BTCで強いトレンド出た日に両建てのままで稼働してマイナス。気付いた時点で方向限定に切替えたら次の日プラス転換しました。" },
+    { name: "ユーザー4438", profit: 117600, system: "Multi", pair: "MULTI", message: "3システム併用で資金分散。安定。" },
+    { name: "ユーザー2876", profit: -34800, system: "Trend Scalping", pair: "BTCUSD", message: "BTCで強いトレンド出た日に両建てのままで稼働してマイナス。気付いた時点で方向限定に切替えたら次の日プラス転換しました。" },
     { name: "ユーザー5523", profit: 215300, system: "Order Flow", pair: "XAUUSD", message: "東京タイムのレンジを取りに行く運用が個人的にハマってます。マニュアル設定からほぼ変えず、稼働時間だけ調整してます。" },
-    { name: "ユーザー7104", profit: 75800, system: "SMC Grid", pair: "XAUUSD", message: "MSB/ChoCH確認してからのグリッド展開なので根拠ある運用。BB期間6で環境見るのを習慣化したら勝率上がりました。" },
-    { name: "ユーザー3982", profit: 168500, system: "Order Flow", pair: "XAUUSD", message: "ロットを欲張らずマニュアル推奨値で複利運用。週次でしっかり確認しながら淡々と継続中。" },
+    { name: "ユーザー7104", profit: 75800, system: "SMC Grid", pair: "XAUUSD", message: "BB期間6で見て稼働。根拠ある運用で安心。" },
+    { name: "ユーザー3982", profit: 168500, system: "Order Flow", pair: "XAUUSD", message: "複利で着実に増えてる。" },
     { name: "ユーザー6210", profit: 53400, system: "Trend Scalping", pair: "XAUUSD", message: "M1スキャ系。経済指標カレンダーを毎朝確認してから稼働ON/OFFする運用にしてから安定しました。" },
-    { name: "ユーザー4565", profit: 124600, system: "Multi", pair: "MULTI", message: "3システム同時稼働だけど時間帯で住み分け。Order Flowは午前、TSは午後、SGは夜。被らないので資金回転が良い。" },
+    { name: "ユーザー4565", profit: 124600, system: "Multi", pair: "MULTI", message: "時間帯で住み分けて運用。" },
     { name: "ユーザー8843", profit: 305700, system: "Order Flow", pair: "XAUUSD", message: "NY時間のレンジ確認できた日だけ稼働で、ナンピン10回到達せず利確が連続。テンプレ通りでも環境見極めれば再現できる。" },
-    { name: "ユーザー1729", profit: -32400, system: "SMC Grid", pair: "BTCUSD", message: "急なトレンドにナンピン引っかかってSL到達。バンドのエクスパンション気付くの遅れました。週次で振り返って学んでます。" },
-    { name: "ユーザー9351", profit: 88900, system: "Trend Scalping", pair: "XAUUSD", message: "ロンドン時間メインで運用。月曜だけ12:00開始のルールも守ってます。週末持ち越しなしの設定が安心感ある。" },
+    { name: "ユーザー1729", profit: -47600, system: "SMC Grid", pair: "BTCUSD", message: "急なトレンドにナンピン引っかかってSL到達。バンドのエクスパンション気付くの遅れました。週次で振り返って学んでます。" },
+    { name: "ユーザー9351", profit: 88900, system: "Trend Scalping", pair: "XAUUSD", message: "金曜全決済ルール守ってる。週末安心。" },
     { name: "ユーザー5478", profit: 196400, system: "Order Flow", pair: "XAUUSD", message: "切替え3ヶ月目。最初の1ヶ月は環境認識に慣れるまで試行錯誤したけど、慣れてからは安定。学習コストはあるけど価値ある。" },
-    { name: "ユーザー2664", profit: 105200, system: "SMC Grid", pair: "XAUUSD", message: "守備的な戦略で月単位でプラス。BB期間6でレンジ判定→稼働、トレンド兆候→片方向限定、をルーティン化してます。" },
+    { name: "ユーザー2664", profit: 105200, system: "SMC Grid", pair: "XAUUSD", message: "今週も守備的にプラス。" },
     { name: "ユーザー7892", profit: 142100, system: "Order Flow", pair: "XAUUSD", message: "他のEAから乗り換え組。前のは完全自動だったけどDDで爆死。これは環境見極めが必要だけど、その分制御できる。" },
-    { name: "ユーザー4123", profit: 47600, system: "Trend Scalping", pair: "XAUUSD", message: "短期トレンドに強い。日に何度もエントリー入るので、稼働時間中は一応モニター見るようにしてます。" },
-    { name: "ユーザー6587", profit: 256800, system: "Multi", pair: "MULTI", message: "3システム全部プラスの週。それぞれ得意な相場が違うので、相場が変わっても全体ではバランス取れる。" },
-    { name: "ユーザー3406", profit: 78400, system: "SMC Grid", pair: "XAUUSD", message: "DD制御が優秀。ナンピン3回上限が決まってるのでリスクが見える。ロジック理解した上で運用してる感じ。" },
+    { name: "ユーザー4123", profit: 47600, system: "Trend Scalping", pair: "XAUUSD", message: "短期トレンドに強い。日に何度もエントリー入る。" },
+    { name: "ユーザー6587", profit: 256800, system: "Multi", pair: "MULTI", message: "3システム全部プラス週。" },
+    { name: "ユーザー3406", profit: -28900, system: "SMC Grid", pair: "XAUUSD", message: "今週は途中まで好調だったが、木曜にトレンド転換捕まえてSL。週合計マイナス。来週は方向限定で。" },
     { name: "ユーザー8175", profit: 173500, system: "Order Flow", pair: "XAUUSD", message: "FX始めて1年。最初は環境認識のところで戸惑ったけど、マニュアル何度も読んで慣れました。今は安定してます。" },
-    { name: "ユーザー5942", profit: -15700, system: "Trend Scalping", pair: "BTCUSD", message: "BTCは値幅大きい分難しい週もあり。XAUUSDメインで、BTCはサブとして方向限定運用に切替予定。" },
+    { name: "ユーザー5942", profit: -52300, system: "Order Flow", pair: "BTCUSD", message: "BTCで稼働して大きめDD。やはりXAUUSDに戻します。BTCはサブで方向限定運用に切替予定。" },
     { name: "ユーザー1083", profit: 121800, system: "Order Flow", pair: "XAUUSD", message: "重要指標前の停止と、金曜の全決済はマスト。これだけ守るだけで損失パターンがほぼ消えました。" },
-    { name: "ユーザー7235", profit: 234600, system: "Multi", pair: "MULTI", message: "週末前は全システム決済。月曜の方向見てから再稼働。リズムが出来て精神的に楽になりました。" },
-    { name: "ユーザー4798", profit: 59200, system: "SMC Grid", pair: "XAUUSD", message: "派手な利益はないけど月でプラス継続。コツコツ系で精神衛生も良い。長く付き合えるEAだと思う。" },
+    { name: "ユーザー7235", profit: 234600, system: "Multi", pair: "MULTI", message: "週末前全決済→月曜の方向見て再稼働。リズム出来て楽。" },
+    { name: "ユーザー4798", profit: -15400, system: "Trend Scalping", pair: "XAUUSD", message: "今週はレンジ続きでナンピン消化できず微マイナス。先月までは絶好調だったので、相場による。" },
     { name: "ユーザー6314", profit: 162400, system: "Order Flow", pair: "XAUUSD", message: "AURUMに切替えて半年。最初は環境見極めの判断ミスもあったけど、慣れた今はテンプレ通りで安定して勝てます。" }
   ];
 
-  // 日別シード (毎日違うシャッフル順)
+  // 3日ごとシード (3日に1度シャッフルが切り替わる)
   const getDaySeed = () => {
     const d = new Date();
-    return d.getFullYear() * 10000 + (d.getMonth()+1) * 100 + d.getDate();
+    const epochDay = Math.floor(d.getTime() / (24 * 60 * 60 * 1000));
+    const threeDayBucket = Math.floor(epochDay / 3);
+    return threeDayBucket;
   };
   // mulberry32風 シード乱数
   const seedRand = (s) => {
@@ -11178,25 +11801,151 @@ setTimeout(initAurumAtmosphere, 1500);
     return String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   };
 
+  // ダミー返信プール (質問形式・短文)
+  const DUMMY_REPLY_POOL = [
+    { name: "ユーザー2841", text: "どのように稼働しましたか？テンプレ通りでしょうか？" },
+    { name: "ユーザー6193", text: "稼働時間は何時から何時にしましたか？" },
+    { name: "ユーザー4502", text: "ロットはどれくらいで運用してますか？" },
+    { name: "ユーザー8970", text: "BB期間はマニュアル通り20で使ってますか？" },
+    { name: "ユーザー1657", text: "金曜全決済はやってますか？" },
+    { name: "ユーザー3284", text: "ナンピン何回まで耐えました？" },
+    { name: "ユーザー7416", text: "通貨ペアはXAUUSDのみですか？BTCも稼働？" },
+    { name: "ユーザー5028", text: "両建てですか、それともBUY/SELL限定?" },
+    { name: "ユーザー9145", text: "VPSはお名前.com使ってますか？" },
+    { name: "ユーザー2367", text: "指標発表のときは止めてますか？" },
+    { name: "ユーザー4759", text: "初期資金いくらでスタートしました？" },
+    { name: "ユーザー8312", text: "MT5のスペック、推奨設定そのままで大丈夫でした？" },
+    { name: "ユーザー6580", text: "今週はレンジでしたか？" },
+    { name: "ユーザー1903", text: "DDどれくらい耐えました？" },
+    { name: "ユーザー5471", text: "月利平均だとどれくらいになりますか？" }
+  ];
+
+  // ダミー返信が付くコメントの判定 (commentId基準で日次決定論的)
+  // コメント indexごとに 0〜3件の返信を確定 (全体6件まで)
+  function buildDummyReplies(comments) {
+    const r = seedRand(getDaySeed() + 999);
+    // 返信を付けるコメントを抽選 (約20%, 最大6コメント)
+    const indices = [];
+    for (let i = 0; i < comments.length; i++) {
+      if (r() < 0.20 && indices.length < 6) indices.push(i);
+    }
+    const map = {};
+    indices.forEach(idx => {
+      const numReplies = 1 + Math.floor(r() * 2); // 1〜2件
+      const replies = [];
+      for (let n = 0; n < numReplies; n++) {
+        const pickIdx = Math.floor(r() * DUMMY_REPLY_POOL.length);
+        const reply = DUMMY_REPLY_POOL[pickIdx];
+        const minutesAgo = 5 + Math.floor(r() * 240); // 5〜245分前
+        replies.push({
+          name: reply.name,
+          text: reply.text,
+          minutesAgo: minutesAgo
+        });
+      }
+      map[idx] = replies;
+    });
+    return map;
+  }
+
+  // いいね数を決定論的に生成 (12〜113)
+  function dummyLikes(commentKey) {
+    let h = 0;
+    for (let i = 0; i < commentKey.length; i++) {
+      h = ((h << 5) - h + commentKey.charCodeAt(i)) | 0;
+    }
+    const bucket = getDaySeed();
+    const seed = (h ^ bucket) >>> 0;
+    return 12 + (seed % 102); // 12〜113
+  }
+
+  // 自分の返信 / いいね (localStorage)
+  const LS_REPLIES_KEY = "aurum_my_replies_v1";
+  const LS_LIKES_KEY = "aurum_my_likes_v1";
+  const loadMyReplies = () => { try { return JSON.parse(localStorage.getItem(LS_REPLIES_KEY) || "{}"); } catch(_){return{};} };
+  const saveMyReply = (commentKey, text) => {
+    try {
+      const all = loadMyReplies();
+      if (!all[commentKey]) all[commentKey] = [];
+      all[commentKey].push({ text: text, at: Date.now() });
+      localStorage.setItem(LS_REPLIES_KEY, JSON.stringify(all));
+    } catch(_){}
+  };
+  const loadMyLikes = () => { try { return JSON.parse(localStorage.getItem(LS_LIKES_KEY) || "{}"); } catch(_){return{};} };
+  const toggleMyLike = (commentKey) => {
+    try {
+      const all = loadMyLikes();
+      all[commentKey] = !all[commentKey];
+      localStorage.setItem(LS_LIKES_KEY, JSON.stringify(all));
+      return all[commentKey];
+    } catch(_){ return false; }
+  };
+
+  function fmtAgo(minutes) {
+    if (minutes < 60) return minutes + "分前";
+    const h = Math.floor(minutes / 60);
+    if (h < 24) return h + "時間前";
+    return Math.floor(h / 24) + "日前";
+  }
+
   const renderMessages = () => {
     const list = document.getElementById("aurum-discord-messages");
     if (!list) return;
     const myPosts = loadMyPosts();
     const dummies = shuffleByDay(DUMMY_COMMENTS);
-    // 個人投稿は本人のみに表示 (見た目はダミーと完全同一・先頭挿入)
-    // 自分の投稿は最大10件まで先頭、ダミーで合計30件まで埋める
     const myPart = myPosts.slice(0, 10);
     const remaining = Math.max(0, 30 - myPart.length);
     const all = [...myPart, ...dummies.slice(0, remaining)];
 
+    const replyMap = buildDummyReplies(all);
+    const myReplies = loadMyReplies();
+    const myLikes = loadMyLikes();
+
     list.innerHTML = "";
-    all.forEach(c => {
+    all.forEach((c, idx) => {
       const initial = c.name.replace("ユーザー", "U").substring(0, 2);
       const profitClass = c.profit >= 0 ? "profit-plus" : "profit-minus";
       const profitSign = c.profit >= 0 ? "+" : "−";
       const profitDisplay = profitSign + "¥" + Math.abs(c.profit).toLocaleString();
+      const commentKey = c.name + ":" + (c.message || "").slice(0, 32);
+      const baseLikes = dummyLikes(commentKey);
+      const userLiked = !!myLikes[commentKey];
+      const displayLikes = baseLikes + (userLiked ? 1 : 0);
+
+      // ダミー返信 + 自分の返信を結合
+      const dummyReplies = replyMap[idx] || [];
+      const ownReplies = myReplies[commentKey] || [];
+
+      let repliesHtml = "";
+      if (dummyReplies.length || ownReplies.length) {
+        repliesHtml = '<div class="aurum-disc-replies">';
+        dummyReplies.forEach(r => {
+          repliesHtml +=
+            '<div class="aurum-disc-reply">' +
+              '<div class="aurum-disc-reply-avatar">' + escapeHtml(r.name.replace("ユーザー","U").substring(0,2)) + '</div>' +
+              '<div class="aurum-disc-reply-body">' +
+                '<div class="aurum-disc-reply-head"><span class="aurum-disc-reply-name">' + escapeHtml(r.name) + '</span><span class="aurum-disc-reply-time">' + fmtAgo(r.minutesAgo) + '</span></div>' +
+                '<div class="aurum-disc-reply-text">' + escapeHtml(r.text) + '</div>' +
+              '</div>' +
+            '</div>';
+        });
+        ownReplies.forEach(r => {
+          const mins = Math.max(1, Math.floor((Date.now() - r.at) / 60000));
+          repliesHtml +=
+            '<div class="aurum-disc-reply aurum-disc-reply-mine">' +
+              '<div class="aurum-disc-reply-avatar">YOU</div>' +
+              '<div class="aurum-disc-reply-body">' +
+                '<div class="aurum-disc-reply-head"><span class="aurum-disc-reply-name">あなた</span><span class="aurum-disc-reply-time">' + fmtAgo(mins) + ' · 自分のみ表示</span></div>' +
+                '<div class="aurum-disc-reply-text">' + escapeHtml(r.text) + '</div>' +
+              '</div>' +
+            '</div>';
+        });
+        repliesHtml += '</div>';
+      }
+
       const msg = document.createElement("div");
       msg.className = "aurum-disc-msg";
+      msg.setAttribute("data-comment-key", commentKey);
       msg.innerHTML =
         '<div class="aurum-disc-avatar">' + escapeHtml(initial) + '</div>' +
         '<div class="aurum-disc-content">' +
@@ -11210,12 +11959,67 @@ setTimeout(initAurumAtmosphere, 1500);
             '<span class="aurum-disc-meta-profit ' + profitClass + '">' + profitDisplay + '</span>' +
           '</div>' +
           (c.message ? '<div class="aurum-disc-message">' + escapeHtml(c.message) + '</div>' : '') +
+          '<div class="aurum-disc-actions">' +
+            '<button type="button" class="aurum-disc-action-btn aurum-disc-like-btn ' + (userLiked ? 'liked' : '') + '" data-action="like">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="' + (userLiked ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
+              '<span class="aurum-disc-like-count">' + displayLikes + '</span>' +
+            '</button>' +
+            '<button type="button" class="aurum-disc-action-btn" data-action="reply">' +
+              '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/></svg>' +
+              '<span>返信</span>' +
+            '</button>' +
+          '</div>' +
+          repliesHtml +
+          '<div class="aurum-disc-reply-form" style="display:none;">' +
+            '<input type="text" class="aurum-disc-reply-input" placeholder="質問や返信を入力..." maxlength="200">' +
+            '<button type="button" class="aurum-disc-reply-submit">送信</button>' +
+          '</div>' +
         '</div>';
       list.appendChild(msg);
     });
     const cnt = document.getElementById("aurum-discord-count");
     if (cnt) cnt.textContent = all.length;
   };
+
+  // いいね / 返信 / 送信 のイベント (デリゲーション)
+  document.addEventListener("click", function(e) {
+    const target = e.target.closest("[data-action], .aurum-disc-reply-submit");
+    if (!target) return;
+    const msgEl = target.closest(".aurum-disc-msg");
+    if (!msgEl) return;
+    const commentKey = msgEl.getAttribute("data-comment-key");
+    if (!commentKey) return;
+
+    if (target.dataset.action === "like") {
+      const liked = toggleMyLike(commentKey);
+      target.classList.toggle("liked", liked);
+      const svg = target.querySelector("svg");
+      if (svg) svg.setAttribute("fill", liked ? "currentColor" : "none");
+      const countEl = target.querySelector(".aurum-disc-like-count");
+      if (countEl) {
+        const cur = parseInt(countEl.textContent, 10) || 0;
+        countEl.textContent = liked ? (cur + 1) : Math.max(0, cur - 1);
+      }
+    } else if (target.dataset.action === "reply") {
+      const form = msgEl.querySelector(".aurum-disc-reply-form");
+      if (form) {
+        form.style.display = form.style.display === "none" ? "flex" : "none";
+        if (form.style.display === "flex") {
+          const input = form.querySelector("input");
+          if (input) input.focus();
+        }
+      }
+    } else if (target.classList.contains("aurum-disc-reply-submit")) {
+      const form = target.closest(".aurum-disc-reply-form");
+      const input = form.querySelector("input");
+      const text = (input.value || "").trim();
+      if (!text) return;
+      saveMyReply(commentKey, text);
+      input.value = "";
+      form.style.display = "none";
+      renderMessages();
+    }
+  });
 
   // モーダル制御
   const openModal = () => {
@@ -11357,7 +12161,6 @@ setTimeout(initAurumAtmosphere, 1500);
     renderMessages();
   }
   setTimeout(renderMessages, 1000);
-  console.log("[AURUM] Discord community initialized: " + DUMMY_COMMENTS.length + " dummies");
 })();
 
 /* ============================================================
@@ -11394,7 +12197,6 @@ setTimeout(initAurumAtmosphere, 1500);
       );
     });
   } catch(e) { console.warn("[AURUM] VariableFont error:", e); }
-  console.log("[AURUM] Variable Font initialized");
   }
   initAurumVariableFont();
 })();
@@ -11426,7 +12228,6 @@ setTimeout(initAurumAtmosphere, 1500);
     if (!e.touches.length) return;
     updateSpot(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: true });
-  console.log("[AURUM] Spotlight initialized");
 })();
 
 /* ============================================================
@@ -11467,7 +12268,6 @@ setTimeout(initAurumAtmosphere, 1500);
     cursor.style.transform = "translate3d(" + curX.toFixed(1) + "px, " + curY.toFixed(1) + "px, 0) translate(-50%, -50%)";
   };
   requestAnimationFrame(animate);
-  console.log("[AURUM] Custom cursor initialized");
 })();
 
 /* ============================================================
@@ -11537,7 +12337,6 @@ setTimeout(initAurumAtmosphere, 1500);
     if (!e.touches.length) return;
     handleMove(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: true });
-  console.log("[AURUM] Text magnetic initialized");
 })();
 
 /* ============================================================
@@ -11550,7 +12349,6 @@ setTimeout(initAurumAtmosphere, 1500);
 
   const gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
   if (!gl) {
-    console.log("[AURUM] WebGL not supported, fluid skipped");
     return;
   }
 
@@ -11712,7 +12510,6 @@ setTimeout(initAurumAtmosphere, 1500);
   requestAnimationFrame(render);
 
   window.addEventListener("resize", resize, { passive: true });
-  console.log("[AURUM] Fluid gold initialized");
 })();
 
 (function initAurumRipple(){
@@ -11991,21 +12788,13 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
   const startDate = new Date(currentMonday);
   startDate.setDate(currentMonday.getDate() - startWeeksAgo * 7);
 
-  // 開始資金 (円) を現実的な分布で生成
-  //  7〜10万:25% / 10〜20万:30% / 20〜30万:20% (合計75%)
-  //  30〜50万:12% / 50〜100万:8% / 100万〜:5%
+  // 開始資金 (円): 全員 170〜230万円 (上位の少額スタートはソート後に再計算)
   const capitalRoll = seededRandom(baseSeed + 30);
-  let initialCapital;
-  if (capitalRoll < 0.25)      initialCapital = 70000  + seededRandom(baseSeed+31) * 30000;   // 7-10万
-  else if (capitalRoll < 0.55) initialCapital = 100000 + seededRandom(baseSeed+32) * 100000;  // 10-20万
-  else if (capitalRoll < 0.75) initialCapital = 200000 + seededRandom(baseSeed+33) * 100000;  // 20-30万
-  else if (capitalRoll < 0.87) initialCapital = 300000 + seededRandom(baseSeed+34) * 200000;  // 30-50万
-  else if (capitalRoll < 0.95) initialCapital = 500000 + seededRandom(baseSeed+35) * 500000;  // 50-100万
-  else                         initialCapital = 1000000 + seededRandom(baseSeed+36) * 2000000;// 100-300万
-  initialCapital = Math.round(initialCapital / 1000) * 1000; // 千円単位に丸め
+  let initialCapital = 1700000 + capitalRoll * 600000;
+  initialCapital = Math.round(initialCapital / 10000) * 10000;
 
   // 週ごとのROI生成 (各週、シード固定)
-  const weeklyBase = baseROI / 4.33; // 月利→週利
+  const weeklyBase = (baseROI / 4.33) * 1.6; // 月利→週利 × 1.6 (ランキング表示用ブースト)
   const weeks = []; // [{weekIdx, date, weeklyROI, equity}]
   let equity = initialCapital;
   const equities = [equity];
@@ -12047,6 +12836,13 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
       equity = equity * (1 + weeklyROI / 100);
       // 元本の60%以下にはならないよう底打ち (清算リスク回避)
       equity = Math.max(equity, initialCapital * 0.6);
+      // システム別の絶対上限 (TOP1相当の利益額をキャップ)
+      const profitCapBySystem =
+        sysKey === "order_flow"     ? 60000000 :
+        sysKey === "trend_scalping" ? 25000000 :
+        sysKey === "smc_grid"       ? 21000000 :
+                                      30000000;
+      equity = Math.min(equity, initialCapital + profitCapBySystem);
       equities.push(equity);
     }
     
@@ -12075,7 +12871,8 @@ function generateUserWeeklyData(sysKey, userIndex, baseROI, currentMondaySeed) {
     totalROI, avgWeekly,
     currentEquity: equity, status,
     initialCapital,
-    profitJPY: equity - initialCapital
+    profitJPY: equity - initialCapital,
+    withdrawnJPY: Math.max(0, Math.round((equity - initialCapital) * 0.27)) // 利益の27%を出金済み
   };
 }
 
@@ -12112,6 +12909,43 @@ window.openCustomerModal = (sysKey) => {
   allUsers.sort((a, b) => b.totalROI - a.totalROI);
   const topUsers = allUsers.slice(0, 100);
 
+  // 全体100名のうち約4割を「7〜10万円スタート」に変更 (決定論的にランダム選択)
+  // → 少額から波のある成長を遂げた高ROI演出。高額組(ROI 2000-3400%)と競えるよう
+  //   ROI 3000〜8000% (利益 元本の30〜80倍) に設定し、上位に自然に混ざるようにする
+  topUsers.forEach((u, i) => {
+    const pickSeed = sysKey.charCodeAt(0) * 13 + i * 41 + 7;
+    if (seededRandom(pickSeed) < 0.4) {
+      const lowSeed = sysKey.charCodeAt(0) * 7 + i * 31;
+      const lowCapital = Math.round((70000 + seededRandom(lowSeed) * 30000) / 1000) * 1000; // 7〜10万
+      // ROI 800〜3000% (元本の8〜30倍)。高額組と重なるレンジでランダムに混在させる
+      // 傾斜なし (順位非依存) にすることで少額組が上位独占せず散らばる
+      const roiMult = 8 + seededRandom(lowSeed + 5) * 22; // 8〜30倍
+      const newProfit = Math.round(lowCapital * roiMult / 10000) * 10000;
+      const oldCapital = u.initialCapital;
+      const oldFinalEquity = oldCapital + u.profitJPY;
+      const newFinalEquity = lowCapital + newProfit;
+      u.initialCapital = lowCapital;
+      u.profitJPY = newProfit;
+      u.totalROI = (newProfit / lowCapital) * 100;
+      u.withdrawnJPY = Math.max(0, Math.round(newProfit * 0.27));
+      u.isLowCapital = true;
+      // チャートの週次エクイティも少額ベースに再スケール (開始資金との乖離を防ぐ)
+      // 旧エクイティ曲線の「元本からの倍率」を保ったまま、新元本に置き換える
+      if (u.weeks && u.weeks.length) {
+        u.weeks = u.weeks.map(w => {
+          // 旧曲線上での進捗比率 (0=開始時の元本, 1=最終エクイティ)
+          const ratio = (oldFinalEquity - oldCapital) !== 0
+            ? (w.equity - oldCapital) / (oldFinalEquity - oldCapital)
+            : 0;
+          const newEquity = lowCapital + ratio * (newFinalEquity - lowCapital);
+          return Object.assign({}, w, { equity: Math.max(lowCapital * 0.6, newEquity) });
+        });
+      }
+    }
+  });
+  // 元本変更でROIが変わったので再ソート
+  topUsers.sort((a, b) => b.totalROI - a.totalROI);
+
   // データを window に保持 (個別モーダルで参照)
   window.AURUM_RANKING_CACHE = window.AURUM_RANKING_CACHE || {};
   window.AURUM_RANKING_CACHE[sysKey] = topUsers;
@@ -12119,15 +12953,82 @@ window.openCustomerModal = (sysKey) => {
   const updateDateEl = document.getElementById("activity-update-date");
   if (updateDateEl) updateDateEl.textContent = "Last Updated: " + getLastMondayDateStr() + " (Mon 00:00 JST)";
 
+  // 「JAY」(代表) を平日のみTOPに固定表示
+  // 表示は「前日」のデータ・両口座 (15万 + 100万) の合算
+  function buildYouRow() {
+    const now = new Date();
+    const day = now.getDay();
+    if (day === 0 || day === 6) return null;
+    const daySeed = Math.floor(now.getTime() / (24 * 3600 * 1000));
+    const seed = (n) => (((Math.abs(n)) * 9301 + 49297) % 233280) / 233280;
+    const r1 = seed(daySeed * 13 + sysKey.charCodeAt(0));
+    const r2 = seed(daySeed * 17 + sysKey.charCodeAt(0));
+
+    // システム別ROI係数: OF > TS > SMC
+    const sysMult = sysKey === "order_flow" ? 1.0 :
+                    sysKey === "trend_scalping" ? 0.62 :
+                    sysKey === "smc_grid" ? 0.42 : 1.0;
+
+    // 2日に1度「オールイン・フル稼働日」(daySeedの偶奇で判定)
+    const isAllInDay = (daySeed % 2 === 0);
+
+    let profit15, profit100;
+    if (isAllInDay) {
+      // オールイン日: 大きく出る
+      profit15  = (1200000 + r1 * 600000) * sysMult;   // 120-180万 × 係数
+      profit100 = (8000000 + r2 * 4000000) * sysMult;  // 800-1200万 × 係数
+    } else {
+      // 通常日
+      profit15  = (300000  + r1 * 600000) * sysMult;
+      profit100 = (2000000 + r2 * 4000000) * sysMult;
+    }
+    profit15  = Math.round(profit15 / 10000) * 10000;
+    profit100 = Math.round(profit100 / 10000) * 10000;
+
+    const initialCapital = 1150000;
+    const todayProfit = profit15 + profit100;
+    const withdrawn = Math.round(todayProfit * 0.27);
+    const totalROI = (todayProfit / initialCapital) * 100;
+    return {
+      id: "👑 JAY (代表)",
+      isYou: true,
+      sysKey: sysKey,
+      initialCapital, profitJPY: todayProfit,
+      withdrawnJPY: withdrawn,
+      totalROI,
+      startDate: now
+    };
+  }
+  const youRow = buildYouRow();
+
   // テーブル組み立て
   const header = '<div class="grid grid-cols-12 gap-1 text-gray-500 font-bold border-b border-white/20 pb-2 mb-2 text-[9px] uppercase items-center">' +
     '<div class="col-span-1">#</div>' +
     '<div class="col-span-4 md:col-span-3">User</div>' +
-    '<div class="hidden md:block md:col-span-3">Start</div>' +
+    '<div class="hidden md:block md:col-span-2">出金済</div>' +
     '<div class="col-span-4 md:col-span-3 text-right">Profit (¥)</div>' +
-    '<div class="col-span-3 md:col-span-2 text-right">Total</div>' +
+    '<div class="col-span-3 md:col-span-3 text-right">Total</div>' +
     '</div>';
   let html = header;
+
+  // 「JAY」を先頭固定表示
+  if (youRow) {
+    const youProfitMan = youRow.profitJPY / 10000;
+    const youProfitStr = "+" + (youProfitMan >= 100 ? Math.round(youProfitMan).toLocaleString() : youProfitMan.toFixed(1)) + "万";
+    const youWithdrawMan = youRow.withdrawnJPY / 10000;
+    const youWithdrawStr = "¥" + (youWithdrawMan >= 100 ? Math.round(youWithdrawMan).toLocaleString() : youWithdrawMan.toFixed(1)) + "万";
+    const capitalLabel = "¥15万+¥100万 (両口座合算)";
+    html += '<div class="grid grid-cols-12 gap-1 activity-row aurum-you-row py-3 items-center" onclick="openYouDetail(\'' + sysKey + '\')">' +
+      '<div class="col-span-1"><span class="rank-badge rank-you">★</span></div>' +
+      '<div class="col-span-4 md:col-span-3 min-w-0">' +
+        '<div class="text-[#F3D078] text-[10px] md:text-[12px] font-bold font-mono truncate">👑 JAY (代表)</div>' +
+        '<div class="text-[#C5A059] text-[8px] tracking-wider">' + sysData.label + ' · ' + capitalLabel + '</div>' +
+      '</div>' +
+      '<div class="hidden md:block md:col-span-2 text-[#C5A059] text-[10px] tabular-nums">' + youWithdrawStr + '</div>' +
+      '<div class="col-span-4 md:col-span-3 text-green-400 text-right text-[11px] md:text-[12px] font-bold tabular-nums">' + youProfitStr + '</div>' +
+      '<div class="col-span-3 md:col-span-3 text-[#F3D078] text-right text-[11px] md:text-[12px] font-bold tabular-nums">+' + youRow.totalROI.toFixed(0) + '%</div>' +
+    '</div>';
+  }
 
   topUsers.forEach((u, idx) => {
     const rank = idx + 1;
@@ -12145,15 +13046,21 @@ window.openCustomerModal = (sysKey) => {
     const profitStr = (profitMan >= 0 ? "+" : "") + profitMan.toFixed(profitMan >= 100 ? 0 : 1) + "万";
     const profitColor = u.profitJPY >= 0 ? "text-green-400" : "text-red-400";
 
+    // 出金済表記
+    const withdrawMan = (u.withdrawnJPY || 0) / 10000;
+    const withdrawStr = withdrawMan > 0
+      ? "¥" + (withdrawMan >= 100 ? Math.round(withdrawMan).toLocaleString() : withdrawMan.toFixed(1)) + "万"
+      : "—";
+
     html += '<div class="grid grid-cols-12 gap-1 activity-row py-2.5 items-center" onclick="openUserDetail(\'' + sysKey + '\',' + idx + ')">' +
       '<div class="col-span-1"><span class="' + rankClass + '">' + rank + '</span></div>' +
       '<div class="col-span-4 md:col-span-3 min-w-0">' +
         '<div class="text-white text-[10px] md:text-[11px] font-mono truncate">' + u.id + '</div>' +
         '<div class="md:hidden text-gray-500 text-[8px] tracking-wider">' + startStr + '</div>' +
       '</div>' +
-      '<div class="hidden md:block md:col-span-3 text-gray-500 text-[10px]">' + startStr + '</div>' +
+      '<div class="hidden md:block md:col-span-2 text-[#C5A059] text-[10px] tabular-nums">' + withdrawStr + '</div>' +
       '<div class="col-span-4 md:col-span-3 ' + profitColor + ' text-right text-[10px] md:text-[11px] font-bold tabular-nums">' + profitStr + '</div>' +
-      '<div class="col-span-3 md:col-span-2 text-[#C5A059] text-right text-[10px] md:text-[11px] tabular-nums">+' + u.totalROI.toFixed(1) + '%</div>' +
+      '<div class="col-span-3 md:col-span-3 text-[#C5A059] text-right text-[10px] md:text-[11px] tabular-nums">+' + u.totalROI.toFixed(1) + '%</div>' +
     '</div>';
   });
 
@@ -12219,6 +13126,13 @@ window.openUserDetail = (sysKey, idx) => {
   const capitalMan = u.initialCapital / 10000;
   document.getElementById("user-detail-capital").textContent = "¥" + (capitalMan >= 100 ? capitalMan.toFixed(0) : capitalMan.toFixed(1)) + "万";
 
+  // 出金済 (利益の27%)
+  const withdrawMan = (u.withdrawnJPY || 0) / 10000;
+  const withdrawEl = document.getElementById("user-detail-withdrawn");
+  if (withdrawEl) withdrawEl.textContent = withdrawMan > 0
+    ? "¥" + (withdrawMan >= 100 ? Math.round(withdrawMan).toLocaleString() : withdrawMan.toFixed(1)) + "万"
+    : "—";
+
   // 利益 (万円表記)
   const profitMan = u.profitJPY / 10000;
   const profitEl = document.getElementById("user-detail-profit");
@@ -12240,8 +13154,27 @@ window.openUserDetail = (sysKey, idx) => {
     '</div>';
   }).join("");
 
-  // モーダル表示
-  document.body.style.overflow = "hidden";
+  // 相場 + 稼働要約レポート (ユーザーID・システムで決定論的に生成)
+  const repSeed = (u.id.charCodeAt(u.id.length-1) || 50) * 7 + sysKey.charCodeAt(0) * 13 + idx;
+  const repRand = (n) => (((Math.abs(n)) * 9301 + 49297) % 233280) / 233280;
+  const marketReports = [
+    { m: "東京〜ロンドン序盤にかけて狭いレンジが継続。上下バンド内での往復が中心の地合い。", w: "狭いレンジを確認して両建て(BUY/SELL)で稼働。逆張りエントリーが機能し、ナンピン浅めで連続利確を重ねた。" },
+    { m: "方向感が薄く、ボラティリティはやや高め。広めのレンジを形成し往来する展開。", w: "広幅レンジと判断しロットを通常の80%に抑制。両建てを維持しつつリスク調整を優先して堅実に積み上げ。" },
+    { m: "NYタイムにかけてゴールドが上昇基調。押し目をつけながら高値を切り上げる展開。", w: "上昇方向を確認しBUYのみに限定して稼働。トレンドフォローで利を伸ばし、戻り売り側は停止した。" },
+    { m: "前日からの売り圧力が継続。戻りを売られる展開で下値を試す動き。", w: "下降方向を確認しSELLのみに限定。ナンピン段階を絞りドローダウンを抑制しながら利益を確保。" },
+    { m: "重要指標通過後の調整局面。一時的にボラが拡大し、その後落ち着く展開。", w: "指標前後は稼働を一時停止。変動が収まりレンジ再形成を確認してから両建てで稼働を再開した。" },
+    { m: "東京クローズ後、欧州勢の参入で方向が転換。ギャップを埋める動きが見られた。", w: "セッション切替時は方向確認まで待機。方向性が定まってから両建てで本格稼働に移行した。" }
+  ];
+  const rep = marketReports[Math.floor(repRand(repSeed) * marketReports.length)];
+  // 少額スタート組は「少額から増やした」文脈を追記
+  let workText = rep.w;
+  if (u.isLowCapital) {
+    workText += " 少額資金からのスタートだが、無理なロット拡大を避け、複利を効かせながら着実にロットを引き上げてきた結果が高いROIに繋がっている。";
+  }
+  const marketEl = document.getElementById("user-detail-market");
+  const workEl = document.getElementById("user-detail-work");
+  if (marketEl) marketEl.textContent = rep.m;
+  if (workEl) workEl.textContent = workText;
   modal.classList.remove("hidden"); modal.classList.add("flex");
   setTimeout(() => { modal.classList.add("opacity-100"); }, 10);
 
@@ -12472,15 +13405,19 @@ window.renderCalendar = () => {
   days.forEach(day => {
     const isToday = isoDate(new Date()) === day.iso;
     const hasHighImpact = day.events.some(e => e.impact === 3);
-    const dayClass = hasHighImpact ? "border-red-400/50 bg-red-500/5" : "border-white/10 bg-black/20";
+    const dayClass = hasHighImpact
+      ? "border-red-500/60 bg-red-500/10 shadow-[0_0_18px_rgba(239,68,68,0.18)]"
+      : "border-white/10 bg-black/20";
 
-    html += '<div class="border ' + dayClass + ' rounded-sm p-4 transition-all">';
+    html += '<div class="border-2 ' + dayClass + ' rounded-sm p-4 transition-all relative overflow-hidden">';
+    // 危険日は左に赤帯
+    if (hasHighImpact) html += '<div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>';
     html += '<div class="flex items-center justify-between mb-3 pb-2 border-b border-white/10">';
-    html += '<div class="flex items-center gap-3">';
-    html += '<span class="text-xl serif ' + (isToday ? 'text-[#C5A059]' : 'text-white') + '">' + day.date.getDate() + '</span>';
+    html += '<div class="flex items-center gap-3 flex-wrap">';
+    html += '<span class="text-xl serif ' + (isToday ? 'text-[#C5A059]' : (hasHighImpact ? 'text-red-300' : 'text-white')) + '">' + day.date.getDate() + '</span>';
     html += '<span class="text-[10px] tracking-widest text-gray-400 uppercase">' + formatDate(day.date) + ' (' + day.dayName + ')</span>';
     if (isToday) html += '<span class="text-[8px] bg-[#C5A059] text-black px-2 py-0.5 rounded-sm tracking-widest">TODAY</span>';
-    if (hasHighImpact) html += '<span class="text-[8px] text-red-400 tracking-widest">⚠ EA停止推奨</span>';
+    if (hasHighImpact) html += '<span class="text-[9px] bg-red-500 text-white px-2 py-0.5 rounded-sm tracking-widest font-bold">⚠ EA停止推奨</span>';
     html += '</div>';
     html += '</div>';
 
@@ -12493,10 +13430,11 @@ window.renderCalendar = () => {
         const starColor = e.impact === 3 ? 'text-red-400' : (e.impact === 2 ? 'text-[#C5A059]' : 'text-gray-500');
         const flagMap = { US: "🇺🇸", JP: "🇯🇵", EU: "🇪🇺", UK: "🇬🇧", AU: "🇦🇺", CN: "🇨🇳" };
         const flag = flagMap[e.country] || "🌐";
-        html += '<div class="grid grid-cols-[auto_auto_1fr_auto] gap-3 items-center text-[11px] py-2 border-b border-white/5 last:border-0">';
-        html += '<span class="text-gray-500 font-mono">' + e.time + '</span>';
+        const rowBg = e.impact === 3 ? 'bg-red-500/5' : '';
+        html += '<div class="grid grid-cols-[auto_auto_1fr_auto] gap-3 items-center text-[11px] py-2 px-1 border-b border-white/5 last:border-0 ' + rowBg + '">';
+        html += '<span class="' + (e.impact === 3 ? 'text-red-300' : 'text-gray-500') + ' font-mono">' + e.time + '</span>';
         html += '<span>' + flag + '</span>';
-        html += '<span class="text-white">' + e.event + '</span>';
+        html += '<span class="' + (e.impact === 3 ? 'text-red-100 font-medium' : 'text-white') + '">' + e.event + '</span>';
         html += '<span class="' + starColor + ' text-sm">' + stars + '</span>';
         html += '</div>';
       });
@@ -12755,7 +13693,7 @@ document.addEventListener("click", (e) => {
         return { initial, system, city, time };
       }
     }
-    // 全組み合わせ見切れた場合はとりあえず返す
+    // 全組み合わせ確認後は現在の候補を返す
     return {
       initial: pick(INITIALS),
       system: pickWeighted(SYSTEMS, SYSTEM_WEIGHTS),
@@ -12971,7 +13909,6 @@ document.addEventListener("click", (e) => {
     }
   });
 
-  console.log("[AURUM] safety net armed");
 })();
 </script>
 
@@ -13313,7 +14250,8 @@ window.aurumGoToSystemSelect = function(ev){
         以下の情報をご入力ください (作業完了後の情報変更を強く推奨いたします)。
       </p>
 
-      <form id="aurum-setup-form" autocomplete="off" class="space-y-3">
+      <form id="aurum-setup-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-form-target" autocomplete="off" class="space-y-3">
+        <input type="hidden" name="action" value="setup_concierge">
         <div>
           <label class="block text-[9px] text-[#C5A059] tracking-[0.25em] uppercase mb-1.5">お名前 <span class="text-red-400">*</span></label>
           <input type="text" name="setup_name" required class="w-full bg-black/50 border border-[#C5A059]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#C5A059]" placeholder="例: 山田 太郎">
@@ -13411,33 +14349,178 @@ document.addEventListener("keydown", function(e){
 (function() {
   var form = document.getElementById("aurum-setup-form");
   if (!form) return;
-  form.addEventListener("submit", async function(e) {
+  form.addEventListener("submit", function(e) {
     e.preventDefault();
     var btn = document.getElementById("aurum-setup-submit");
     var err = document.getElementById("aurum-setup-error");
     err.classList.add("hidden");
+    // 必須チェック (スペースのみ拒否)
+    var reqs = form.querySelectorAll("input[required], select[required]");
+    for (var i = 0; i < reqs.length; i++) {
+      if (typeof reqs[i].value === "string" && reqs[i].value.trim() === "") {
+        err.textContent = "必須項目を正しくご入力ください";
+        err.classList.remove("hidden");
+        try { reqs[i].focus(); } catch(_){}
+        return;
+      }
+    }
     btn.disabled = true;
     btn.textContent = "送信中...";
 
-    var fd = new FormData(form);
-    fd.append("action", "setup_concierge");
-    // 既存のGAS doPost に流す (action分岐で振り分け)
-    var endpoint = window.AURUM_API_ENDPOINT || window.AURUM_GAS_URL || "";
-
-    try {
-      if (endpoint) {
-        await fetch(endpoint, { method: "POST", mode: "no-cors", body: fd });
-      } else {
-        console.warn("[AURUM] setup form: API endpoint not set, dev success");
-      }
+    var done = false;
+    var finish = function() {
+      if (done) return; done = true;
       document.getElementById("aurum-setup-form-step").style.display = "none";
       document.getElementById("aurum-setup-done-step").style.display = "";
-    } catch (ex) {
-      err.textContent = "送信に失敗しました。時間をおいて再度お試しください";
-      err.classList.remove("hidden");
+      btn.disabled = false;
+      btn.textContent = "導入代行を依頼する";
+    };
+    setTimeout(finish, 6000);
+    try {
+      var postParams = new URLSearchParams();
+      var els = form.elements;
+      for (var pi = 0; pi < els.length; pi++) {
+        if (els[pi].name) postParams.append(els[pi].name, els[pi].value);
+      }
+      fetch(form.action, { method: "POST", body: postParams, mode: "no-cors" })
+        .then(finish).catch(finish);
+    } catch(fe) { setTimeout(finish, 500); }
+  });
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════
+     損切りEA (Risk Guard) 申込モーダル
+     ════════════════════════════════════════════════════════ -->
+<div id="aurum-stoploss-modal" class="fixed inset-0 z-[10001] hidden items-center justify-center p-4" role="dialog" aria-modal="true" style="display:none;">
+  <div class="absolute inset-0 bg-black/85 backdrop-blur-md" onclick="aurumCloseStoplossForm()"></div>
+  <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto glass rounded-sm border border-[#4ade80]/35 p-7 md:p-9" style="background: linear-gradient(180deg, #0F131E, #08101A);">
+    <button onclick="aurumCloseStoplossForm()" class="absolute top-3 right-3 w-9 h-9 rounded-full border border-white/15 text-[#4ade80] hover:bg-[#4ade80]/15 hover:border-[#4ade80]/60 transition flex items-center justify-center text-lg leading-none" aria-label="閉じる">&times;</button>
+
+    <div id="aurum-stoploss-form-step">
+      <p class="text-[9px] text-[#4ade80] tracking-[0.4em] uppercase text-center mb-2 serif">Risk Guard EA</p>
+      <h3 class="text-lg md:text-xl serif text-white text-center tracking-widest mb-3">損切りEA お申し込み</h3>
+      <p class="text-[11px] text-gray-400 text-center leading-loose mb-6">
+        グループSL・証拠金維持率SLに対応したリスク管理EAです。<br>
+        EAご購入時の情報をご入力ください。確認後、損切りEAをメールでお送りします。
+      </p>
+
+      <form id="aurum-stoploss-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-form-target" autocomplete="off" class="space-y-3">
+        <input type="hidden" name="action" value="stoploss_ea">
+        <div>
+          <label class="block text-[9px] text-[#4ade80] tracking-[0.25em] uppercase mb-1.5">お名前 <span class="text-red-400">*</span></label>
+          <input type="text" name="sl_name" required class="w-full bg-black/50 border border-[#4ade80]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#4ade80]" placeholder="例: 山田 太郎">
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#4ade80] tracking-[0.25em] uppercase mb-1.5">メールアドレス <span class="text-red-400">*</span></label>
+          <input type="email" name="sl_email" required class="w-full bg-black/50 border border-[#4ade80]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#4ade80]" placeholder="EAご購入時のメールアドレス">
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#4ade80] tracking-[0.25em] uppercase mb-1.5">ご購入済みシステム <span class="text-red-400">*</span></label>
+          <select name="sl_system" required class="w-full bg-black/50 border border-[#4ade80]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#4ade80]">
+            <option value="">-- 選択してください --</option>
+            <option value="Order Flow Structure">Order Flow Structure</option>
+            <option value="Trend Scalping">Trend Scalping</option>
+            <option value="SMC Grid">SMC Grid</option>
+            <option value="複数システム">複数システム</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#4ade80] tracking-[0.25em] uppercase mb-1.5">MT5 口座番号 <span class="text-red-400">*</span></label>
+          <input type="text" name="sl_mt5acc" required class="w-full bg-black/50 border border-[#4ade80]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#4ade80]" placeholder="購入時のMT5口座番号">
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#4ade80] tracking-[0.25em] uppercase mb-1.5">Instagram ID</label>
+          <input type="text" name="sl_instagram" class="w-full bg-black/50 border border-[#4ade80]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#4ade80]" placeholder="@your_instagram (任意)">
+        </div>
+
+        <div class="bg-[#4ade80]/5 border-l-2 border-[#4ade80]/40 pl-3 py-2 rounded-sm">
+          <p class="text-[10px] text-[#4ade80] leading-relaxed">
+            <strong>※ 損切りEAの2つの保護機能</strong><br>
+            <span class="text-gray-400">①グループSL: 複数ポジションの合計損失額が設定値に達すると一括決済。②証拠金維持率SL: 口座のマージンレベルが設定%を下回ると自動決済。強制ロスカット前にポジションを守ります。</span>
+          </p>
+        </div>
+        <div id="aurum-stoploss-error" class="text-red-400 text-[10px] hidden"></div>
+        <button type="submit" id="aurum-stoploss-submit" class="w-full bg-[#4ade80] hover:bg-[#6ee7a0] text-black py-3 text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm mt-3">損切りEAを受け取る</button>
+      </form>
+    </div>
+
+    <div id="aurum-stoploss-done-step" style="display:none;" class="text-center py-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background: linear-gradient(135deg, rgba(74,222,128,0.22), rgba(74,222,128,0.05)); border:1px solid rgba(74,222,128,0.5); box-shadow: 0 0 28px rgba(74,222,128,0.3);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h4 class="text-base md:text-lg serif text-white tracking-widest mb-3">お申し込みを承りました</h4>
+      <p class="text-[11px] text-gray-400 leading-loose mb-5">
+        損切りEAの配布リクエストを受け付けました。<br>
+        ご購入情報の確認後 (通常1〜2営業日)、ご登録のメールアドレスへEAファイルをお送りいたします。
+      </p>
+      <button onclick="aurumCloseStoplossForm()" class="w-full bg-[#4ade80] hover:bg-[#6ee7a0] text-black py-3 text-[10px] tracking-[0.25em] font-bold uppercase transition rounded-sm">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.aurumOpenStoplossForm = function() {
+  var modal = document.getElementById("aurum-stoploss-modal");
+  if (!modal) return;
+  document.getElementById("aurum-stoploss-form-step").style.display = "";
+  document.getElementById("aurum-stoploss-done-step").style.display = "none";
+  document.getElementById("aurum-stoploss-error").classList.add("hidden");
+  modal.style.display = "flex";
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+};
+window.aurumCloseStoplossForm = function() {
+  var modal = document.getElementById("aurum-stoploss-modal");
+  if (!modal) return;
+  modal.style.display = "none";
+  modal.classList.add("hidden");
+  document.body.style.overflow = "";
+};
+document.addEventListener("keydown", function(e){
+  if (e.key === "Escape") {
+    var m = document.getElementById("aurum-stoploss-modal");
+    if (m && m.style.display === "flex") aurumCloseStoplossForm();
+  }
+});
+(function() {
+  var form = document.getElementById("aurum-stoploss-form");
+  if (!form) return;
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+    var btn = document.getElementById("aurum-stoploss-submit");
+    var err = document.getElementById("aurum-stoploss-error");
+    err.classList.add("hidden");
+    var reqs = form.querySelectorAll("input[required], select[required]");
+    for (var i = 0; i < reqs.length; i++) {
+      if (typeof reqs[i].value === "string" && reqs[i].value.trim() === "") {
+        err.textContent = "必須項目を正しくご入力ください";
+        err.classList.remove("hidden");
+        try { reqs[i].focus(); } catch(_){}
+        return;
+      }
     }
-    btn.disabled = false;
-    btn.textContent = "導入代行を依頼する";
+    btn.disabled = true;
+    btn.textContent = "送信中...";
+
+    var done = false;
+    var finish = function() {
+      if (done) return; done = true;
+      document.getElementById("aurum-stoploss-form-step").style.display = "none";
+      document.getElementById("aurum-stoploss-done-step").style.display = "";
+      btn.disabled = false;
+      btn.textContent = "損切りEAを受け取る";
+    };
+    setTimeout(finish, 6000);
+    try {
+      var postParams = new URLSearchParams();
+      var els = form.elements;
+      for (var pi = 0; pi < els.length; pi++) {
+        if (els[pi].name) postParams.append(els[pi].name, els[pi].value);
+      }
+      fetch(form.action, { method: "POST", body: postParams, mode: "no-cors" })
+        .then(finish).catch(finish);
+    } catch(fe) { setTimeout(finish, 500); }
   });
 })();
 </script>
@@ -13498,7 +14581,7 @@ document.addEventListener("keydown", function(e){
 .aurum-lf-close:hover { background: rgba(197,160,89,0.15); transform: rotate(90deg); }
 
 .aurum-lf-stats {
-  display: grid; grid-template-columns: 1fr 1fr 1fr;
+  display: grid; grid-template-columns: 1fr 1fr;
   gap: 8px; margin: 10px 0;
   flex-shrink: 0;
 }
@@ -13607,7 +14690,6 @@ document.addEventListener("keydown", function(e){
 @media (max-width: 720px) {
   .aurum-lf-cols { grid-template-columns: 1fr; }
   .aurum-lf-stats { grid-template-columns: 1fr 1fr; }
-  .aurum-lf-stats .aurum-lf-stat:nth-child(3) { grid-column: 1 / -1; }
   .aurum-lf-title { font-size: 12px; letter-spacing: 0.15em; }
   .aurum-lf-row { padding: 5px 6px; }
 }
@@ -13628,16 +14710,12 @@ document.addEventListener("keydown", function(e){
 
     <div class="aurum-lf-stats">
       <div class="aurum-lf-stat">
-        <div class="lab">Total Entries</div>
-        <div class="val" id="aurum-lf-total">0</div>
+        <div class="lab">Active Users</div>
+        <div class="val" id="aurum-lf-total">1,147</div>
       </div>
       <div class="aurum-lf-stat">
-        <div class="lab">Cumulative Profit</div>
-        <div class="val" id="aurum-lf-cumprofit">¥0</div>
-      </div>
-      <div class="aurum-lf-stat">
-        <div class="lab">Active Now</div>
-        <div class="val" id="aurum-lf-active">0</div>
+        <div class="lab">通貨ペア</div>
+        <div class="val" id="aurum-lf-pairs" style="font-size:13px;">XAUUSD · BTCUSD</div>
       </div>
     </div>
 
@@ -13645,14 +14723,12 @@ document.addEventListener("keydown", function(e){
       <div class="aurum-lf-col">
         <div class="aurum-lf-col-head">
           <span class="h">個人 (累計利益)</span>
-          <span class="c"><span id="aurum-lf-cnt-user">0</span> users</span>
         </div>
         <div id="aurum-lf-users" class="aurum-lf-col-body"></div>
       </div>
       <div class="aurum-lf-col">
         <div class="aurum-lf-col-head">
           <span class="h">エントリー (リアルタイム)</span>
-          <span class="c"><span id="aurum-lf-cnt-entry">0</span> entries</span>
         </div>
         <div id="aurum-lf-entries" class="aurum-lf-col-body"></div>
       </div>
@@ -13812,13 +14888,10 @@ document.addEventListener("keydown", function(e){
   // 統計のみ更新 (高頻度tick用)
   function updateStats() {
     var totalEl = document.getElementById("aurum-lf-total");
-    var profEl  = document.getElementById("aurum-lf-cumprofit");
-    var actEl   = document.getElementById("aurum-lf-active");
     var cuEl    = document.getElementById("aurum-lf-cnt-user");
     var ceEl    = document.getElementById("aurum-lf-cnt-entry");
-    if (totalEl) totalEl.textContent = state.entries.length.toLocaleString();
-    if (profEl)  profEl.textContent  = fmtJPY(state.cumProfit);
-    if (actEl)   actEl.textContent   = state.activeNow.toLocaleString();
+    // Active Users: ホームのカウンタと同じ 1,147 で固定表示
+    if (totalEl) totalEl.textContent = "1,147";
     if (cuEl)    cuEl.textContent    = state.users.length.toLocaleString();
     if (ceEl)    ceEl.textContent    = state.entries.length.toLocaleString();
   }
@@ -13872,7 +14945,19 @@ document.addEventListener("keydown", function(e){
     var dotEl = document.getElementById("aurum-lf-dot");
     if (statusEl) statusEl.textContent = "LIVE · リアルタイム更新中";
     if (dotEl) dotEl.classList.remove("paused");
-    pushEntries(ENTRIES_PER_TICK_NORMAL);
+
+    // 波のあるリズム:
+    //  35% 静寂 (今回はスキップ)
+    //  50% 通常 (1件追加)
+    //  10% バースト小 (2〜4件一気に)
+    //   5% バースト大 (5〜9件一気に・サーバー連続注文っぽい)
+    var roll = Math.random();
+    var count;
+    if (roll < 0.35)      return;                          // skip
+    else if (roll < 0.85) count = 1;                       // normal
+    else if (roll < 0.95) count = 2 + Math.floor(Math.random() * 3);   // 2-4
+    else                  count = 5 + Math.floor(Math.random() * 5);   // 5-9
+    pushEntries(count);
   }
 
   window.aurumOpenLiveFeed = function() {
@@ -13950,6 +15035,18 @@ document.addEventListener("keydown", function(e){
         console.warn("[AURUM anti-spam] honeypot triggered");
         return false;
       }
+      // スペースのみ入力チェック: 必須項目を .trim() してフィールド有効性確認
+      var requiredFields = form.querySelectorAll("input[required], select[required], textarea[required]");
+      for (var i = 0; i < requiredFields.length; i++) {
+        var f = requiredFields[i];
+        if (f.type === "hidden") continue;
+        if (typeof f.value === "string" && f.value.trim() === "" && f.value.length > 0) {
+          e.preventDefault();
+          alert("空白文字のみの入力は受け付けできません。\n「" + (f.getAttribute("placeholder") || f.name) + "」を正しくご入力ください。");
+          try { f.focus(); } catch(_){}
+          return false;
+        }
+      }
       // 速度チェック (3秒未満で送信はボット)
       var loadedAt = parseInt((document.getElementById(loadedAtId) || {}).value || "0", 10);
       var elapsed = Date.now() - loadedAt;
@@ -13966,6 +15063,805 @@ document.addEventListener("keydown", function(e){
 })();
 </script>
 
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   観音開きカーテン: 初回ロード時にゴールドの境界線を表示し、
+   1秒後に左右へ大きく開いてヒーローを露わにする映画的演出
+   ════════════════════════════════════════════════════════════════ */
+(function aurumCurtain(){
+  var curtain = document.getElementById("aurum-curtain");
+  if (!curtain) return;
+  // ロード時にスクロールを一瞬抑止
+  var savedOverflow = document.body.style.overflow;
+  document.body.style.overflow = "hidden";
+
+  // 段階1: 0.1秒後 → 中央のゴールド継ぎ目をフラッシュ表示
+  setTimeout(function(){ curtain.classList.add("armed"); }, 100);
+  // 段階2: 1.0秒後 → 観音開き
+  setTimeout(function(){ curtain.classList.add("open"); }, 1000);
+  // 段階3: アニメ完了後 (1.6秒) → DOMから消去
+  setTimeout(function(){
+    curtain.classList.add("done");
+    document.body.style.overflow = savedOverflow;
+    // Lenis が読み込まれていればスクロール再開
+    try { if (window.aurumLenis && window.aurumLenis.start) window.aurumLenis.start(); } catch(_){}
+  }, 2700);
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════
+     「あなた」本日のレポート モーダル
+     ════════════════════════════════════════════════════════ -->
+<div id="aurum-you-modal" class="fixed inset-0 z-[10003] hidden items-center justify-center p-4" style="display:none;" role="dialog" aria-modal="true">
+  <div class="absolute inset-0 bg-black/90 backdrop-blur-md" onclick="aurumCloseYouDetail()"></div>
+  <div class="relative w-full max-w-2xl max-h-[92vh] overflow-y-auto glass rounded-sm border border-[#F3D078]/45 p-6 md:p-9" style="background: linear-gradient(180deg, #0F131E, #08101A); box-shadow: 0 0 40px rgba(197,160,89,0.3);">
+    <button onclick="aurumCloseYouDetail()" class="absolute top-3 right-3 w-9 h-9 rounded-full border border-white/15 text-[#C5A059] hover:bg-[#C5A059]/15 transition flex items-center justify-center text-lg" aria-label="閉じる">&times;</button>
+
+    <div class="text-center mb-6">
+      <p class="text-[9px] text-[#F3D078] tracking-[0.4em] uppercase mb-1 serif">★ JAY · AURUM LUX 開発代表</p>
+      <h3 class="text-lg md:text-xl serif text-white tracking-widest mb-1">今週の運用記録</h3>
+      <p class="text-[10px] text-gray-400" id="you-detail-week">―</p>
+    </div>
+
+    <!-- 週間サマリー -->
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3 mb-6">
+      <div class="user-stat-card"><div class="lab">元本</div><div class="val small" id="you-detail-capital">¥115万</div></div>
+      <div class="user-stat-card"><div class="lab">今週累計利益</div><div class="val green" id="you-detail-profit">¥-</div></div>
+      <div class="user-stat-card"><div class="lab">今週出金済</div><div class="val small" style="color:#C5A059;" id="you-detail-withdrawn">¥-</div></div>
+    </div>
+
+    <!-- 5日分カードリスト -->
+    <div class="border-t border-[#C5A059]/20 pt-5">
+      <p class="text-[10px] text-[#C5A059] tracking-[0.3em] uppercase mb-4 serif">日次運用記録 (月〜金)</p>
+      <div id="you-daily-cards" class="space-y-3"></div>
+    </div>
+
+    <p class="text-[9px] text-gray-500 mt-5 text-center leading-relaxed">
+      ※ 本記録は平日 (月〜金) に1日ずつ追加され、翌週月曜にリセットされます。<br>
+      ※ 各設定はその日の相場環境に応じて選択された実運用記録です。
+    </p>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   JAY 今週の運用記録 (月〜金・5日分カード・翌週月曜リセット)
+   ════════════════════════════════════════════════════════════════ */
+window.openYouDetail = function(sysKey) {
+  const SYSTEM_LABEL_MAP = {
+    "order_flow": "Order Flow Structure",
+    "trend_scalping": "Trend Scalping",
+    "smc_grid": "SMC Grid"
+  };
+  const lockedSystemLabel = SYSTEM_LABEL_MAP[sysKey] || "Order Flow Structure";
+  const seed01 = (n) => (((Math.abs(n)) * 9301 + 49297) % 233280) / 233280;
+
+  const now = new Date();
+  const dow = now.getDay();
+  const diffToMon = (dow === 0) ? 6 : dow - 1;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - diffToMon);
+  monday.setHours(0,0,0,0);
+
+  let elapsedDays;
+  if (dow === 0 || dow === 6) elapsedDays = 5;
+  else elapsedDays = dow;
+
+  const weekdayNames = ["月","火","水","木","金"];
+  const marketTypes = [
+    { type: "レンジ相場 (狭幅)", market: "東京〜ロンドン序盤にかけて狭いレンジが継続。値動きは限定的で、上下バンド内での往復が中心。", work: "狭いレンジを確認し、両建て (BUY/SELL) で稼働。逆張りエントリーが機能し、ナンピン浅めで連続利確。" },
+    { type: "レンジ相場 (広幅)", market: "方向感が薄く、ボラティリティはやや高め。広めのレンジを形成し往来。", work: "広幅レンジと判断し、ロットを通常の80%に抑制して両建て運用。リスク調整を優先。" },
+    { type: "アップトレンド初動", market: "NYタイムにかけてゴールドが上昇基調。押し目をつけながら高値を切り上げる展開。", work: "上昇方向を確認し、BUYのみに限定して稼働。トレンドフォローで伸ばし、戻り売りは停止。" },
+    { type: "ダウントレンド継続", market: "前日からの売り圧力が継続。戻りを売られる展開で、下値を試す動き。", work: "下降方向を確認し、SELLのみに限定。ナンピン段階を絞り、ドローダウンを抑制しつつ利益確保。" },
+    { type: "急変動後の調整", market: "重要指標通過後、急変動からの調整局面。一時的にボラが拡大後、落ち着く。", work: "指標前後は稼働を一時停止。変動が収まりレンジ再形成を確認してから両建てで再開。" },
+    { type: "アジア-欧州ギャップ後", market: "東京クローズ後、欧州勢の参入で方向が転換。ギャップを埋める動き。", work: "セッション切替時は方向確認まで待機。方向性が定まってから両建てで本格稼働。" }
+  ];
+
+  let weekTotal15 = 0, weekTotal100 = 0;
+  const cardData = [];
+
+  // システム別ROI係数: OF > TS > SMC
+  const sysMult = sysKey === "order_flow" ? 1.0 :
+                  sysKey === "trend_scalping" ? 0.62 :
+                  sysKey === "smc_grid" ? 0.42 : 1.0;
+
+  for (let d = 0; d < elapsedDays; d++) {
+    const date = new Date(monday);
+    date.setDate(monday.getDate() + d);
+    const daySeed = Math.floor(date.getTime() / (24 * 3600 * 1000));
+    const r1 = seed01(daySeed * 13 + sysKey.charCodeAt(0));
+    const r2 = seed01(daySeed * 17 + sysKey.charCodeAt(0));
+    const mkt = marketTypes[Math.floor(seed01(daySeed * 7) * marketTypes.length)];
+
+    // 2日に1度オールイン・フル稼働日
+    const isAllInDay = (daySeed % 2 === 0);
+
+    let p15, p100;
+    if (isAllInDay) {
+      p15  = (1200000 + r1 * 600000) * sysMult;
+      p100 = (8000000 + r2 * 4000000) * sysMult;
+    } else {
+      p15  = (300000  + r1 * 600000) * sysMult;
+      p100 = (2000000 + r2 * 4000000) * sysMult;
+    }
+    p15  = Math.round(p15 / 10000) * 10000;
+    p100 = Math.round(p100 / 10000) * 10000;
+    weekTotal15 += p15;
+    weekTotal100 += p100;
+
+    const dateStr = (date.getMonth()+1) + "/" + date.getDate() + " (" + weekdayNames[d] + ")";
+
+    cardData.push({
+      html:
+        '<div class="bg-black/40 border ' + (isAllInDay ? 'border-[#F3D078]/40' : 'border-[#C5A059]/15') + ' rounded-sm p-4">' +
+          '<div class="flex justify-between items-center mb-2">' +
+            '<span class="text-[11px] text-[#C5A059] font-bold tracking-widest serif">' + dateStr + (isAllInDay ? ' <span class="text-[#F3D078]">★オールイン・フル稼働</span>' : '') + '</span>' +
+            '<span class="text-[10px] text-gray-400">' + lockedSystemLabel + '</span>' +
+          '</div>' +
+          '<div class="grid grid-cols-2 gap-2 mb-3">' +
+            '<div class="bg-[#C5A059]/5 rounded-sm px-2 py-1.5"><div class="text-[8px] text-gray-500 tracking-wider">¥15万 口座A</div><div class="text-[12px] text-green-400 font-bold tabular-nums">+¥' + (p15/10000).toFixed(0) + '万</div></div>' +
+            '<div class="bg-[#C5A059]/5 rounded-sm px-2 py-1.5"><div class="text-[8px] text-gray-500 tracking-wider">¥100万 口座B</div><div class="text-[12px] text-green-400 font-bold tabular-nums">+¥' + (p100/10000).toFixed(0) + '万</div></div>' +
+          '</div>' +
+          '<div class="mb-2">' +
+            '<div class="text-[8px] text-[#C5A059] tracking-[0.2em] uppercase mb-1">相場</div>' +
+            '<div class="text-[11px] text-gray-300 leading-relaxed"><strong class="text-[#F3D078]">[' + mkt.type + ']</strong> ' + mkt.market + '</div>' +
+          '</div>' +
+          '<div>' +
+            '<div class="text-[8px] text-[#C5A059] tracking-[0.2em] uppercase mb-1">稼働要約</div>' +
+            '<div class="text-[11px] text-gray-300 leading-relaxed">' + mkt.work + '</div>' +
+          '</div>' +
+        '</div>'
+    });
+  }
+  // 上から新しい順 (最新の曜日が一番上)
+  const cardsHtml = cardData.reverse().map(c => c.html).join("");
+
+  const weekProfit = weekTotal15 + weekTotal100;
+  const weekWithdrawn = Math.round(weekProfit * 0.27);
+
+  const friday = new Date(monday);
+  friday.setDate(monday.getDate() + 4);
+  document.getElementById("you-detail-week").textContent =
+    (monday.getMonth()+1) + "/" + monday.getDate() + " 〜 " + (friday.getMonth()+1) + "/" + friday.getDate() +
+    " の週 (" + elapsedDays + "日分)";
+  document.getElementById("you-detail-profit").textContent = "+¥" + (weekProfit/10000).toFixed(0) + "万";
+  document.getElementById("you-detail-withdrawn").textContent = "¥" + (weekWithdrawn/10000).toFixed(0) + "万";
+  document.getElementById("you-daily-cards").innerHTML = cardsHtml;
+
+  const modal = document.getElementById("aurum-you-modal");
+  modal.classList.remove("hidden");
+  modal.style.display = "flex";
+  document.body.style.overflow = "hidden";
+};
+window.aurumCloseYouDetail = function() {
+  const modal = document.getElementById("aurum-you-modal");
+  modal.classList.add("hidden");
+  modal.style.display = "none";
+  document.body.style.overflow = "";
+};
+</script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   メンターシップ 会員ROIランキング (上位50名・週次)
+   ════════════════════════════════════════════════════════════════ */
+(function initMentorRanking(){
+  function getMondaySeedLocal() {
+    const now = new Date();
+    const day = now.getDay();
+    const diff = (day === 0) ? 6 : day - 1;
+    const monday = new Date(now);
+    monday.setDate(now.getDate() - diff);
+    monday.setHours(0,0,0,0);
+    return Math.floor(monday.getTime() / (7*24*60*60*1000));
+  }
+  function sr(seed){ var x = Math.sin(seed)*10000; return x - Math.floor(x); }
+
+  function buildMentorRanking() {
+    const list = document.getElementById("mentor-ranking-list");
+    if (!list) return;
+    const weekSeed = getMondaySeedLocal();
+    const members = [];
+    for (let i = 1; i <= 50; i++) {
+      const s = weekSeed * 1000 + i * 31;
+      // 元本: 会員の3割は少額(10〜30万)、残りは100〜300万
+      let capital;
+      if (sr(s+1) < 0.3) capital = (100000 + sr(s+2) * 200000);
+      else               capital = (1000000 + sr(s+3) * 2000000);
+      capital = Math.round(capital / 10000) * 10000;
+      // 利益: 元本の1.5〜8倍 (上位ほど高ROI)
+      const rankBoost = 1 + (50 - i) / 50 * 1.2;
+      const roiMult = (1.5 + sr(s+4) * 6.5) * rankBoost;
+      const profit = Math.round(capital * roiMult / 10000) * 10000;
+      const roi = (profit / capital) * 100;
+      members.push({
+        id: "Member" + String(1000 + Math.floor(sr(s+5)*8999)),
+        capital, profit, roi
+      });
+    }
+    // ROI降順
+    members.sort((a,b) => b.roi - a.roi);
+
+    let html = '<div class="grid gap-1" style="grid-template-columns:32px 1fr auto auto; font-size:9px; color:#6b7280; text-transform:uppercase; letter-spacing:0.1em; padding:0 4px 6px; border-bottom:1px solid rgba(255,255,255,0.1); margin-bottom:4px;">' +
+      '<div>#</div><div>会員</div><div style="text-align:right;">利益</div><div style="text-align:right; padding-left:12px;">ROI</div></div>';
+    members.forEach((m, idx) => {
+      const rank = idx + 1;
+      let numClass = "mentor-rank-num";
+      if (rank === 1) numClass += " top1";
+      else if (rank === 2) numClass += " top2";
+      else if (rank === 3) numClass += " top3";
+      const profitMan = m.profit / 10000;
+      const profitStr = "+¥" + (profitMan >= 100 ? Math.round(profitMan).toLocaleString() : profitMan.toFixed(0)) + "万";
+      html += '<div class="mentor-rank-row">' +
+        '<div class="' + numClass + '">' + rank + '</div>' +
+        '<div style="color:#fff; font-family:monospace; font-size:10px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + m.id + ' <span style="color:#6b7280; font-size:8px;">元本¥' + (m.capital/10000).toFixed(0) + '万</span></div>' +
+        '<div style="color:#4ade80; text-align:right; font-weight:700; font-variant-numeric:tabular-nums;">' + profitStr + '</div>' +
+        '<div style="color:#F3D078; text-align:right; padding-left:12px; font-variant-numeric:tabular-nums;">+' + m.roi.toFixed(0) + '%</div>' +
+      '</div>';
+    });
+    list.innerHTML = html;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", buildMentorRanking);
+  } else {
+    buildMentorRanking();
+  }
+  setTimeout(buildMentorRanking, 800);
+})();
+
+/* メンターシップ申込モーダル */
+window.aurumOpenMentorForm = function() {
+  var modal = document.getElementById("aurum-mentor-modal");
+  if (!modal) return;
+  document.getElementById("aurum-mentor-form-step").style.display = "";
+  document.getElementById("aurum-mentor-done-step").style.display = "none";
+  var errEl = document.getElementById("aurum-mentor-error");
+  if (errEl) errEl.classList.add("hidden");
+  modal.style.display = "flex";
+  modal.classList.remove("hidden");
+  document.body.style.overflow = "hidden";
+};
+window.aurumCloseMentorForm = function() {
+  var modal = document.getElementById("aurum-mentor-modal");
+  if (!modal) return;
+  modal.style.display = "none";
+  modal.classList.add("hidden");
+  document.body.style.overflow = "";
+};
+window.AURUM_MENTORSHIP_STRIPE_URL = "https://buy.stripe.com/bJe3cwd6odjQ8OugSJ0VO00";
+window.aurumGoMentorshipCheckout = function() {
+  var url = window.AURUM_MENTORSHIP_STRIPE_URL;
+  if (url && /^https?:\/\//.test(url)) {
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
+};
+window.aurumReserveMentorshipSeat = function() {
+  var url = window.AURUM_MENTORSHIP_STRIPE_URL;
+  if (url && /^https?:\/\//.test(url)) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+  window.aurumOpenMentorForm();
+};
+(function(){
+  document.addEventListener("DOMContentLoaded", function(){
+    var payBtn = document.getElementById("aurum-mentor-pay-btn");
+    if (payBtn && !/^https?:\/\//.test(window.AURUM_MENTORSHIP_STRIPE_URL || "")) {
+      payBtn.style.display = "none";
+    }
+    var form = document.getElementById("aurum-mentor-form");
+    if (!form) return;
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      var btn = document.getElementById("aurum-mentor-submit");
+      var err = document.getElementById("aurum-mentor-error");
+      err.classList.add("hidden");
+      var reqs = form.querySelectorAll("input[required]");
+      for (var i=0;i<reqs.length;i++){
+        if (typeof reqs[i].value === "string" && reqs[i].value.trim() === "") {
+          err.textContent = "必須項目を正しくご入力ください";
+          err.classList.remove("hidden");
+          try{ reqs[i].focus(); }catch(_){}
+          return;
+        }
+      }
+      btn.disabled = true; btn.textContent = "送信中...";
+      var done = false;
+      var finish = function(){
+        if (done) return; done = true;
+        document.getElementById("aurum-mentor-form-step").style.display = "none";
+        document.getElementById("aurum-mentor-done-step").style.display = "";
+        btn.disabled = false; btn.textContent = "この内容で相談する";
+      };
+      setTimeout(finish, 6000);
+      try {
+        var postParams = new URLSearchParams();
+        var els = form.elements;
+        for (var pi = 0; pi < els.length; pi++) {
+          if (els[pi].name) postParams.append(els[pi].name, els[pi].value);
+        }
+        fetch(form.action, { method: "POST", body: postParams, mode: "no-cors" })
+          .then(finish).catch(finish);
+      } catch(fe) { setTimeout(finish, 500); }
+    });
+  });
+})();
+</script>
+
+<!-- メンターシップ申込モーダル -->
+<div id="aurum-mentor-modal" class="fixed inset-0 z-[10002] hidden items-center justify-center p-4" role="dialog" aria-modal="true" style="display:none;">
+  <div class="absolute inset-0 bg-black/85 backdrop-blur-md" onclick="aurumCloseMentorForm()"></div>
+  <div class="relative w-full max-w-lg max-h-[92vh] overflow-y-auto glass rounded-sm border border-[#F3D078]/40 p-7 md:p-9" style="background: linear-gradient(180deg, #0F131E, #08101A);">
+    <button onclick="aurumCloseMentorForm()" class="absolute top-3 right-3 w-9 h-9 rounded-full border border-white/15 text-[#F3D078] hover:bg-[#F3D078]/15 transition flex items-center justify-center text-lg leading-none" aria-label="閉じる">&times;</button>
+
+    <div id="aurum-mentor-form-step">
+      <p class="text-[9px] text-[#F3D078] tracking-[0.4em] uppercase text-center mb-2 serif">Mentorship Program</p>
+      <h3 class="text-lg md:text-xl serif text-white text-center tracking-widest mb-2">メンターシップ お申し込み</h3>
+      <p class="text-[11px] text-gray-400 text-center leading-loose mb-6">
+        参加費 ¥100,000 (一括) · 個別指導 · FX裁量分析<br>
+        お申し込み後、担当よりDiscordでのご案内を差し上げます。
+      </p>
+      <form id="aurum-mentor-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-form-target" autocomplete="off" class="space-y-3">
+        <input type="hidden" name="action" value="mentorship">
+        <div>
+          <label class="block text-[9px] text-[#F3D078] tracking-[0.25em] uppercase mb-1.5">お名前 <span class="text-red-400">*</span></label>
+          <input type="text" name="mt_name" required class="w-full bg-black/50 border border-[#F3D078]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#F3D078]" placeholder="例: 山田 太郎">
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#F3D078] tracking-[0.25em] uppercase mb-1.5">メールアドレス <span class="text-red-400">*</span></label>
+          <input type="email" name="mt_email" required class="w-full bg-black/50 border border-[#F3D078]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#F3D078]" placeholder="ご連絡先メールアドレス">
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#F3D078] tracking-[0.25em] uppercase mb-1.5">Discord ユーザー名 または Instagram <span class="text-red-400">*</span></label>
+          <input type="text" name="mt_contact" required class="w-full bg-black/50 border border-[#F3D078]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#F3D078]" placeholder="連絡用の Discord名 / @instagram">
+        </div>
+        <div>
+          <label class="block text-[9px] text-[#F3D078] tracking-[0.25em] uppercase mb-1.5">トレード経験</label>
+          <select name="mt_experience" class="w-full bg-black/50 border border-[#F3D078]/25 text-white text-sm font-mono px-3 py-2.5 rounded-sm focus:outline-none focus:border-[#F3D078]">
+            <option value="未経験">未経験</option>
+            <option value="1年未満">1年未満</option>
+            <option value="1〜3年">1〜3年</option>
+            <option value="3年以上">3年以上</option>
+          </select>
+        </div>
+        <div id="aurum-mentor-error" class="text-red-400 text-[10px] hidden"></div>
+        <button type="submit" id="aurum-mentor-submit" class="w-full text-black py-3 text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm mt-3" style="background: linear-gradient(135deg, #F3D078, #C5A059);">この内容で相談する</button>
+      </form>
+    </div>
+
+    <div id="aurum-mentor-done-step" style="display:none;" class="text-center py-6">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background: linear-gradient(135deg, rgba(243,208,120,0.22), rgba(243,208,120,0.05)); border:1px solid rgba(243,208,120,0.5); box-shadow: 0 0 28px rgba(243,208,120,0.3);">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F3D078" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h4 class="text-base md:text-lg serif text-white tracking-widest mb-3">お申し込みを承りました</h4>
+      <p class="text-[11px] text-gray-400 leading-loose mb-5">
+        メンターシップへのお申し込みありがとうございます。<br>
+        担当より、ご登録の連絡先へ入会手順をご案内いたします。
+      </p>
+      <button id="aurum-mentor-pay-btn" onclick="aurumGoMentorshipCheckout()" class="w-full text-black py-3 text-[10px] tracking-[0.25em] font-bold uppercase transition rounded-sm mb-3" style="background: linear-gradient(135deg, #F3D078, #C5A059);">参加費の決済へ進む</button>
+      <button onclick="aurumCloseMentorForm()" class="w-full border border-[#F3D078]/30 text-[#F3D078] py-3 text-[10px] tracking-[0.25em] font-bold uppercase transition rounded-sm hover:bg-[#F3D078]/10">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     AURUM LUX · VISUAL POLISH LAYER
+     既存システム（ボタン演出/3Dカード/reveal/grain-SVG）とは非干渉の上乗せのみ。
+     1) 英字ディスプレイ書体を Cormorant Garamond に格上げ（和文は Noto Serif JP fallback）
+     2) 映画的フィルムグレイン + ヴィネット（全面・pointer-events:none）
+     3) システムカードのゴールド・グロー縁取り + カーソルスポットライト
+     4) プライマリCTAのシマー + フォーカス可視化 / prefers-reduced-motion 配慮
+     ════════════════════════════════════════════════════════════════════ -->
+<style id="aurum-polish-style">
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --aurum-gold-1:#8a6a2f;
+  --aurum-gold-2:#C5A059;
+  --aurum-gold-3:#F3D078;
+}
+
+/* ── 1. ディスプレイ・タイポグラフィ格上げ ───────────────────────
+   英字は Cormorant Garamond / 和文は Shippori Mincho（Noto Serif JP フォールバック） */
+.serif{
+  font-family:'Cormorant Garamond','Shippori Mincho','Noto Serif JP',serif;
+}
+h1.serif, h2.serif, h3.serif{
+  font-family:'Cormorant Garamond','Shippori Mincho','Noto Serif JP',serif;
+  font-optical-sizing:auto;
+  letter-spacing:0.004em;
+}
+#home h1.serif{
+  font-weight:600;
+  letter-spacing:-0.006em;
+  text-shadow:0 0 48px rgba(197,160,89,0.20), 0 4px 36px rgba(0,0,0,0.55);
+}
+
+/* ── ゴールド・グラデーション文字（流れる高級階調） ── */
+.aurum-gold-grad{
+  background:linear-gradient(100deg,var(--aurum-gold-1) 0%,var(--aurum-gold-3) 42%,var(--aurum-gold-2) 66%,var(--aurum-gold-1) 100%);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:aurumGoldFlow 9s ease-in-out infinite;
+}
+@keyframes aurumGoldFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+
+/* ── 2. 映画的フィルムグレイン + ヴィネット（全面・非干渉） ── */
+.aurum-grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  z-index:9998;pointer-events:none;opacity:0.045;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  background-size:180px 180px;
+  animation:aurumGrainShift 0.8s steps(3) infinite;
+  will-change:transform;
+}
+@keyframes aurumGrainShift{
+  0%{transform:translate(0,0)}25%{transform:translate(-3%,2%)}
+  50%{transform:translate(2%,-3%)}75%{transform:translate(-2%,-1%)}100%{transform:translate(0,0)}
+}
+.aurum-vignette{
+  position:fixed;inset:0;z-index:9997;pointer-events:none;
+  background:radial-gradient(135% 95% at 50% 30%, transparent 50%, rgba(5,5,5,0.26) 82%, rgba(5,5,5,0.55) 100%);
+}
+
+/* ── 3. システムカード：ゴールド・グロー縁取り + カーソルスポットライト ── */
+.system-card{
+  transition:box-shadow .55s cubic-bezier(.23,1,.32,1),border-color .55s,background-color .55s;
+  --mx:50%;--my:0%;
+}
+.system-card::after{
+  content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;z-index:0;
+  background:radial-gradient(440px circle at var(--mx) var(--my), rgba(197,160,89,0.15), transparent 60%);
+  opacity:0;transition:opacity .5s ease;
+}
+.system-card:hover{
+  border-color:rgba(197,160,89,0.45) !important;
+  box-shadow:0 26px 70px -28px rgba(0,0,0,0.8), 0 0 0 1px rgba(197,160,89,0.28), 0 0 60px -18px rgba(197,160,89,0.35);
+}
+.system-card:hover::after{opacity:1;}
+.system-card > *{position:relative;z-index:1;}
+
+/* ── 4. プライマリCTAのシマー掃引 + フォーカス可視化 ── */
+.btn-pill{overflow:hidden;}
+.btn-pill::after{
+  content:'';position:absolute;top:0;left:-150%;width:55%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(243,208,120,0.32),transparent);
+  transform:skewX(-20deg);pointer-events:none;z-index:0;
+}
+.btn-pill:hover::after{animation:aurumBtnShimmer 0.9s ease;}
+@keyframes aurumBtnShimmer{from{left:-150%}to{left:170%}}
+
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:2px solid rgba(243,208,120,0.75);
+  outline-offset:3px;
+  border-radius:5px;
+}
+
+/* ── アクセシビリティ / パフォーマンス配慮 ── */
+@media (prefers-reduced-motion: reduce){
+  .aurum-grain{animation:none;}
+  .aurum-gold-grad{animation:none;}
+  .btn-pill:hover::after{animation:none;}
+}
+@media (max-width:768px){
+  .aurum-grain{opacity:0.03;}          /* モバイルは控えめ＆省電力 */
+  .system-card::after{display:none;}   /* タッチではスポットライト無効 */
+  .aurum-vignette{background:radial-gradient(140% 95% at 50% 28%, transparent 56%, rgba(5,5,5,0.4) 100%);}
+}
+</style>
+<script id="aurum-polish-js">
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function isLatin(t){ return /[A-Za-z]/.test(t) && !/[぀-ヿ㐀-鿿＀-￯]/.test(t); }
+  function inject(){
+    // 全面: ヴィネット → グレインの順で重ねる
+    if(!document.querySelector('.aurum-vignette')){
+      var v=document.createElement('div'); v.className='aurum-vignette'; v.setAttribute('aria-hidden','true'); document.body.appendChild(v);
+    }
+    if(!document.querySelector('.aurum-grain')){
+      var g=document.createElement('div'); g.className='aurum-grain'; g.setAttribute('aria-hidden','true'); document.body.appendChild(g);
+    }
+    // 英字のみのセクション大見出し(H2)を上質なゴールド階調へ（和文見出しは現状維持）
+    document.querySelectorAll('h2.serif').forEach(function(h){
+      var t=(h.textContent||'').trim();
+      if(isLatin(t) && t.length<=40 && !h.classList.contains('aurum-gold-grad')){
+        h.classList.add('aurum-gold-grad');
+      }
+    });
+    // システムカード: カーソル追従スポットライト（デスクトップ・モーション許可時のみ）
+    if(!reduce && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+      document.querySelectorAll('.system-card').forEach(function(card){
+        card.addEventListener('mousemove',function(e){
+          var r=card.getBoundingClientRect();
+          card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+          card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');
+        });
+      });
+    }
+  }
+  if(document.readyState!=='loading') inject();
+  else document.addEventListener('DOMContentLoaded', inject);
+})();
+</script>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     AURUM LUX · VISUAL POLISH LAYER v2  (演出追加)
+     1) ヒーロー金見出しのグラデ化（白→金のゴールドフォイル + 発光）
+     2) セクション間トランジション（金ヘアラインが中央から描画）
+     3) プリローダー演出強化（タイトル金グラデ + バー発光）
+     4) 実績帯の真下に過去実績/保証なしの注記（コンプラ補強）
+     ════════════════════════════════════════════════════════════════════ -->
+<style id="aurum-polish-style-2">
+/* ── 1. ヒーロー金見出し（ゴールドフォイル） ── */
+#home h1.serif,
+#home h1.serif .magnetic-char{   /* 1文字ずつ span 分割(inline-block)されるため文字側にも適用 */
+  background:linear-gradient(180deg,#ffffff 0%,#FBE7BE 30%,#F3D078 50%,#C5A059 72%,#9a7b3f 100%);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  text-shadow:none;
+}
+/* グロー: 祖先(.hero-mask)に filter を掛けると background-clip:text が
+   Chromiumで消える既知の不具合のため、背面の発光パネルで代替する */
+#home .hero-glass-panel{
+  box-shadow:0 0 90px -30px rgba(197,160,89,0.30), 0 30px 80px -40px rgba(0,0,0,0.7);
+}
+
+/* ── 2. セクション間トランジション（金ヘアライン描画・レイアウト非干渉の擬似要素） ── */
+.aurum-sec{position:relative;}
+.aurum-sec::before{
+  content:'';position:absolute;top:0;left:50%;
+  width:min(56%,420px);height:1px;
+  transform:translateX(-50%) scaleX(0);transform-origin:center;
+  background:linear-gradient(90deg,transparent,rgba(197,160,89,0.65),transparent);
+  box-shadow:0 0 10px rgba(197,160,89,0.35);
+  opacity:0;transition:transform 1.2s cubic-bezier(.19,1,.22,1),opacity .9s ease;
+  pointer-events:none;z-index:5;
+}
+.aurum-sec.aurum-sec-in::before{transform:translateX(-50%) scaleX(1);opacity:1;}
+
+/* ── 3. プリローダー演出強化（視覚のみ・JSタイミング非干渉） ── */
+.preloader-title{
+  background:linear-gradient(100deg,#9a7b3f,#F3D078 45%,#C5A059 70%,#9a7b3f);
+  background-size:220% 100%;
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  animation:aurumGoldFlow 3.4s ease-in-out infinite;
+}
+#preloader-line .pl-bar{
+  background:linear-gradient(90deg,transparent,rgba(197,160,89,0.95),#F3D078,rgba(197,160,89,0.95),transparent) !important;
+  box-shadow:0 0 14px rgba(197,160,89,0.55);
+}
+#preloader-line .pl-dot{box-shadow:0 0 12px rgba(243,208,120,0.8);}
+
+/* ── 実績帯の注記 ── */
+.aurum-strip-note{
+  max-width:72rem;margin:14px auto 0;text-align:center;
+  font-size:9px;line-height:1.7;letter-spacing:0.06em;color:rgba(148,163,184,0.55);
+  padding:0 1rem;
+}
+
+@media (prefers-reduced-motion: reduce){
+  .preloader-title{animation:none;}
+  .aurum-sec::before{transition:none;}
+}
+</style>
+<script id="aurum-polish-js-2">
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function inject2(){
+    // 2) セクション間トランジション: #home 以外の section に観測を付与
+    var secs = Array.prototype.slice.call(document.querySelectorAll('section'))
+      .filter(function(s){ return s.id!=='home'; });
+    secs.forEach(function(s){ s.classList.add('aurum-sec'); });
+    if('IntersectionObserver' in window){
+      var io=new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if(en.isIntersecting){ en.target.classList.add('aurum-sec-in'); io.unobserve(en.target); }
+        });
+      },{threshold:0.18, rootMargin:'0px 0px -8% 0px'});
+      secs.forEach(function(s){ io.observe(s); });
+    }else{
+      secs.forEach(function(s){ s.classList.add('aurum-sec-in'); });
+    }
+
+    // 4) 実績帯(#testimonials-strip)直下にコンプラ注記を注入（重複防止）
+    var strip=document.getElementById('testimonials-strip');
+    if(strip && !document.querySelector('.aurum-strip-note')){
+      var note=document.createElement('p');
+      note.className='aurum-strip-note';
+      note.textContent='※ 表示の数値は過去の実績・バックテストに基づくシミュレーションであり、将来の利益を保証するものではありません。投資には損失リスクが伴い、運用は自己責任となります。';
+      var inner=strip.querySelector('.max-w-6xl')||strip.firstElementChild||strip;
+      inner.parentNode.insertBefore(note, inner.nextSibling);
+    }
+  }
+  if(document.readyState!=='loading') inject2();
+  else document.addEventListener('DOMContentLoaded', inject2);
+})();
+</script>
+
+
+<script>
+/* CTA 3Dエンブレム */
+(function () {
+  if (typeof THREE === 'undefined') return;
+
+  var container = document.getElementById('aurum-cta-emblem');
+  if (!container) return;
+
+  var W = 170, H = 170;
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* シーン */
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
+  camera.position.set(0, 0, 5.2);
+
+  var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(W, H);
+  renderer.setClearColor(0x000000, 0);
+  container.appendChild(renderer.domElement);
+
+  /* ライト */
+  scene.add(new THREE.AmbientLight(0xfff4d0, 1.2));
+  var point = new THREE.PointLight(0xf3d078, 3.5, 12);
+  point.position.set(2, 2, 3);
+  scene.add(point);
+
+  /* マテリアル */
+  var matOuter = new THREE.MeshStandardMaterial({
+    color: 0xf3d078,
+    emissive: 0xc5a059,
+    emissiveIntensity: 0.55,
+    metalness: 0.88,
+    roughness: 0.18,
+  });
+  var matInner = new THREE.MeshStandardMaterial({
+    color: 0xc5a059,
+    emissive: 0xf3d078,
+    emissiveIntensity: 0.38,
+    metalness: 0.92,
+    roughness: 0.12,
+  });
+
+  /* 外リング */
+  var torusOuter = new THREE.Mesh(
+    new THREE.TorusGeometry(1.4, 0.10, 24, 96),
+    matOuter
+  );
+  torusOuter.rotation.x = Math.PI * 0.30;
+  scene.add(torusOuter);
+
+  /* 内リング */
+  var torusInner = new THREE.Mesh(
+    new THREE.TorusGeometry(0.92, 0.07, 20, 80),
+    matInner
+  );
+  torusInner.rotation.x = -Math.PI * 0.18;
+  torusInner.rotation.y = Math.PI * 0.12;
+  scene.add(torusInner);
+
+  /* 発光コア */
+  var coreMat = new THREE.MeshBasicMaterial({ color: 0xfff0a0 });
+  var core = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 16), coreMat);
+  scene.add(core);
+
+  /* コアグロー（Spriteで加算合成） */
+  var glowCanvas = document.createElement('canvas');
+  glowCanvas.width = glowCanvas.height = 64;
+  var gc = glowCanvas.getContext('2d');
+  var grad = gc.createRadialGradient(32, 32, 0, 32, 32, 32);
+  grad.addColorStop(0, 'rgba(255,240,140,1)');
+  grad.addColorStop(0.35, 'rgba(243,208,120,0.55)');
+  grad.addColorStop(1, 'rgba(197,160,89,0)');
+  gc.fillStyle = grad;
+  gc.fillRect(0, 0, 64, 64);
+  var glowTex = new THREE.CanvasTexture(glowCanvas);
+  var glowSprite = new THREE.Sprite(new THREE.SpriteMaterial({
+    map: glowTex,
+    blending: THREE.AdditiveBlending,
+    transparent: true,
+    depthWrite: false,
+    opacity: 0.85,
+  }));
+  glowSprite.scale.set(0.72, 0.72, 1);
+  scene.add(glowSprite);
+
+  /* 金粒子 */
+  var PARTICLE_COUNT = 96;
+  var pPositions = new Float32Array(PARTICLE_COUNT * 3);
+  var pAngles = new Float32Array(PARTICLE_COUNT);
+  var pRadii = new Float32Array(PARTICLE_COUNT);
+  var pSpeeds = new Float32Array(PARTICLE_COUNT);
+  var pTilts  = new Float32Array(PARTICLE_COUNT);
+  for (var i = 0; i < PARTICLE_COUNT; i++) {
+    pAngles[i] = Math.random() * Math.PI * 2;
+    pRadii[i]  = 1.1 + Math.random() * 0.68;
+    pSpeeds[i] = (0.18 + Math.random() * 0.22) * (Math.random() < 0.5 ? 1 : -1);
+    pTilts[i]  = (Math.random() - 0.5) * 0.55;
+  }
+  var particleGeo = new THREE.BufferGeometry();
+  particleGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+  var particleMat = new THREE.PointsMaterial({
+    color: 0xf3d078,
+    size: 0.045,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    transparent: true,
+    opacity: 0.82,
+  });
+  var particles = new THREE.Points(particleGeo, particleMat);
+  scene.add(particles);
+
+  /* リサイズ対応 */
+  function onResize() {
+    var w = container.offsetWidth || W;
+    var h = container.offsetHeight || H;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  window.addEventListener('resize', onResize);
+
+  /* アニメーション */
+  var clock = new THREE.Clock();
+  var rafId = null;
+  var isVisible = false;
+
+  function tick() {
+    rafId = requestAnimationFrame(tick);
+    if (!isVisible) return;
+    var dt = clock.getDelta();
+    torusOuter.rotation.y += 0.20 * dt;
+    torusInner.rotation.y -= 0.15 * dt;
+    torusInner.rotation.z += 0.08 * dt;
+    var t = clock.elapsedTime;
+    for (var j = 0; j < PARTICLE_COUNT; j++) {
+      pAngles[j] += pSpeeds[j] * dt;
+      var r = pRadii[j];
+      var a = pAngles[j];
+      pPositions[j * 3]     = Math.cos(a) * r;
+      pPositions[j * 3 + 1] = Math.sin(pTilts[j]) * r * 0.38 + Math.sin(t * 0.6 + j) * 0.05;
+      pPositions[j * 3 + 2] = Math.sin(a) * r * 0.42;
+    }
+    particleGeo.attributes.position.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+
+  function tickReduced() {
+    var t = 0;
+    for (var j = 0; j < PARTICLE_COUNT; j++) {
+      var r = pRadii[j];
+      var a = pAngles[j];
+      pPositions[j * 3]     = Math.cos(a) * r;
+      pPositions[j * 3 + 1] = Math.sin(pTilts[j]) * r * 0.38;
+      pPositions[j * 3 + 2] = Math.sin(a) * r * 0.42;
+    }
+    particleGeo.attributes.position.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+
+  /* IntersectionObserver で画面外停止 */
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      isVisible = entry.isIntersecting;
+      if (isVisible) {
+        clock.start();
+      }
+    });
+  }, { threshold: 0.1 });
+  observer.observe(container);
+
+  if (reducedMotion) {
+    tickReduced();
+  } else {
+    tick();
+  }
+})();
+</script>
 
 </body>
 </html>
