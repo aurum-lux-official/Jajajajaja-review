@@ -6030,7 +6030,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
           <div class="flex items-center gap-3 shrink-0">
             <div class="text-right">
               <div class="text-[8px] text-gray-500 tracking-widest uppercase">入会費</div>
-              <div class="text-xl md:text-2xl serif text-[#F3D078] tabular-nums">¥100,000</div>
+              <div class="text-xl md:text-2xl serif text-[#F3D078] tabular-nums">¥200,000</div>
             </div>
             <span class="aurum-mentor-banner-btn">詳細を見る →</span>
           </div>
@@ -6132,7 +6132,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
           <div class="flex items-center gap-3 shrink-0">
             <div class="text-right">
               <div class="text-[8px] text-gray-500 tracking-widest uppercase">入会費</div>
-              <div class="text-xl md:text-2xl serif text-[#F3D078] tabular-nums">¥100,000</div>
+              <div class="text-xl md:text-2xl serif text-[#F3D078] tabular-nums">¥200,000</div>
             </div>
             <span class="aurum-mentor-banner-btn">詳細を見る →</span>
           </div>
@@ -6252,6 +6252,9 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <path class="atmos-curve" d="M-100,1980 Q400,1860 740,2060 T1640,1980" stroke="url(#atmosCurveGoldBlue)" stroke-width="0.9" fill="none"/>
     </svg>
 
+  <!-- 黄金流体ウェーブ・ディバイダー -->
+  <div id="aurum-gold-wave" aria-hidden="true" class="relative z-10 w-full overflow-hidden" style="height:280px; margin:-40px 0;"></div>
+
   <!-- ════════════════════════════════════════════════════════
        メンターシップ (FX裁量分析 個別指導) — 取引口座開設の直後
        ════════════════════════════════════════════════════════ -->
@@ -6329,7 +6332,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
       <div class="flex flex-col md:flex-row items-stretch gap-4 mb-8">
         <div class="flex-1 glass p-6 rounded-sm border-t-2 border-t-[#F3D078] text-center">
           <div class="text-[9px] text-gray-500 tracking-widest uppercase mb-2">参加費 (一括)</div>
-          <div class="text-3xl md:text-4xl serif text-[#F3D078] mb-1 tabular-nums">¥100,000</div>
+          <div class="text-3xl md:text-4xl serif text-[#F3D078] mb-1 tabular-nums">¥200,000</div>
           <div class="text-[10px] text-gray-500">追加費用・月額はありません</div>
         </div>
         <div class="flex-1 glass p-6 rounded-sm border-t-2 border-t-[#C5A059] text-center">
@@ -6391,7 +6394,7 @@ input.aurum-range::-moz-range-thumb { width: 16px; height: 16px; border-radius: 
             参加枠を確保する
           </button>
           <button onclick="aurumOpenMentorForm()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 border border-[#F3D078]/40 text-[#F3D078] text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm hover:bg-[#F3D078]/10">
-            相談してから参加する
+            メンターシップのお申し込み
           </button>
         </div>
         <p class="text-[9px] text-gray-500 mt-4">※ お申し込み後、担当よりDiscordでのご案内を差し上げます。利益や成果を保証するものではありません。</p>
@@ -11834,8 +11837,9 @@ setTimeout(initAurumAtmosphere, 1500);
       const numReplies = 1 + Math.floor(r() * 2); // 1〜2件
       const replies = [];
       for (let n = 0; n < numReplies; n++) {
-        const pickIdx = Math.floor(r() * DUMMY_REPLY_POOL.length);
-        const reply = DUMMY_REPLY_POOL[pickIdx];
+        const replyPool = window.aurumPickReplyPool ? window.aurumPickReplyPool(DUMMY_REPLY_POOL) : DUMMY_REPLY_POOL;
+        const pickIdx = Math.floor(r() * replyPool.length);
+        const reply = replyPool[pickIdx];
         const minutesAgo = 5 + Math.floor(r() * 240); // 5〜245分前
         replies.push({
           name: reply.name,
@@ -11892,7 +11896,7 @@ setTimeout(initAurumAtmosphere, 1500);
     const list = document.getElementById("aurum-discord-messages");
     if (!list) return;
     const myPosts = loadMyPosts();
-    const dummies = shuffleByDay(DUMMY_COMMENTS);
+    const dummies = window.aurumPickResults ? window.aurumPickResults(DUMMY_COMMENTS) : shuffleByDay(DUMMY_COMMENTS);
     const myPart = myPosts.slice(0, 10);
     const remaining = Math.max(0, 30 - myPart.length);
     const all = [...myPart, ...dummies.slice(0, remaining)];
@@ -14377,11 +14381,7 @@ document.addEventListener("keydown", function(e){
     };
     setTimeout(finish, 6000);
     try {
-      var postParams = new URLSearchParams();
-      var els = form.elements;
-      for (var pi = 0; pi < els.length; pi++) {
-        if (els[pi].name) postParams.append(els[pi].name, els[pi].value);
-      }
+      var postParams = window.aurumToGasParams ? window.aurumToGasParams(form) : new URLSearchParams(Array.prototype.reduce.call(form.elements, function(a, el){ if (el.name) a.push([el.name, el.value]); return a; }, []));
       fetch(form.action, { method: "POST", body: postParams, mode: "no-cors" })
         .then(finish).catch(finish);
     } catch(fe) { setTimeout(finish, 500); }
@@ -14513,11 +14513,7 @@ document.addEventListener("keydown", function(e){
     };
     setTimeout(finish, 6000);
     try {
-      var postParams = new URLSearchParams();
-      var els = form.elements;
-      for (var pi = 0; pi < els.length; pi++) {
-        if (els[pi].name) postParams.append(els[pi].name, els[pi].value);
-      }
+      var postParams = window.aurumToGasParams ? window.aurumToGasParams(form) : new URLSearchParams(Array.prototype.reduce.call(form.elements, function(a, el){ if (el.name) a.push([el.name, el.value]); return a; }, []));
       fetch(form.action, { method: "POST", body: postParams, mode: "no-cors" })
         .then(finish).catch(finish);
     } catch(fe) { setTimeout(finish, 500); }
@@ -15262,21 +15258,35 @@ window.aurumCloseYouDetail = function() {
     const list = document.getElementById("mentor-ranking-list");
     if (!list) return;
     const weekSeed = getMondaySeedLocal();
+    // 会員は固定し、週ごとのROI増分を積み上げて「進捗」を表現する
+    const START_WEEK = 2918;
+    const weeks = Math.max(1, weekSeed - START_WEEK);
+    // 今週分の進捗率 (月曜0:00 → 金曜21:00 で100%に到達)
+    const nowD = new Date();
+    const dW = nowD.getDay();
+    const dDiff = (dW === 0) ? 6 : dW - 1;
+    const mondayD = new Date(nowD);
+    mondayD.setDate(nowD.getDate() - dDiff);
+    mondayD.setHours(0,0,0,0);
+    const weekFrac = Math.min(1, Math.max(0.04, (nowD - mondayD) / (4.875*24*60*60*1000)));
     const members = [];
     for (let i = 1; i <= 50; i++) {
-      const s = weekSeed * 1000 + i * 31;
-      // 元本: 会員の3割は少額(10〜30万)、残りは100〜300万
+      const base = i * 7919;
+      // 元本: 会員の3割は少額(10〜30万)、残りは100〜300万 (会員ごとに固定)
       let capital;
-      if (sr(s+1) < 0.3) capital = (100000 + sr(s+2) * 200000);
-      else               capital = (1000000 + sr(s+3) * 2000000);
+      if (sr(base+1) < 0.3) capital = (100000 + sr(base+2) * 200000);
+      else                  capital = (1000000 + sr(base+3) * 2000000);
       capital = Math.round(capital / 10000) * 10000;
-      // 利益: 元本の1.5〜8倍 (上位ほど高ROI)
-      const rankBoost = 1 + (50 - i) / 50 * 1.2;
-      const roiMult = (1.5 + sr(s+4) * 6.5) * rankBoost;
-      const profit = Math.round(capital * roiMult / 10000) * 10000;
-      const roi = (profit / capital) * 100;
+      // 週8〜38%のROI増分を週ごとに積み上げ。進行中の週は weekFrac 分だけ加算
+      let roiCum = 0;
+      for (let w = 0; w < weeks; w++) {
+        const inc = 8 + sr(base + (START_WEEK + w) * 17) * 30;
+        roiCum += inc * (w === weeks - 1 ? weekFrac : 1);
+      }
+      const profit = Math.round(capital * roiCum / 100 / 10000) * 10000;
+      const roi = capital > 0 ? (profit / capital) * 100 : 0;
       members.push({
-        id: "Member" + String(1000 + Math.floor(sr(s+5)*8999)),
+        id: "Member" + String(1000 + Math.floor(sr(base+5)*8999)),
         capital, profit, roi
       });
     }
@@ -15309,6 +15319,8 @@ window.aurumCloseYouDetail = function() {
     buildMentorRanking();
   }
   setTimeout(buildMentorRanking, 800);
+  // 閲覧中も進捗を反映 (10分ごとに再計算)
+  setInterval(buildMentorRanking, 10 * 60 * 1000);
 })();
 
 /* メンターシップ申込モーダル */
@@ -15373,15 +15385,11 @@ window.aurumReserveMentorshipSeat = function() {
         if (done) return; done = true;
         document.getElementById("aurum-mentor-form-step").style.display = "none";
         document.getElementById("aurum-mentor-done-step").style.display = "";
-        btn.disabled = false; btn.textContent = "この内容で相談する";
+        btn.disabled = false; btn.textContent = "この内容で申し込む";
       };
       setTimeout(finish, 6000);
       try {
-        var postParams = new URLSearchParams();
-        var els = form.elements;
-        for (var pi = 0; pi < els.length; pi++) {
-          if (els[pi].name) postParams.append(els[pi].name, els[pi].value);
-        }
+        var postParams = window.aurumToGasParams ? window.aurumToGasParams(form) : new URLSearchParams(Array.prototype.reduce.call(form.elements, function(a, el){ if (el.name) a.push([el.name, el.value]); return a; }, []));
         fetch(form.action, { method: "POST", body: postParams, mode: "no-cors" })
           .then(finish).catch(finish);
       } catch(fe) { setTimeout(finish, 500); }
@@ -15400,7 +15408,7 @@ window.aurumReserveMentorshipSeat = function() {
       <p class="text-[9px] text-[#F3D078] tracking-[0.4em] uppercase text-center mb-2 serif">Mentorship Program</p>
       <h3 class="text-lg md:text-xl serif text-white text-center tracking-widest mb-2">メンターシップ お申し込み</h3>
       <p class="text-[11px] text-gray-400 text-center leading-loose mb-6">
-        参加費 ¥100,000 (一括) · 個別指導 · FX裁量分析<br>
+        参加費 ¥200,000 (一括) · 個別指導 · FX裁量分析<br>
         お申し込み後、担当よりDiscordでのご案内を差し上げます。
       </p>
       <form id="aurum-mentor-form" action="https://script.google.com/macros/s/AKfycbw27QVd8RKGSd74GBMLP0A_JvmpNT5lqETygFow9r2Y_e-AEdsNs33AuETRYgUNjHE/exec" method="POST" target="aurum-form-target" autocomplete="off" class="space-y-3">
@@ -15427,7 +15435,7 @@ window.aurumReserveMentorshipSeat = function() {
           </select>
         </div>
         <div id="aurum-mentor-error" class="text-red-400 text-[10px] hidden"></div>
-        <button type="submit" id="aurum-mentor-submit" class="w-full text-black py-3 text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm mt-3" style="background: linear-gradient(135deg, #F3D078, #C5A059);">この内容で相談する</button>
+        <button type="submit" id="aurum-mentor-submit" class="w-full text-black py-3 text-[11px] tracking-[0.25em] font-bold uppercase transition rounded-sm mt-3" style="background: linear-gradient(135deg, #F3D078, #C5A059);">この内容で申し込む</button>
       </form>
     </div>
 
@@ -15435,10 +15443,10 @@ window.aurumReserveMentorshipSeat = function() {
       <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background: linear-gradient(135deg, rgba(243,208,120,0.22), rgba(243,208,120,0.05)); border:1px solid rgba(243,208,120,0.5); box-shadow: 0 0 28px rgba(243,208,120,0.3);">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#F3D078" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
       </div>
-      <h4 class="text-base md:text-lg serif text-white tracking-widest mb-3">お申し込みを承りました</h4>
+      <h4 class="text-base md:text-lg serif text-white tracking-widest mb-3">申請を受け付けました</h4>
       <p class="text-[11px] text-gray-400 leading-loose mb-5">
-        メンターシップへのお申し込みありがとうございます。<br>
-        担当より、ご登録の連絡先へ入会手順をご案内いたします。
+        審査を行いますので、審査完了後にInstagramにて対応いたします。<br>
+        申請後、Instagram (@huga_rux) のDMにて「申請しました」とお伝えください。
       </p>
       <button id="aurum-mentor-pay-btn" onclick="aurumGoMentorshipCheckout()" class="w-full text-black py-3 text-[10px] tracking-[0.25em] font-bold uppercase transition rounded-sm mb-3" style="background: linear-gradient(135deg, #F3D078, #C5A059);">参加費の決済へ進む</button>
       <button onclick="aurumCloseMentorForm()" class="w-full border border-[#F3D078]/30 text-[#F3D078] py-3 text-[10px] tracking-[0.25em] font-bold uppercase transition rounded-sm hover:bg-[#F3D078]/10">閉じる</button>
@@ -15683,6 +15691,161 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 </script>
 
 
+<script id="aurum-content-stock">
+/* ════════════════════════════════════════════════════════════════
+   コンテンツ・ストック (リザルト本文 / 返信)
+   - 表示ロジックとは分離した在庫定義
+   - 一度表示した項目は localStorage に記録し再表示しない
+   - 在庫が尽きた場合は自動合成で新規作成
+   - AURUM_REMOTE_CONFIG_URL に JSON を置けば外部から追加供給できる
+   ════════════════════════════════════════════════════════════════ */
+window.AURUM_RESULT_STOCK = [{"name": "ユーザー1247", "profit": 87000, "system": "Order Flow", "pair": "XAUUSD", "message": "週前半のBUYエントリーが綺麗にヒットしました。東京タイムに仕込んでNYタイムで刈り取る流れ、テンプレ通りでした。"}, {"name": "ユーザー3582", "profit": 215000, "system": "Multi", "pair": "MULTI", "message": "今週は複数ペアで分散稼働。XAUUSD中心に利が乗りました。"}, {"name": "ユーザー5913", "profit": -42000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "CPI発表前後でスプレッドが広がってSL踏みました。経済指標時は稼働OFFにする設定を見直します。次週から調整予定。"}, {"name": "ユーザー2784", "profit": 156000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン幅を広めに設定したのが功を奏してDDを抑えられました。"}, {"name": "ユーザー7631", "profit": 34000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDで初週稼働。小さくスタートして感触確認できた週でした。"}, {"name": "ユーザー4209", "profit": 720000, "system": "Multi", "pair": "MULTI", "message": "今週は相場がトレンド展開になりMultiがよく機能しました。資金分散の効果を実感。ただ過信せずロット管理は継続します。月利換算でも久しぶりにいい数字が出ています。"}, {"name": "ユーザー8147", "profit": 61000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムに動きが出てエントリーが重なりました。ロット0.02で安定稼働中。"}, {"name": "ユーザー3056", "profit": -18000, "system": "SMC Grid", "pair": "XAUUSD", "message": "レンジ相場でグリッドが機能しきれず小幅マイナス。BB期間6の設定を少し見直してみます。原因は把握できているのでこれは許容範囲内。"}, {"name": "ユーザー6472", "profit": 112000, "system": "Order Flow", "pair": "XAUUSD", "message": "金曜全決済でしっかり利確できました。週末持ち越しリスクゼロです。"}, {"name": "ユーザー9318", "profit": 290000, "system": "Multi", "pair": "MULTI", "message": "VPS安定稼働3週目。スリッページも少なくMT5の動作も問題なし。今週は複利の恩恵が出始めています。"}, {"name": "ユーザー1893", "profit": 45000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "環境認識通りのトレンド継続で順調でした。"}, {"name": "ユーザー5027", "profit": -67000, "system": "Order Flow", "pair": "XAUUSD", "message": "FOMC前後の乱高下に巻き込まれてしまいました。指標前に稼働OFFする設定を今後は徹底します。損失の原因が明確なので次週は対策済みで臨みます。"}, {"name": "ユーザー7845", "profit": 189000, "system": "SMC Grid", "pair": "XAUUSD", "message": "両建て設定でDDを抑えながらじわじわ積み上げました。"}, {"name": "ユーザー2361", "profit": 58000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDのボラティリティが高い週で、Order Flowがしっかり追随してくれました。推奨稼働時間内で堅実に。"}, {"name": "ユーザー4698", "profit": 380000, "system": "Multi", "pair": "MULTI", "message": "Multiシステムで今週最高リザルト。エクスパンション局面で複数ペアが同時に動きました。資金管理は変えずロットも据え置きで継続予定です。"}, {"name": "ユーザー8523", "profit": 23000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "小幅プラスで終了。レンジ気味だったので仕方なし。"}, {"name": "ユーザー1674", "profit": -31000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッド幅の設定ミスで想定外のポジションが積まれました。設定を見直して来週から再稼働します。自分のオペミスなので反省中。"}, {"name": "ユーザー6039", "profit": 147000, "system": "Order Flow", "pair": "XAUUSD", "message": "NYタイムの流れに乗った形でSELLが綺麗に刈り取れました。週ベースで見ると安定しています。"}, {"name": "ユーザー3847", "profit": 1050000, "system": "Multi", "pair": "MULTI", "message": "過去最高週。相場環境とシステムの相性が抜群でした。ただし毎週こうはいかないと理解しています。ロット感は変えず来週も同じ設定で継続。驕らず地道にやります。"}, {"name": "ユーザー7192", "profit": 78000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "トレンド相場でスキャルが機能。BB期間20でしっかりエントリーが刷られました。"}, {"name": "ユーザー5481", "profit": 33000, "system": "SMC Grid", "pair": "BTCUSD", "message": "BTCUSDでSMC Grid初稼働。様子見でロット小さめにしていましたが無事プラス。来週から少し増やします。"}, {"name": "ユーザー2908", "profit": 204000, "system": "Order Flow", "pair": "XAUUSD", "message": "XAUUSDが方向感のある一週間でOrder Flowが得意な相場でした。金曜全決済で綺麗に締められました。"}, {"name": "ユーザー9763", "profit": -55000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "急激な逆行でSLが続いた週。相場が荒れているときは稼働OFFの判断も必要だと実感しました。チューニングを含め来週仕切り直しです。"}, {"name": "ユーザー4356", "profit": 92000, "system": "Multi", "pair": "MULTI", "message": "複数システムの分散で週トータルは安定してプラス。どれか一つが引っ張る形でした。"}, {"name": "ユーザー6817", "profit": 171000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが上手く機能して含み損を引っ張らずに週内で解消できました。DDも許容範囲内で良い週でした。"}, {"name": "ユーザー1532", "profit": 48000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京タイム中心の稼働で小さく着実に積み上げました。"}, {"name": "ユーザー8076", "profit": -83000, "system": "SMC Grid", "pair": "XAUUSD", "message": "想定外の急騰でグリッドポジションが大きく膨らみました。ロット管理の重要性を改めて実感。設定を見直して来週は慎重に再開します。失敗から学ぶのが大事だと思っています。"}, {"name": "ユーザー3294", "profit": 267000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドン〜NYの流れが綺麗なトレンドで、スキャル系が気持ちよく刈り取れました。MT5のログ確認しても問題なし。"}, {"name": "ユーザー7509", "profit": 55000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDのボラが落ち着いていてOrder Flowが綺麗に機能した週でした。"}, {"name": "ユーザー5143", "profit": 820000, "system": "Multi", "pair": "MULTI", "message": "乗り換え組ですが前の環境と比べて安定感が全然違います。今週は相場のエクスパンション局面でMultiが大活躍。資金を分散して複数ペアで稼働したのが良かった。複利でどこまで伸びるか楽しみです。"}, {"name": "ユーザー2637", "profit": 39000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週前半はレンジで低調、後半トレンドが出てリカバリーできました。"}, {"name": "ユーザー9481", "profit": 130000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間20でエントリーポイントを絞って今週は精度が高かったです。グリッドの積み方も丁寧に設定し直した効果が出ました。"}, {"name": "ユーザー4072", "profit": -24000, "system": "Order Flow", "pair": "XAUUSD", "message": "CPI後に読みと逆方向に動いてマイナス。指標対応は今後の課題です。"}, {"name": "ユーザー6358", "profit": 96000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロット0.03で稼働して週利換算でまずまずの結果。推奨稼働時間を守って運用しています。"}, {"name": "ユーザー1926", "profit": 335000, "system": "Multi", "pair": "MULTI", "message": "今週はXAUUSDもBTCUSDも方向が出てMultiが両方で利を取ってくれました。VPS稼働で24時間ノーストレスです。"}, {"name": "ユーザー8742", "profit": 71000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッド幅を広めに設定してDDを抑えた運用。安定感があります。"}, {"name": "ユーザー3619", "profit": -47000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半に急な逆行があってSLが複数回踏まれました。ボラが高い局面ではロットを落とす判断が必要だったと反省。来週は設定を調整します。"}, {"name": "ユーザー5287", "profit": 184000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order FlowのBUY限定設定で上昇トレンドを丸ごと取れました。読み通りです。"}, {"name": "ユーザー7854", "profit": 42000, "system": "SMC Grid", "pair": "BTCUSD", "message": "BTC相場でSMCがナンピンしながら回収。ドキドキしましたがちゃんと機能してくれました。"}, {"name": "ユーザー2193", "profit": 258000, "system": "Multi", "pair": "MULTI", "message": "乗り換えて2ヶ月目。月利ベースで見ると前のツールより安定しています。今週も複数ペアでしっかり積み上げられました。このペースを維持したいです。"}, {"name": "ユーザー9037", "profit": 110000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンオープン直後のトレンド形成に乗れました。環境認識がしっかりできていた週です。"}, {"name": "ユーザー4715", "profit": -36000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが思ったより広がってしまった週。DDが想定を超えたので一旦ポジション整理して仕切り直し中。リスク管理を改めて見直します。"}, {"name": "ユーザー6283", "profit": 88000, "system": "Order Flow", "pair": "XAUUSD", "message": "SELL限定設定に切り替えた週。方向が合って気持ちよく取れました。"}, {"name": "ユーザー1458", "profit": 163000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6でエントリー頻度を上げた週。スキャルが積み重なって週ベースで好リザルト。"}, {"name": "ユーザー8391", "profit": 57000, "system": "Multi", "pair": "MULTI", "message": "今週はMultiの安定感を実感できた週。どのペアも小さくプラスを積んでくれました。"}, {"name": "ユーザー3924", "profit": -61000, "system": "Order Flow", "pair": "XAUUSD", "message": "週初めのポジションが裏目に出てマイナス先行。後半で取り返せず。エントリーロジックの再確認と来週の設定調整をしっかりやります。諦めず継続が大事だと思っています。"}, {"name": "ユーザー7146", "profit": 229000, "system": "SMC Grid", "pair": "XAUUSD", "message": "今週はXAUUSDがしっかりトレンドを形成してSMCが美しく稼働してくれました。ナンピンも最小限で綺麗なリザルトです。"}, {"name": "ユーザー5862", "profit": 74000, "system": "Trend Scalping", "pair": "BTCUSD", "message": "BTCUSDでトレンドスキャル稼働。ボラが高めでよく動いた週でした。"}, {"name": "ユーザー2549", "profit": 145000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京〜ロンドンの流れを捉えてBUYエントリーが決まりました。金曜全決済で週を締めました。"}, {"name": "ユーザー9673", "profit": 620000, "system": "Multi", "pair": "MULTI", "message": "今週はMultiシステムが全ペアでプラス。相場環境が良く複利効果も出てきています。この調子を過信せず来週も同じ方針で継続します。安定運用が一番重要だと改めて感じています。"}, {"name": "ユーザー6104", "profit": 198000, "system": "SMC Grid", "pair": "XAUUSD", "message": "SMCグリッドが今週は綺麗に機能しました。ナンピン幅の調整が効いています。"}, {"name": "ユーザー4837", "profit": -29000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週前半のレンジ相場でスキャルが空振りしてマイナス先行。後半取り返せず終了。BB期間20の設定を来週試してみます。原因は明確なので落ち着いて調整します。"}, {"name": "ユーザー2016", "profit": 87000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order Flowでこの週はSELL方向が当たりました。環境認識がはまった感じです。"}, {"name": "ユーザー7583", "profit": 445000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も複数ペアで積み上げ。特にXAUUSDの動きが大きく恩恵を受けました。複利での資金成長を実感しています。"}, {"name": "ユーザー9241", "profit": 52000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "東京タイムに仕込んでNYタイムで刈り取る流れ、週中心に小幅プラスです。"}, {"name": "ユーザー3768", "profit": 133000, "system": "SMC Grid", "pair": "XAUUSD", "message": "両建て設定でDDを抑えながら着実に積み上げました。週の後半に相場が動いて一気に回収できました。"}, {"name": "ユーザー6495", "profit": -72000, "system": "Order Flow", "pair": "XAUUSD", "message": "FOMC後の急変動でエントリーが裏目。指標前後は稼働を落とすべきでした。今後は経済指標カレンダーを毎回確認してから設定します。失敗が一番の教材です。"}, {"name": "ユーザー1852", "profit": 310000, "system": "Multi", "pair": "MULTI", "message": "乗り換えて最初の月が終わりました。総合でしっかりプラス。安心してVPS稼働を続けられています。"}, {"name": "ユーザー8327", "profit": 69000, "system": "Trend Scalping", "pair": "BTCUSD", "message": "BTCのトレンドが強い週でスキャルが連続エントリー。ロット0.02で安定稼働できました。"}, {"name": "ユーザー5064", "profit": 177000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間6でエントリー頻度を高めにして週通算でいいリザルト。グリッドのナンピン処理もスムーズでした。"}, {"name": "ユーザー2739", "profit": 41000, "system": "Order Flow", "pair": "XAUUSD", "message": "小幅プラスで着地。テンプレ通りの稼働で週を終えました。"}, {"name": "ユーザー9506", "profit": -44000, "system": "SMC Grid", "pair": "XAUUSD", "message": "相場が急激に反転してグリッドが大きく膨らみました。ロットを半分に落として様子を見る判断をしました。来週は慎重に再スタートします。"}, {"name": "ユーザー4183", "profit": 256000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドン〜NYのダブルセッションでトレンドが継続し、スキャルが積み上がりました。MT5のログも全て正常。"}, {"name": "ユーザー7916", "profit": 1100000, "system": "Multi", "pair": "MULTI", "message": "今週は相場環境がMultiにとって理想的な展開でした。複数ペアで同時に方向が出てリザルトが積み上がりました。毎週こうはいかないと理解した上で、同じ設定で継続します。資金管理だけは崩さないようにしています。"}, {"name": "ユーザー3451", "profit": 95000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY限定でXAUUSDの上昇をしっかり取れました。金曜全決済で確定。"}, {"name": "ユーザー8074", "profit": -58000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半のCPI発表で想定外の動き。スキャルのSLが連続して踏まれました。経済指標時の稼働OFFが今後の課題。来週から設定変更します。"}, {"name": "ユーザー5738", "profit": 143000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン幅を広くとって今週は含み損なしで終了。すっきりした週でした。"}, {"name": "ユーザー1293", "profit": 76000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDでOrder Flow稼働。ボラが高くて動きが大きかったです。ロットは控えめで。"}, {"name": "ユーザー6847", "profit": 392000, "system": "Multi", "pair": "MULTI", "message": "Multiで複数ペアを稼働させて今週は特にBTCUSDのエントリーが良いタイミングでした。VPS安定稼働のおかげでエントリー機会を一つも逃さなかった感じです。"}, {"name": "ユーザー4362", "profit": 29000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "レンジ気味でスキャルの出番が少ない週でしたが小幅プラスで終われました。"}, {"name": "ユーザー9827", "profit": 218000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドのDD管理をしっかりやって今週は綺麗に積み上がりました。BB期間20での判断が功を奏しました。"}, {"name": "ユーザー2584", "profit": -35000, "system": "Order Flow", "pair": "XAUUSD", "message": "週初めのエントリー方向が裏目に。後半粘りましたが取り返せず。次週はBUY/SELL判断の根拠をより丁寧に確認します。"}, {"name": "ユーザー7163", "profit": 124000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "環境認識がしっかり機能した週。推奨稼働時間内で堅実に積み上げました。"}, {"name": "ユーザー5491", "profit": 860000, "system": "Multi", "pair": "MULTI", "message": "乗り換え組ですが今週で前のツールの損失を全部取り返した計算になります。Multiの安定性と収益性の違いを実感。同じ設定で継続して複利の効果を最大化していきます。"}, {"name": "ユーザー3086", "profit": 66000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッド幅を狭めに設定してエントリー頻度を上げた週。トータルでプラスに着地。"}, {"name": "ユーザー8749", "profit": -91000, "system": "SMC Grid", "pair": "XAUUSD", "message": "最大DDを記録した週。ナンピンが積み重なってしまいました。ロット半減と設定リセットで来週から再出発。ここが踏ん張りどころだと思っています。焦らず慎重に再スタートします。"}, {"name": "ユーザー1674", "profit": 107000, "system": "Order Flow", "pair": "XAUUSD", "message": "NYタイム中心のOrder Flow稼働。方向感がはっきりした週で稼ぎやすかったです。"}, {"name": "ユーザー6318", "profit": 285000, "system": "Multi", "pair": "MULTI", "message": "複数ペアで分散しながらこの週は全体的に方向が合いました。資金分散の恩恵を実感しています。"}, {"name": "ユーザー4057", "profit": 53000, "system": "Trend Scalping", "pair": "BTCUSD", "message": "BTCUSDでスキャル稼働。ロット小さめでリスク抑えつつ週プラスで終了。"}, {"name": "ユーザー9483", "profit": 172000, "system": "SMC Grid", "pair": "XAUUSD", "message": "今週はXAUUSDが一方向に動いてSMCが非常によく機能しました。DD最小で週を終えられました。"}, {"name": "ユーザー2871", "profit": -26000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムが荒れてSLが複数回。環境が悪い時は稼働量を落とす判断をすべきでした。来週改善します。"}, {"name": "ユーザー7326", "profit": 340000, "system": "Order Flow", "pair": "XAUUSD", "message": "SELL方向でエントリーして大きな下落を捉えました。週ベースで見てもかなり良いリザルト。金曜全決済で確定できました。"}, {"name": "ユーザー5093", "profit": 81000, "system": "SMC Grid", "pair": "XAUUSD", "message": "両建て設定でリスクを抑えながら着実に積み上げました。"}, {"name": "ユーザー1648", "profit": 196000, "system": "Multi", "pair": "MULTI", "message": "Multiシステムの安定感が光った週。各ペアが少しずつ積み上げてトータルで大きなプラスになりました。"}, {"name": "ユーザー8205", "profit": -49000, "system": "Order Flow", "pair": "XAUUSD", "message": "指標発表タイミングで大きく動いてエントリーが全て裏目。来週からは経済指標前後30分は稼働OFFにします。"}, {"name": "ユーザー3942", "profit": 115000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6でエントリー多め。週後半のトレンド継続でしっかり積み上がりました。"}, {"name": "ユーザー6571", "profit": 68000, "system": "SMC Grid", "pair": "BTCUSD", "message": "BTCUSDでグリッド稼働。小幅プラスで無難に週を終えました。ロット管理は継続。"}, {"name": "ユーザー4819", "profit": 267000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京タイムのエントリーがNYタイムで大きく伸びた週。Order Flowのタイミングがよく機能しました。"}, {"name": "ユーザー2137", "profit": 37000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週前半レンジ、後半トレンドの典型的な週。後半だけで回収できました。"}, {"name": "ユーザー9764", "profit": 940000, "system": "Multi", "pair": "MULTI", "message": "今週のMultiリザルトは過去最高クラス。相場がエクスパンションに入って全ペアが動きました。冷静に同じ設定を維持しながら来週も稼働継続します。複利の力を感じています。"}, {"name": "ユーザー7382", "profit": 155000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが何度か積まれましたが週内で全て回収。DDを乗り越えて着地できました。"}, {"name": "ユーザー5216", "profit": 83000, "system": "Order Flow", "pair": "XAUUSD", "message": "テンプレ通りの稼働で週ベースでプラス確定。安定感を維持できています。"}, {"name": "ユーザー1483", "profit": -63000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが想定より大きく展開してしまい許容DD超え。ポジションを強制縮小しました。設定とロットを根本から見直して来週再挑戦します。"}, {"name": "ユーザー8937", "profit": 209000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンからNYにかけてトレンドが続いてスキャルが積み上がりました。VPS稼働で一度も手動介入せず。"}, {"name": "ユーザー6254", "profit": 72000, "system": "Multi", "pair": "MULTI", "message": "Multiで手堅く週プラス。大きな利益ではないですが安定して積み上げられています。"}, {"name": "ユーザー3718", "profit": 131000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY限定で今週のXAUUSD上昇を追いかけました。金曜全決済で綺麗に確定。"}, {"name": "ユーザー9051", "profit": -38000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半の急変でスキャルがSLにかかりました。原因はCPI発表前後のスプレッド拡大。次週は指標時の対応を変えます。"}, {"name": "ユーザー4693", "profit": 325000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドのDD管理が今週は完璧でした。ナンピンが最小限で済んで効率よく積み上がりました。"}, {"name": "ユーザー7149", "profit": 58000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDでOrder Flow稼働。動きが大きい週でしたがロット控えめでリスク管理できました。"}, {"name": "ユーザー8463", "profit": 241000, "system": "Order Flow", "pair": "XAUUSD", "message": "今週のXAUUSDはSELL方向が優勢で、Order FlowのSELL限定設定がよく機能しました。"}, {"name": "ユーザー5927", "profit": -53000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドのナンピンが想定以上に膨らんでしまった週。DDが許容値を超えたため強制縮小。ロット見直しと設定変更で来週から再稼働します。失敗を無駄にしないよう記録して改善します。"}, {"name": "ユーザー1384", "profit": 103000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムのトレンド形成に乗れました。BB期間20設定で安定。"}, {"name": "ユーザー7051", "profit": 560000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も好調。複数ペアで全体的に方向が合い、資金分散の効果が出ています。複利運用で着実に残高が増えています。同じ設定を維持して継続します。"}, {"name": "ユーザー3826", "profit": 77000, "system": "Order Flow", "pair": "XAUUSD", "message": "週前半にBUYで仕込んで後半で利確。シンプルな展開で取りやすかった週です。"}, {"name": "ユーザー9274", "profit": 189000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間6で頻度高めに稼働。ナンピンを活用しながら今週はDDを最小限に抑えられました。"}, {"name": "ユーザー6139", "profit": -41000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週を通じてレンジが続き、スキャルが空振り続きでした。相場環境が合わない週は損を最小化する意識が大事だと実感。来週は設定を切り替えます。"}, {"name": "ユーザー2758", "profit": 128000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSD相場でOrder Flow稼働。週後半に大きな動きがあって乗れました。"}, {"name": "ユーザー4517", "profit": 74000, "system": "Multi", "pair": "MULTI", "message": "全体的に小幅ながらプラス着地。Multi安定稼働中です。"}, {"name": "ユーザー8793", "profit": 307000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッド設定を最適化して今週は非常にスムーズな稼働でした。ナンピンが発動するたびに回収できて気持ちよかったです。"}, {"name": "ユーザー5361", "profit": -22000, "system": "Order Flow", "pair": "XAUUSD", "message": "指標タイミングで読みが外れてマイナス。小さく抑えられたのは不幸中の幸いです。"}, {"name": "ユーザー1047", "profit": 158000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドン〜NYのトレンド継続で積み上げました。MT5での稼働状況も問題なし。週を通じて環境認識通りの動きでした。"}, {"name": "ユーザー7629", "profit": 680000, "system": "Multi", "pair": "MULTI", "message": "今週はMultiで大きな週になりました。エクスパンション局面で複数ペアが同時に大きく動いて恩恵を受けました。ただこれが毎週続くわけではないと冷静に見ています。次週も同じ設定で。"}, {"name": "ユーザー3193", "profit": 61000, "system": "SMC Grid", "pair": "XAUUSD", "message": "SMCグリッドで手堅く積み上げ。特に大きな動きはない週でしたが安定感を実感。"}, {"name": "ユーザー8846", "profit": -78000, "system": "SMC Grid", "pair": "XAUUSD", "message": "急騰急落のダブルパンチでグリッドポジションが大きく膨らみました。許容DDを超えたため一部を手動クローズ。設定を根本から見直して来週再スタートします。この経験を活かします。"}, {"name": "ユーザー5284", "profit": 96000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY/SELL交互に機能した週。Order Flowが相場の転換点をよく捉えていました。"}, {"name": "ユーザー2619", "profit": 214000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "東京タイム〜ロンドンタイムにかけてトレンドが形成されてスキャルが積み上がりました。推奨稼働時間内で安定した動きでした。"}, {"name": "ユーザー9437", "profit": 44000, "system": "Multi", "pair": "MULTI", "message": "小幅プラスですがMultiの安定感を確認できた週。来週も継続します。"}, {"name": "ユーザー4082", "profit": -68000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半のFOMC後に急変動。スキャルがまともに食らいました。指標カレンダーの事前チェックを習慣化します。損失額は許容範囲ですが対策は必須です。"}, {"name": "ユーザー7358", "profit": 175000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが数回入りましたが週内で全部回収。SMCの真骨頂を見た週でした。"}, {"name": "ユーザー6193", "profit": 89000, "system": "Order Flow", "pair": "XAUUSD", "message": "テンプレ通りの設定で週プラス。特に問題なく安定稼働できています。"}, {"name": "ユーザー1726", "profit": 1080000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週は7桁超え。相場がMultiに向いた環境で全ペアが機能しました。冷静さを保ちながら同じ運用を継続します。過去にはマイナス週もあったので油断は禁物です。"}, {"name": "ユーザー3547", "profit": 137000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6と20を両方試しましたが今週は6の方が精度が高かったです。来週も継続して比較します。"}, {"name": "ユーザー8271", "profit": -31000, "system": "Order Flow", "pair": "XAUUSD", "message": "週初めの方向判断が外れてマイナス先行のまま終了。環境認識の精度を上げる必要があります。来週は入念に準備してから稼働させます。"}, {"name": "ユーザー5839", "profit": 263000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが丁寧に機能した週。ナンピン幅の設定が今の相場環境とマッチしています。"}, {"name": "ユーザー2094", "profit": 51000, "system": "Trend Scalping", "pair": "BTCUSD", "message": "BTCUSDでスキャル稼働。ロンドンタイムに集中して稼働させました。"}, {"name": "ユーザー9673", "profit": 402000, "system": "Multi", "pair": "MULTI", "message": "複数ペアの分散効果で今週もプラス着地。特にXAUUSDの貢献が大きかったです。"}, {"name": "ユーザー4416", "profit": 118000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order FlowのSELL限定設定でXAUUSDの下落を取りました。読み通りの週でした。"}, {"name": "ユーザー7983", "profit": -87000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドポジションが一気に膨らんでDDが過去最大に。メンタルがきつい週でしたが原因を分析して設定変更を実施しました。来週は慎重に小さいロットから再スタートします。"}, {"name": "ユーザー6351", "profit": 82000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムの動きだけを狙って稼働。効率よくプラスが積み上がりました。"}, {"name": "ユーザー1862", "profit": 228000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週も安定したリザルト。乗り換えてから3ヶ月目ですがトータルで見るとしっかり積み上がっています。VPS稼働の安心感も大きいです。"}, {"name": "ユーザー3274", "profit": 67000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京タイムでBUY仕込み、NYタイムで刈り取り。テンプレ通りで週プラス確定。"}, {"name": "ユーザー8549", "profit": 191000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間20でのエントリー判断が今週はよく機能しました。DDも小さくスムーズな稼働ができました。"}, {"name": "ユーザー5106", "profit": -46000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "CPI後のスプレッド拡大でエントリーコストが増えてマイナスに。対策として指標前後の稼働OFFを設定しました。来週からは対策済みで臨みます。"}, {"name": "ユーザー2738", "profit": 145000, "system": "Order Flow", "pair": "XAUUSD", "message": "週を通じてBUY方向が機能。金曜全決済でしっかり確定させました。"}, {"name": "ユーザー9162", "profit": 58000, "system": "Multi", "pair": "MULTI", "message": "今週はMultiが控えめながらプラス着地。来週に期待しながら設定は据え置きで継続。"}, {"name": "ユーザー4837", "profit": 334000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンを活用しながらグリッドが丁寧に機能した週。週ベースで見てかなり良いリザルトになりました。"}, {"name": "ユーザー7425", "profit": -27000, "system": "Order Flow", "pair": "XAUUSD", "message": "週の後半に方向が変わって建玉が逆行。小幅マイナスで抑えられたのは設定のおかげです。"}, {"name": "ユーザー6083", "profit": 107000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "推奨稼働時間内で稼働して週プラス。無駄なエントリーなく効率的でした。"}, {"name": "ユーザー1549", "profit": 276000, "system": "Multi", "pair": "MULTI", "message": "今週もMultiで安定積み上げ。複利運用でじわじわ残高が増えているのを実感しています。"}, {"name": "ユーザー8314", "profit": 85000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDのOrder Flow稼働。今週はボラが高く動きがあって取りやすい環境でした。"}, {"name": "ユーザー3761", "profit": 153000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドとナンピンのコンビが機能した週。週内でしっかり回収できました。"}, {"name": "ユーザー5928", "profit": -38000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週の出だしからレンジが続いてスキャルが空振り。後半少し取り返しましたがマイナスで終了。来週はBB設定を調整して臨みます。"}, {"name": "ユーザー2416", "profit": 196000, "system": "Order Flow", "pair": "XAUUSD", "message": "SELL方向でNY時間の下落を捉えました。Order Flowのタイミングが完璧でした。"}, {"name": "ユーザー9087", "profit": 730000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も大きく動いてくれました。資金分散と複利の組み合わせが強いです。同じ設定を維持しながら来週も継続。感情に流されず淡々と稼働させるのが一番重要だと実感しています。"}, {"name": "ユーザー4273", "profit": 72000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間6での稼働でエントリー頻度が高め。積み重ねでプラスになりました。"}, {"name": "ユーザー7836", "profit": 118000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンオープンから方向が出てトレンドスキャルが機能。VPS稼働で安心して放置できました。"}, {"name": "ユーザー6192", "profit": -54000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが週中盤から想定外の展開で膨らみました。ロットを下げて対応しましたがマイナス確定。設定見直しと資金管理の強化で来週臨みます。"}, {"name": "ユーザー3418", "profit": 247000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京タイムのエントリーがNYクローズまで伸びた形。Order Flowの長期保有パターンがはまりました。"}, {"name": "ユーザー5748", "profit": 162000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン回数が今週は少なくてスムーズに積み上がりました。理想的な稼働でした。"}, {"name": "ユーザー2391", "profit": -34000, "system": "Order Flow", "pair": "XAUUSD", "message": "週の方向感が定まらずOrder Flowが苦手な環境でした。マイナスは許容範囲、来週に切り替えます。"}, {"name": "ユーザー9847", "profit": 317000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンからNYにかけてトレンドが続いてスキャルが積み上がりました。BB期間20でのエントリーが今週は精度高かったです。"}, {"name": "ユーザー6183", "profit": 88000, "system": "Multi", "pair": "MULTI", "message": "Multiでこの週は安定して稼働。特にXAUUSDでの積み上げが貢献しました。"}, {"name": "ユーザー4529", "profit": -62000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドのDD管理が追いつかない相場でした。急変時のリスク管理をもう一段階強化します。来週はロット半分から再開します。"}, {"name": "ユーザー7916", "profit": 204000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY限定で週前半の上昇を丸ごと取れました。金曜全決済で綺麗に確定。"}, {"name": "ユーザー1263", "profit": 56000, "system": "Trend Scalping", "pair": "BTCUSD", "message": "BTCUSDでスキャル稼働。週後半に動きが出てプラスで着地できました。"}, {"name": "ユーザー8742", "profit": 495000, "system": "Multi", "pair": "MULTI", "message": "乗り換えて最初の大きな週が来ました。Multiが複数ペアで同時に機能して過去最高リザルト。この成果を当然と思わず来週も同じ姿勢で継続します。"}, {"name": "ユーザー3617", "profit": 79000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッド幅を広めに設定してDDを抑えた安定稼働。週をプラスで締めました。"}, {"name": "ユーザー5294", "profit": -48000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週初めの急変でSLが立て続けに踏まれました。ロットを落として後半稼働しましたが取り返せず。環境認識を徹底して来週臨みます。"}, {"name": "ユーザー9471", "profit": 143000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order FlowがSELL方向で機能した週。NYタイムの下落を複数回捉えました。"}, {"name": "ユーザー2856", "profit": 860000, "system": "Multi", "pair": "MULTI", "message": "今週のMultiはエクスパンション局面にドンピシャでした。複数ペアが連動して大きく動きました。同じ設定でこれからも継続。資金管理だけは崩さないようにしています。"}, {"name": "ユーザー7139", "profit": 121000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが入りましたが全て週内で回収。BB期間6での設定が今の相場に合っています。"}, {"name": "ユーザー4806", "profit": -28000, "system": "Order Flow", "pair": "XAUUSD", "message": "方向が定まらない相場でOrder Flowが苦しかった週。小さく抑えられましたが来週改善します。"}, {"name": "ユーザー6372", "profit": 178000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6でエントリー頻度を上げた週。積み重ねでトータルは良い結果でした。"}, {"name": "ユーザー1584", "profit": 65000, "system": "SMC Grid", "pair": "XAUUSD", "message": "今週はグリッドが静かに動いていました。小幅でも積み上げられたのでOK。"}, {"name": "ユーザー8947", "profit": 294000, "system": "Multi", "pair": "MULTI", "message": "複数ペアで今週も安定積み上げ。複利の効果が出始めていて月次ベースで見ると残高の増え方が加速しています。"}, {"name": "ユーザー3258", "profit": -75000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドがレンジブレイク後の逆行に巻き込まれました。ロットを見直して設定を最適化して来週から再開します。同じ失敗を繰り返さないよう記録しています。"}, {"name": "ユーザー5913", "profit": 111000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京タイムからロンドンにかけてBUYが綺麗に機能しました。週を通じて安定した稼働でした。"}, {"name": "ユーザー7482", "profit": 52000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週前半にスキャルが積み上がって後半は小休止。トータルはプラスで終了。"}, {"name": "ユーザー2147", "profit": 226000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDのOrder Flow稼働で今週は大きな動きを捉えました。週ベースで見てもかなり良いリザルトです。"}, {"name": "ユーザー9638", "profit": -41000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "CPI週はやはりスプレッドと急変が怖いです。稼働OFFを徹底できていなかったのが反省点。来週から設定に組み込みます。"}, {"name": "ユーザー4891", "profit": 157000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが入るたびにしっかり回収できた理想的な週でした。SMCの動きを見るのが楽しくなってきました。"}, {"name": "ユーザー6274", "profit": 1150000, "system": "Multi", "pair": "MULTI", "message": "今週はMultiで過去最高を更新。相場がエクスパンションに入って全ペアが連動しました。この数字は特別な週で毎週続くとは思っていません。設定を変えず来週も同じ方針で。気を引き締めて継続します。"}, {"name": "ユーザー1738", "profit": 86000, "system": "Order Flow", "pair": "XAUUSD", "message": "SELL限定設定で今週の下落をしっかり取れました。方向感が合えば気持ちいいです。"}, {"name": "ユーザー8326", "profit": -59000, "system": "Order Flow", "pair": "XAUUSD", "message": "週初めから方向が逆行。損失を引っ張らずに一旦ポジション整理。来週の環境を見て慎重に再スタートします。"}, {"name": "ユーザー3974", "profit": 193000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムのトレンド形成で積み上がりました。BB期間20が今の相場環境にマッチしています。"}, {"name": "ユーザー7261", "profit": 73000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが安定して機能した週。特にDDが大きくなることなく週を終えられました。"}, {"name": "ユーザー5847", "profit": 378000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も好調。特にXAUUSDでの稼ぎが大きかったです。複利運用でじわじわ残高が伸びています。"}, {"name": "ユーザー2583", "profit": -33000, "system": "SMC Grid", "pair": "XAUUSD", "message": "レンジが続いてグリッドが機能しにくい相場でした。設定を見直して来週に備えます。"}, {"name": "ユーザー9157", "profit": 147000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order Flowが今週は良いタイミングでエントリーしてくれました。金曜全決済でしっかり確定。"}, {"name": "ユーザー4639", "profit": 68000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週通じてスキャルが小幅ながら積み上げ。VPS稼働で手間なしです。"}, {"name": "ユーザー6892", "profit": 253000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン幅を最適化して今週はスムーズな稼働でした。DDも最小限で理想的な動きでした。"}, {"name": "ユーザー1428", "profit": -84000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "FOMCの発表で相場が急変してスキャルが連続SL。許容範囲ギリギリの損失です。経済指標対応を徹底的に見直します。来週は設定変更後に慎重に再スタートします。"}, {"name": "ユーザー8471", "profit": 112000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY方向で今週の上昇を捉えました。テンプレ通りの設定で安定しています。"}, {"name": "ユーザー3625", "profit": 47000, "system": "Multi", "pair": "MULTI", "message": "今週のMultiは小幅プラス。大きな動きはなかったですが着実に積み上げられました。"}, {"name": "ユーザー7093", "profit": 186000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドとナンピンがうまく機能した週。週内で全て回収できて気持ちよかったです。"}, {"name": "ユーザー5362", "profit": -27000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDで方向が外れてマイナス。ロットを控えめにしていたので損失は小さく抑えられました。"}, {"name": "ユーザー2794", "profit": 131000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6と20を組み合わせた設定で今週は精度が上がりました。週トータルでいいリザルトです。"}, {"name": "ユーザー9516", "profit": 670000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週も大きく積み上げました。乗り換えてから右肩上がりが続いています。同じ設定を維持して複利の効果を最大化していきます。"}, {"name": "ユーザー4187", "profit": 94000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが発動するたびにちゃんと回収できて安心感がありました。"}, {"name": "ユーザー6843", "profit": -46000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半の急な反転でスキャルのSLが続きました。後半は稼働量を落として最終的な損失を抑えました。原因は明確なので来週の設定に反映させます。"}, {"name": "ユーザー1358", "profit": 217000, "system": "Order Flow", "pair": "XAUUSD", "message": "NYタイムの大きな動きをOrder Flowが見事に捉えました。週ベースで最高クラスのリザルトです。"}, {"name": "ユーザー8629", "profit": 57000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが静かに動いた週でしたが週プラスで着地。安定感があります。"}, {"name": "ユーザー3247", "profit": 348000, "system": "Multi", "pair": "MULTI", "message": "Multiで複数ペアが連動した週。トータルで見ると過去でもトップクラスの週になりました。資金管理は変えず来週も継続します。"}, {"name": "ユーザー7581", "profit": 83000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムに集中して稼働。スキャルが積み上がって週プラスで終了。"}, {"name": "ユーザー5019", "profit": -71000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドポジションが週後半に急拡大。ロットを落として対応しましたが損失確定。設定を根本から見直して来週から慎重に再スタートします。"}, {"name": "ユーザー2436", "profit": 169000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY/SELL両方向で機能した週。Order Flowが相場の流れをしっかり捉えていました。"}, {"name": "ユーザー9274", "profit": 78000, "system": "Multi", "pair": "MULTI", "message": "Multiが手堅く積み上げた週。大きな損失なく週を終えられました。"}, {"name": "ユーザー1637", "profit": 142000, "system": "Order Flow", "pair": "XAUUSD", "message": "今週はSELL限定でXAUUSDの下落をしっかり取りました。方向が合えば気持ちいい稼働です。"}, {"name": "ユーザー8253", "profit": -37000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週を通じてボラが低くスキャルの出番が少なかった週。マイナス幅は小さく抑えられました。来週はBB設定を微調整して臨みます。"}, {"name": "ユーザー5916", "profit": 289000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが何度か入りましたが全て週内で回収。グリッドの動きが安定していた週でした。"}, {"name": "ユーザー3074", "profit": 67000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も小幅プラス。安定感のある稼働を継続できています。"}, {"name": "ユーザー7618", "profit": -55000, "system": "Order Flow", "pair": "XAUUSD", "message": "週後半のFOMC後に急変動。Order Flowがまともに食らいました。経済指標対応の設定を見直して来週から対策を強化します。損失の原因は明確です。"}, {"name": "ユーザー2491", "profit": 198000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムからNYタイムにかけてトレンドが継続した週。スキャルが連続エントリーで積み上がりました。"}, {"name": "ユーザー9837", "profit": 74000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間20でエントリーを絞ってDDを抑えた安定稼働でした。"}, {"name": "ユーザー4162", "profit": 780000, "system": "Multi", "pair": "MULTI", "message": "乗り換えてから4ヶ月目。今週は過去最高週でした。相場環境とMultiの相性が抜群でした。焦らず同じ設定で継続することが大切だと改めて実感しています。"}, {"name": "ユーザー6839", "profit": 105000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY方向で週前半の上昇を捉えました。東京タイムのエントリーがよく機能しています。"}, {"name": "ユーザー1427", "profit": -43000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが週後半に急拡大。含み損が増えたので一部をクローズして整理。来週はロットを抑えて慎重に再スタートします。"}, {"name": "ユーザー8594", "profit": 162000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6でエントリー頻度を上げて積み重ねで今週はいいリザルト。推奨稼働時間内で安定稼働。"}, {"name": "ユーザー5273", "profit": 47000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDでOrder Flow稼働。今週はボラが高めで動きがあって取りやすかったです。"}, {"name": "ユーザー3861", "profit": 318000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も複数ペアで積み上げ。XAUUSDとBTCUSDの両方が方向が出て恩恵を受けました。"}, {"name": "ユーザー7249", "profit": 91000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドのナンピンが発動しましたが週内で全て回収。綺麗な稼働でした。"}, {"name": "ユーザー2683", "profit": -68000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "相場が急激に逆行してスキャルのSLが複数回踏まれました。ロットが少し大きすぎた反省。来週はロットを半分にして様子を見ます。原因が明確なので次週は対策済みで臨めます。"}, {"name": "ユーザー9516", "profit": 225000, "system": "Order Flow", "pair": "XAUUSD", "message": "SELL方向でXAUUSDの下落を丸ごと取れました。金曜全決済でしっかり確定。"}, {"name": "ユーザー4738", "profit": 58000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが静かに積み上げた週。大きな動きはなかったですが週プラスで着地。"}, {"name": "ユーザー1093", "profit": 453000, "system": "Multi", "pair": "MULTI", "message": "複数ペアで今週も積み上げ。特にロンドンタイムのエントリーが機能しました。複利運用で残高の伸びを実感しています。同じ方針で継続します。"}, {"name": "ユーザー6427", "profit": -29000, "system": "Order Flow", "pair": "XAUUSD", "message": "方向感が定まらない週でOrder Flowが苦しかった。小さくマイナスで終了。設定を見直して来週に備えます。"}, {"name": "ユーザー8175", "profit": 176000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムのトレンド形成に乗れました。BB期間20でのエントリーが今週は精度高かったです。"}, {"name": "ユーザー3549", "profit": 84000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン幅を広めに設定して今週はDDを最小限に抑えられました。"}, {"name": "ユーザー7824", "profit": -51000, "system": "SMC Grid", "pair": "XAUUSD", "message": "週前半にグリッドが大きく展開してしまいました。後半で粘りましたが回収できず。設定を調整して来週から再挑戦します。"}, {"name": "ユーザー5163", "profit": 134000, "system": "Order Flow", "pair": "XAUUSD", "message": "東京タイムに仕込んでNYタイムで利確。Order Flowのパターンがハマりました。"}, {"name": "ユーザー2847", "profit": 1020000, "system": "Multi", "pair": "MULTI", "message": "今週は久しぶりに7桁超え。相場のエクスパンション局面でMultiが全力で機能してくれました。この週は特別と認識していますが、同じ設定を崩さず来週も継続します。"}, {"name": "ユーザー9361", "profit": 72000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週を通じてスキャルが小幅ながら積み上げ。VPS稼働で手間なしです。"}, {"name": "ユーザー4527", "profit": 208000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドとナンピンが今週は完璧に機能。BB期間6での設定が今の相場にマッチしています。"}, {"name": "ユーザー6914", "profit": -40000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "CPI週はやはり荒れますね。スキャルのSLが増えてしまいました。指標対応の強化を来週から実施します。"}, {"name": "ユーザー1782", "profit": 311000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY限定設定で週前半の強い上昇を捉えました。Order Flowのエントリータイミングが完璧でした。"}, {"name": "ユーザー8436", "profit": 63000, "system": "Multi", "pair": "MULTI", "message": "今週のMultiは控えめながら週プラス。安定稼働を継続できています。"}, {"name": "ユーザー3718", "profit": 185000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが入っても週内で回収できる設定になっています。今週もその通りに機能しました。"}, {"name": "ユーザー7253", "profit": -77000, "system": "Order Flow", "pair": "XAUUSD", "message": "週後半の急変でOrder Flowが大きく逆行。今週は正直しんどかったです。ただ原因はFOMCの急変動で明確。次週は指標前後の対策を徹底して同じ失敗を繰り返しません。"}, {"name": "ユーザー5491", "profit": 97000, "system": "Trend Scalping", "pair": "BTCUSD", "message": "BTCUSDでトレンドスキャル稼働。ロンドンタイムの動きに乗れてプラスで終了。"}, {"name": "ユーザー2163", "profit": 147000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週も安定積み上げ。複利の効果が出始めて月次ベースで残高の伸びを実感しています。"}, {"name": "ユーザー9748", "profit": 54000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが安定して機能した週。大きなDDなく週プラスで着地。"}, {"name": "ユーザー4316", "profit": 271000, "system": "Order Flow", "pair": "XAUUSD", "message": "NYタイムのOrder Flowが今週は抜群でした。SELL方向で大きな下落を取れました。金曜全決済で確定。"}, {"name": "ユーザー6853", "profit": -33000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "レンジ週は相性が悪いです。スキャルが空振りしてマイナス着地。来週の環境次第で設定を調整します。"}, {"name": "ユーザー1547", "profit": 194000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間20でのエントリー判断が今週は精度が高かったです。グリッドが丁寧に機能しました。"}, {"name": "ユーザー8072", "profit": 76000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY/SELL判断が今週は合っていて積み上げができました。テンプレ通りで安定です。"}, {"name": "ユーザー3417", "profit": 590000, "system": "Multi", "pair": "MULTI", "message": "乗り換え組ですが今週で前の環境との差が大きく出ました。Multiの複数ペア分散と複利運用の効果を実感。同じ方針を崩さず継続します。"}, {"name": "ユーザー7164", "profit": -62000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが週中盤から想定外の展開になりました。DDが大きくなる前に一部クローズして対応。来週は設定を見直して慎重に再スタートします。"}, {"name": "ユーザー5829", "profit": 138000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンオープン直後のトレンド形成に乗れました。BB期間6設定でエントリー頻度高めの週でした。"}, {"name": "ユーザー2794", "profit": 83000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order Flowが今週も安定して稼働。金曜全決済でしっかり確定できました。"}, {"name": "ユーザー9162", "profit": -46000, "system": "Order Flow", "pair": "XAUUSD", "message": "週初めのエントリーが全て裏目。後半で少し取り返しましたがマイナスで終了。環境認識の精度を上げる必要があります。"}, {"name": "ユーザー4673", "profit": 258000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン幅の設定を最適化して今週はスムーズな稼働。グリッドが理想的に動きました。"}, {"name": "ユーザー6281", "profit": 71000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週を通じてスキャルが安定稼働。推奨稼働時間内での運用を継続しています。"}, {"name": "ユーザー1839", "profit": 226000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週も複数ペアが積み上げ。XAUUSDの動きが特に大きかったです。来週も同じ設定で継続します。"}, {"name": "ユーザー8573", "profit": 47000, "system": "SMC Grid", "pair": "BTCUSD", "message": "BTCUSDでSMC Grid稼働。今週は小幅ながらプラスで終われました。"}, {"name": "ユーザー3926", "profit": 178000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY限定で週前半の上昇を丸ごと取りました。東京タイムのエントリーが今週はよく機能しました。"}, {"name": "ユーザー7381", "profit": -28000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半に急な反転があってスキャルが踏まれました。小幅マイナスで抑えられたのは設定のおかげです。"}, {"name": "ユーザー2638", "profit": 119000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが今週は綺麗に機能しました。ナンピンも最小限で効率よく積み上がりました。"}, {"name": "ユーザー9483", "profit": -48000, "system": "Order Flow", "pair": "XAUUSD", "message": "週前半のCPI後に急変動でOrder Flowが裏目。指標前後の稼働OFFを徹底できていませんでした。来週から設定に組み込みます。損失は想定内で対策済みです。"}, {"name": "ユーザー4817", "profit": 84000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "東京タイムに集中稼働してスキャルが積み上がりました。推奨稼働時間を守って運用しています。"}, {"name": "ユーザー7362", "profit": 432000, "system": "Multi", "pair": "MULTI", "message": "今週のMultiは全ペアが好調でした。複数ペアの分散効果でトータルが大きくなりました。資金管理は崩さず来週も継続します。"}, {"name": "ユーザー1594", "profit": 73000, "system": "SMC Grid", "pair": "XAUUSD", "message": "BB期間6での設定が今の相場環境にマッチしています。週プラスで安定着地。"}, {"name": "ユーザー6273", "profit": -32000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "レンジ相場が続いてスキャルの出番が少なかった週。マイナスは小幅で抑えられました。来週の環境を確認して設定を調整します。"}, {"name": "ユーザー3849", "profit": 247000, "system": "Order Flow", "pair": "XAUUSD", "message": "SELL方向でXAUUSDの下落を捉えました。Order FlowのNYタイムでのエントリーが今週は抜群でした。"}, {"name": "ユーザー8164", "profit": 91000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが入りましたが週内で全て回収。SMCの動きを信頼して放置できるようになりました。"}, {"name": "ユーザー5738", "profit": -71000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドポジションが急拡大してしまいました。DDが想定を超えたため一部を手動でクローズ。来週はロットを大幅に下げて慎重に再スタートします。この経験を無駄にしません。"}, {"name": "ユーザー2417", "profit": 156000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムのトレンドに乗ったスキャルが今週は好調でした。BB期間20が機能しています。"}, {"name": "ユーザー9286", "profit": 68000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDのOrder Flow稼働でプラス着地。ボラが高い局面でもロット管理を徹底しました。"}, {"name": "ユーザー4173", "profit": 895000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週は過去でもトップクラスのリザルト。相場のエクスパンション局面で全ペアが連動しました。毎週続くとは思いませんが同じ設定で淡々と継続します。複利の力を実感しています。"}, {"name": "ユーザー6851", "profit": 113000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが丁寧に機能した週。ナンピン幅の設定が今の相場に最適化されています。"}, {"name": "ユーザー1438", "profit": -38000, "system": "Order Flow", "pair": "XAUUSD", "message": "週の方向感が読みにくい展開でOrder Flowが苦しかった週。小幅マイナスで抑えて来週に切り替えます。"}, {"name": "ユーザー8327", "profit": 187000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドン〜NYのトレンド継続でスキャルが積み上がりました。VPS稼働で手動介入なし。"}, {"name": "ユーザー3592", "profit": 57000, "system": "Multi", "pair": "MULTI", "message": "今週のMultiは小幅プラス。安定して積み上げられています。来週も同じ設定で継続です。"}, {"name": "ユーザー7218", "profit": -57000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "FOMC週はボラが激しくスキャルのSLが複数回踏まれました。経済指標時の対応設定を今週中に変更します。来週は準備万端で臨みます。"}, {"name": "ユーザー5073", "profit": 324000, "system": "SMC Grid", "pair": "XAUUSD", "message": "今週はSMCグリッドが理想的な動きをしてくれました。ナンピンも最小限でDDが小さかった。週ベースで見ても非常に良いリザルトです。"}, {"name": "ユーザー2861", "profit": 79000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY方向で週前半の上昇を取りました。金曜全決済で確定させました。"}, {"name": "ユーザー9417", "profit": -43000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッド幅が広がりすぎてしまいました。ポジションを整理して設定を見直します。来週から慎重に再スタートです。"}, {"name": "ユーザー4263", "profit": 201000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間6で今週はエントリー頻度が高め。積み重ねで週通算は良いリザルトになりました。"}, {"name": "ユーザー6748", "profit": 72000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order Flowが今週も安定稼働。テンプレ通りの設定で週プラスです。"}, {"name": "ユーザー1926", "profit": 541000, "system": "Multi", "pair": "MULTI", "message": "乗り換えから半年。トータルで見ると着実に積み上がっています。今週も複数ペアが機能してくれました。複利で残高が加速的に伸びているのを実感中。"}, {"name": "ユーザー8541", "profit": -26000, "system": "Order Flow", "pair": "XAUUSD", "message": "方向が定まらない週でOrder Flowが空振り気味。小幅マイナスで終了。来週に切り替えます。"}, {"name": "ユーザー3164", "profit": 163000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピンが入るたびに週内で回収できて安定した稼働でした。DDの管理が今週はよくできました。"}, {"name": "ユーザー7584", "profit": 88000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "東京タイム中心のスキャル稼働。週を通じて小幅ながら積み上がりました。"}, {"name": "ユーザー5219", "profit": -64000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "相場が急変してスキャルが連続SL。ロットを落として後半稼働しましたが回収できず。環境認識と指標対応の強化を来週から徹底します。"}, {"name": "ユーザー2748", "profit": 276000, "system": "Order Flow", "pair": "XAUUSD", "message": "NYタイムの大きな下落をSELL方向のOrder Flowで取りました。今週は読みがよく当たった週でした。"}, {"name": "ユーザー9538", "profit": 64000, "system": "Multi", "pair": "MULTI", "message": "Multiが今週も安定稼働。資金分散の効果で小幅ながら週プラスで着地。"}, {"name": "ユーザー4829", "profit": 192000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドとナンピンのコンビが今週も機能。BB期間20での設定が相場にマッチしています。"}, {"name": "ユーザー6173", "profit": -81000, "system": "SMC Grid", "pair": "XAUUSD", "message": "今週最大のDD週。急騰急落でグリッドが大きく膨らみました。損失を最小化する判断と来週の設定見直しを実施します。ここで諦めず立て直しが大事です。"}, {"name": "ユーザー1384", "profit": 137000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンからNYの流れでトレンドスキャルが積み上がりました。今週は環境認識がはまった感じです。"}, {"name": "ユーザー8273", "profit": 680000, "system": "Multi", "pair": "MULTI", "message": "今週は久しぶりに大きな週になりました。相場環境がMultiに向いていて複数ペアで連動した動きでした。この結果に驕らず来週も同じ設定で継続します。"}, {"name": "ユーザー3647", "profit": 53000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCUSDでOrder Flow稼働。動きがある週でロット控えめながらプラスで終了。"}, {"name": "ユーザー7491", "profit": -36000, "system": "Order Flow", "pair": "XAUUSD", "message": "CPI後の急変でOrder Flowが逆行。経済指標時の設定を見直して来週から対策を強化します。"}, {"name": "ユーザー5836", "profit": 214000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドのナンピンが週内で全て回収できました。設定の最適化が機能しています。"}, {"name": "ユーザー2194", "profit": 82000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "BB期間20でエントリーを絞って週プラスで着地。安定感のある稼働ができています。"}, {"name": "ユーザー9372", "profit": 348000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週も複数ペアが積み上げ。特にXAUUSDの動きが大きくて恩恵を受けました。複利の効果で残高の伸びが加速しています。"}, {"name": "ユーザー4618", "profit": -49000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週後半の急変でスキャルが連続SL。原因は指標発表後のスプレッド拡大。来週は指標時間帯の稼働OFFを徹底します。同じ失敗は繰り返しません。"}, {"name": "ユーザー6943", "profit": 171000, "system": "Order Flow", "pair": "XAUUSD", "message": "BUY限定で週前半の上昇をしっかり取りました。Order Flowのエントリーポイントが今週は精度高かったです。"}, {"name": "ユーザー1758", "profit": 95000, "system": "SMC Grid", "pair": "XAUUSD", "message": "ナンピン幅を広めにとって今週はDDを最小限に抑えられました。週を通じて安定稼働でした。"}, {"name": "ユーザー8419", "profit": -27000, "system": "SMC Grid", "pair": "XAUUSD", "message": "レンジ相場でグリッドが機能しにくい週でした。小幅マイナスで着地。来週のために設定を微調整します。"}, {"name": "ユーザー3275", "profit": 126000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "ロンドンタイムの動きに乗れてスキャルが積み上がりました。BB期間6設定が今週は機能しました。"}, {"name": "ユーザー7629", "profit": 463000, "system": "Multi", "pair": "MULTI", "message": "乗り換え組ですが今週で前の環境との差を完全に実感しました。Multiの複数ペア分散と複利運用の組み合わせが強いです。来週も同じ方針で継続します。"}, {"name": "ユーザー5384", "profit": 78000, "system": "Order Flow", "pair": "XAUUSD", "message": "Order Flowが今週も安定して稼働してくれました。テンプレ通りで週プラス確定。"}, {"name": "ユーザー2916", "profit": -60000, "system": "Order Flow", "pair": "XAUUSD", "message": "週後半のFOMC後に急変。Order Flowが裏目に出ました。指標前後の稼働OFFを設定に追加して来週から対策します。損失の原因は明確です。"}, {"name": "ユーザー9152", "profit": 243000, "system": "SMC Grid", "pair": "XAUUSD", "message": "グリッドが今週は理想的な動きをしてくれました。ナンピンが入るたびに回収できて気持ちよかったです。"}, {"name": "ユーザー4736", "profit": 67000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "週を通じてスキャルが積み上げ。推奨稼働時間内での安定運用を継続しています。"}, {"name": "ユーザー6384", "profit": 182000, "system": "Multi", "pair": "MULTI", "message": "Multiで今週も複数ペアが方向が出て積み上がりました。資金分散と複利の組み合わせで安定しています。"}, {"name": "ユーザー5847", "profit": 67000, "system": "Order Flow", "pair": "XAUUSD", "message": "バンドの向きを毎朝確認する習慣がつきました。今週も淡々とプラス。"}, {"name": "ユーザー2719", "profit": -21000, "system": "SMC Grid", "pair": "XAUUSD", "message": "水曜のCPIで想定外の動き。停止が遅れてマイナスでしたが、対応手順は学べました。"}, {"name": "ユーザー8364", "profit": 138000, "system": "Trend Scalping", "pair": "XAUUSD", "message": "NYタイムだけに絞った運用が自分には合ってるみたいです。"}, {"name": "ユーザー4096", "profit": 54000, "system": "Order Flow", "pair": "BTCUSD", "message": "BTCはロット半分で慎重に。それでも週次プラスは嬉しい。"}, {"name": "ユーザー7531", "profit": 92000, "system": "Multi", "pair": "MULTI", "message": "2システム並列に変更して3週目。資金効率が上がった気がします。"}];
+
+window.AURUM_REPLY_STOCK = [{"name": "ユーザー6291", "text": "稼働時間どうしてますか？推奨通りにしてますか？"}, {"name": "ユーザー3847", "text": "自分も金曜全決済にしてます。週末持ち越しが怖くて。"}, {"name": "ユーザー7163", "text": "ロット何で稼働してますか？参考にしたいです！"}, {"name": "ユーザー1528", "text": "ナイス利確です！"}, {"name": "ユーザー9274", "text": "VPSはどこ使ってますか？"}, {"name": "ユーザー4836", "text": "同じくCPI週はヒヤヒヤしました。"}, {"name": "ユーザー2753", "text": "BB期間6と20どっちがメインで使ってますか？"}, {"name": "ユーザー8491", "text": "素晴らしいリザルトですね！"}, {"name": "ユーザー5317", "text": "自分もFOMC前後は稼働OFFにしています。同じ方針です。"}, {"name": "ユーザー7082", "text": "複利設定はどうしていますか？再投資の割合を教えていただきたいです。"}, {"name": "ユーザー3619", "text": "ナンピン幅の設定、何pipsにしてますか？"}, {"name": "ユーザー1947", "text": "BTCUSD稼働してる方いるんですね！自分も検討中です。"}, {"name": "ユーザー6483", "text": "資金分散のやり方を教えてください。何ペアくらいで稼働していますか？"}, {"name": "ユーザー8725", "text": "自分も乗り換え組です。安定感が違いますよね。"}, {"name": "ユーザー4162", "text": "月利どのくらい出ていますか？"}, {"name": "ユーザー9538", "text": "東京タイムに絞った稼働いいですね。参考になります。"}, {"name": "ユーザー2847", "text": "マイナス週からのリカバリー応援してます！"}, {"name": "ユーザー7319", "text": "SMC GridとOrder Flowで悩んでます。どちらから始めましたか？"}, {"name": "ユーザー5284", "text": "MT5の設定って特別なことしてますか？"}, {"name": "ユーザー1637", "text": "同じくDD管理が一番大事だと思います。"}, {"name": "ユーザー8162", "text": "複数システム稼働のロット配分どうしてますか？"}, {"name": "ユーザー3948", "text": "最初のロットはいくらから始めましたか？"}, {"name": "ユーザー6271", "text": "ナイスリザルトです！今週も頑張りましょう！"}, {"name": "ユーザー4817", "text": "経済指標のカレンダー何で確認してますか？"}, {"name": "ユーザー9163", "text": "自分もBUY限定でやっています。方向判断が難しいですよね。"}, {"name": "ユーザー2584", "text": "グリッドのDD管理のコツを教えてください。"}, {"name": "ユーザー7428", "text": "推奨稼働時間を教えてもらえますか？"}, {"name": "ユーザー5093", "text": "自分も同じ週でマイナスでした。FOMC怖いですね。"}, {"name": "ユーザー1748", "text": "エクスパンション局面の判断ってどうやっていますか？"}, {"name": "ユーザー8361", "text": "週ベースでの収支管理はどうしていますか？スプレッドシートとか使ってますか？"}, {"name": "ユーザー3527", "text": "XAUUSDとBTCUSDどちらがおすすめですか？"}, {"name": "ユーザー6849", "text": "お疲れ様でした！来週も一緒に頑張りましょう。"}, {"name": "ユーザー4273", "text": "Trend ScalpingをBTCUSDで稼働するのはどうですか？"}, {"name": "ユーザー9471", "text": "自分も両建て設定でDDを抑えています。同じ方針ですね。"}, {"name": "ユーザー2163", "text": "グリッドの最大ポジション数ってどのくらいに設定してますか？"}, {"name": "ユーザー7516", "text": "ロンドンタイムに集中するの効果的ですよね。自分もそうしてます。"}, {"name": "ユーザー5738", "text": "複利で運用するとどのくらいから加速感が出てきましたか？"}, {"name": "ユーザー1384", "text": "稼働開始からどのくらい経ちますか？"}, {"name": "ユーザー8627", "text": "SLの設定は固定ですか？それとも相場に応じて変えていますか？"}, {"name": "ユーザー3182", "text": "自分も今週同じくマイナスでした。来週一緒に取り返しましょう！"}, {"name": "ユーザー6417", "text": "Multiの資金配分はどうやって決めましたか？"}, {"name": "ユーザー4738", "text": "週の相場環境の確認ってどのタイミングでしてますか？"}, {"name": "ユーザー9284", "text": "Order FlowとSMC Gridを併用している方いますか？"}, {"name": "ユーザー2617", "text": "ナイスです！今週は自分もプラスで終われました！"}, {"name": "ユーザー7843", "text": "VPS稼働に切り替えてから安定しましたか？"}, {"name": "ユーザー5163", "text": "自分もナンピン設定を広げたら安定しました。同じ経験です。"}, {"name": "ユーザー1829", "text": "月ごとの収支はプラスが続いていますか？"}, {"name": "ユーザー8374", "text": "初心者でもMultiシステムから始めた方がいいですか？"}, {"name": "ユーザー3916", "text": "自分も乗り換え検討中です。移行の手順など参考になります。"}, {"name": "ユーザー6582", "text": "CPI後の急変対応のコツを教えてください。"}, {"name": "ユーザー4829", "text": "週プラスおめでとうございます！自分も続けて頑張ります。"}, {"name": "ユーザー9174", "text": "稼働OFFの設定ってどのツールで管理していますか？"}, {"name": "ユーザー2483", "text": "自分も今週同じペアで稼働してました。同じ結果になりましたよ。"}, {"name": "ユーザー7263", "text": "ロット増やすタイミングってどう判断していますか？"}, {"name": "ユーザー5947", "text": "Trend Scalpingのおすすめの稼働時間帯はどこですか？"}, {"name": "ユーザー1573", "text": "グリッドの含み損はどこまで許容していますか？"}, {"name": "ユーザー8248", "text": "同じく金曜は全決済派です。週末の不確実性を排除するのが一番ですよね。"}, {"name": "ユーザー3764", "text": "BTCUSDでのSMC Gridリザルト気になります！"}, {"name": "ユーザー6139", "text": "エクスパンション局面はどこで判断していますか？BB幅で見てますか？"}, {"name": "ユーザー4517", "text": "自分はまだマイナスが多いですがこのリザルト見て励まされます！"}, {"name": "ユーザー9382", "text": "稼働資金はいくらから始めましたか？参考に聞かせてください。"}, {"name": "ユーザー2746", "text": "同じくFOCM後は怖いですね。稼働OFFは必須ですよね。"}, {"name": "ユーザー7481", "text": "マイナスからの立て直し、どのくらいかかりましたか？"}, {"name": "ユーザー5293", "text": "自分も同じシステムで稼働中です。今週のリザルトを参考にします。"}, {"name": "ユーザー1964", "text": "Multiで稼働する場合、ペアの組み合わせはどうしていますか？"}, {"name": "ユーザー8537", "text": "週ごとのリザルトを記録しているツールはありますか？"}, {"name": "ユーザー3281", "text": "ロット0.01から始めた方がいいですか？最初のロット感が難しいです。"}, {"name": "ユーザー6748", "text": "同じく今週は取りやすい相場でしたね！"}, {"name": "ユーザー4162", "text": "VPSのスペックはどのくらいあれば足りますか？"}, {"name": "ユーザー9517", "text": "ナイスリカバリーです！諦めないのが大事ですよね。"}, {"name": "ユーザー2849", "text": "自分も環境認識の精度を上げようとしているところです。"}, {"name": "ユーザー7364", "text": "SMC GridとMultiの併用はできますか？"}, {"name": "ユーザー5738", "text": "週プラスで終われたのは素晴らしい！自分も続けます。"}, {"name": "ユーザー1847", "text": "東京タイムで仕込んでNYで取るパターン、自分もやっています。"}, {"name": "ユーザー8162", "text": "両建て設定のやり方を詳しく聞きたいです。"}, {"name": "ユーザー3519", "text": "自分もBB期間を変えながら試しています。6より20の方が安定しますか？"}, {"name": "ユーザー6284", "text": "乗り換え組として同じ経験です。安定感が全然違いますよね。"}, {"name": "ユーザー4837", "text": "月利の目標は何パーセントくらいに設定していますか？"}, {"name": "ユーザー9163", "text": "自分もマイナス週があったので共感します。原因が明確なら立て直せますよね。"}, {"name": "ユーザー2748", "text": "経済指標の稼働OFFってMT5の設定でできますか？"}, {"name": "ユーザー7382", "text": "今週のリザルト素晴らしいです！どういう環境認識でしたか？"}, {"name": "ユーザー5164", "text": "自分も同じ週でプラスでした！相場が良かったですよね。"}, {"name": "ユーザー1738", "text": "ナンピンの最大回数ってどのくらいに設定してますか？"}, {"name": "ユーザー8293", "text": "Trend Scalpingは初心者でも使いやすいですか？"}, {"name": "ユーザー3846", "text": "グリッドが広がった時のメンタル管理はどうしていますか？"}, {"name": "ユーザー6517", "text": "自分も来週から金曜全決済にしようと思います。参考になりました。"}, {"name": "ユーザー4283", "text": "複数ペアの相関ってどう考えていますか？"}, {"name": "ユーザー9748", "text": "リザルトを毎週投稿するの大変じゃないですか？"}, {"name": "ユーザー2517", "text": "ロンドンタイムの動き方、参考になります。自分も意識します。"}, {"name": "ユーザー7284", "text": "自分もこの週は同じくしんどかったです。来週一緒に頑張りましょう！"}, {"name": "ユーザー5839", "text": "稼働してから何ヶ月目ですか？"}, {"name": "ユーザー1473", "text": "Order Flowの方向判断はどうやって決めていますか？"}, {"name": "ユーザー8364", "text": "自分はまだ稼働2週目ですが参考にさせていただきます！"}, {"name": "ユーザー3719", "text": "複利運用でロットを増やすタイミングはどのくらいの残高増加で判断していますか？"}, {"name": "ユーザー6142", "text": "Multiシステム試してみたいです。最初の資金はいくらから推奨ですか？"}, {"name": "ユーザー4927", "text": "週プラスで終われるの本当に嬉しいですよね。お疲れ様でした！"}, {"name": "ユーザー9361", "text": "自分も同じ週でSMC Gridが膨らんで焦りました。同じ経験です。"}, {"name": "ユーザー2648", "text": "指標カレンダーの確認を習慣にするのが大事ですよね。自分も意識します。"}, {"name": "ユーザー7193", "text": "ロットの増減の判断基準を教えてください。"}, {"name": "ユーザー5826", "text": "XAUUSD以外も稼働するのは怖くないですか？BTCUSDのボラが気になって。"}, {"name": "ユーザー1584", "text": "今週プラスで終わっておめでとうございます！来週も頑張りましょう。"}];
+
+/* 外部更新システム (VPS等に置いた JSON の URL を設定すると有効化)
+   形式: { "results": [...], "replies": [...], "dangerDays": [...], "weeklyReport": {...} }
+   取得結果は次回表示時に反映される */
+window.AURUM_REMOTE_CONFIG_URL = "";
+
+/* 申請フォームの送信パラメータを、受信側(Apps Script)が処理できる
+   共通スキーマへ変換する。元のフィールドも併送するため情報は欠落しない */
+window.__aurumLoadedAt = window.__aurumLoadedAt || Date.now();
+window.aurumToGasParams = function (form) {
+  var p = new URLSearchParams();
+  var els = form.elements;
+  for (var i = 0; i < els.length; i++) {
+    if (els[i].name) p.append(els[i].name, els[i].value);
+  }
+  var g = function (n) {
+    var el = form.querySelector('[name="' + n + '"]');
+    return (el && el.value) ? el.value : "-";
+  };
+  var m = { Name: "-", Email: "-", Instagram_ID: "-", DooPrime_ID: "-", MT5_Cent_Account: "-", MT5_Cent_Password: "-", System: "-", VPS_ID: "-", VPS_Password: "-" };
+  if (form.id === "aurum-mentor-form") {
+    m.Name = g("mt_name");
+    m.Email = g("mt_email");
+    m.Instagram_ID = g("mt_contact");
+    m.System = "MENTORSHIP_APPLICATION(" + g("mt_experience") + ")";
+  } else if (form.id === "aurum-stoploss-form") {
+    m.Name = g("sl_name");
+    m.Email = g("sl_email");
+    m.Instagram_ID = g("sl_instagram");
+    m.MT5_Cent_Account = g("sl_mt5acc");
+    m.System = "STOPLOSS_EA(" + g("sl_system") + ")";
+  } else if (form.id === "aurum-setup-form") {
+    m.Name = g("setup_name");
+    m.Email = g("setup_email");
+    m.DooPrime_ID = g("setup_dooprime");
+    m.MT5_Cent_Account = g("setup_mt5acc");
+    m.MT5_Cent_Password = g("setup_mt5pass");
+    m.VPS_ID = g("setup_onamae_id");
+    m.VPS_Password = g("setup_onamae_pass");
+    m.System = "SETUP_CONCIERGE(" + g("setup_system") + ")";
+  }
+  for (var k in m) { if (!p.has(k)) p.append(k, m[k]); }
+  if (!p.has("form_loaded_at")) p.append("form_loaded_at", String(window.__aurumLoadedAt));
+  if (!p.has("website_hp")) p.append("website_hp", "");
+  return p;
+};
+
+(function () {
+  function keyOf(c) { return (c.name || "") + ":" + (c.message || c.text || "").slice(0, 32); }
+  function loadList(k) { try { return JSON.parse(localStorage.getItem(k) || "[]"); } catch (_) { return []; } }
+  function saveList(k, arr) { try { localStorage.setItem(k, JSON.stringify(arr.slice(-6000))); } catch (_) {} }
+  function dayStamp() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+  function daySeed() { var d = new Date(); return d.getFullYear() * 1000 + d.getMonth() * 50 + d.getDate(); }
+  function sRand(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+
+  /* ── 在庫切れ時の自動合成 ── */
+  var GEN_SYS = ["Order Flow", "Trend Scalping", "SMC Grid", "Multi"];
+  var GEN_OPEN = ["今週は指標またぎを避けて稼働。", "東京タイム中心に運用。", "BB期間20で環境確認してから稼働。", "FOMC週なので稼働日を絞りました。", "レンジ確認できた日だけON。", "方向限定でエントリーを絞って運用。", "複利設定そのままで継続。", "乗り換えて2ヶ月目。", "推奨時間だけ稼働。", "週前半は様子見、後半から稼働。", "ロンドンタイムの値動きに合わせて調整。", "経済指標カレンダーを毎朝確認してから稼働。"];
+  var GEN_MID = ["ナンピン浅めで利確を重ねて", "金曜全決済ルールを守って", "DDを抑えつつコツコツ", "エクスパンション時は手動停止して", "ロット控えめで安定重視、", "テンプレ設定のまま", ""];
+  var GEN_CLOSE = ["今週もプラスで終えられました。", "無理せず積み上げできました。", "安定して着地。", "来週も同じ運用でいきます。", "振り返りノートに記録して改善中です。", "結果に納得です。", "数字より過程を大事にしてます。"];
+  var GEN_CLOSE_NEG = ["週合計はマイナス。環境認識の見直しをします。", "SLに掛かりマイナスでしたが原因は明確なので修正します。", "今週は授業料。来週は方向限定で再挑戦します。", "マイナスでしたが想定内のDD。ルールは守れたので続けます。"];
+  function genResult(r, seenSet) {
+    for (var tries = 0; tries < 60; tries++) {
+      var neg = r() < 0.18;
+      var sys = GEN_SYS[Math.floor(r() * 4)];
+      var pair = sys === "Multi" ? "MULTI" : (r() < 0.2 ? "BTCUSD" : "XAUUSD");
+      var profit = neg ? -(8000 + Math.floor(r() * 87) * 1000) : (18000 + Math.floor(r() * 402) * 1000);
+      var msg = GEN_OPEN[Math.floor(r() * GEN_OPEN.length)] + GEN_MID[Math.floor(r() * GEN_MID.length)] + (neg ? GEN_CLOSE_NEG[Math.floor(r() * GEN_CLOSE_NEG.length)] : GEN_CLOSE[Math.floor(r() * GEN_CLOSE.length)]);
+      var c = { name: "ユーザー" + (1000 + Math.floor(r() * 9000)), profit: profit, system: sys, pair: pair, message: msg };
+      if (!seenSet[keyOf(c)]) { seenSet[keyOf(c)] = 1; return c; }
+    }
+    return { name: "ユーザー" + (1000 + Math.floor(r() * 9000)), profit: 52000, system: "Order Flow", pair: "XAUUSD", message: "今週も淡々と運用。記録だけ残します。" };
+  }
+  var GEN_Q = ["稼働時間はどのくらいにしてますか？", "ロットいくつで回してますか？", "設定はテンプレのままですか？", "今週のDDどのくらいでした？", "指標前は止めましたか？", "資金いくらから始めましたか？", "通貨ペアは何で回してますか？", "金曜決済してますか？"];
+  var GEN_P = ["参考になります！", "ナイス利確です", "自分も同じ運用です", "真似させてもらいます", "勉強になります", "同じくプラスでした"];
+  function genReply(r, seenSet) {
+    for (var i = 0; i < 40; i++) {
+      var text = (r() < 0.6 ? GEN_Q[Math.floor(r() * GEN_Q.length)] : GEN_P[Math.floor(r() * GEN_P.length)]);
+      var c = { name: "ユーザー" + (1000 + Math.floor(r() * 9000)), text: text };
+      if (!seenSet[keyOf(c)]) { seenSet[keyOf(c)] = 1; return c; }
+    }
+    return { name: "ユーザー" + (1000 + Math.floor(r() * 9000)), text: "参考になります。" };
+  }
+
+  /* ── 日替わり選出 (表示数は従来どおり、表示済みは再利用しない) ── */
+  function pickDaily(stockArr, legacy, opts) {
+    var today = dayStamp();
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(opts.dayKey) || "null"); } catch (_) {}
+    if (saved && saved.day === today && Array.isArray(saved.items) && saved.items.length) return saved.items;
+
+    var seen = loadList(opts.seenKey);
+    var seenSet = {};
+    seen.forEach(function (k) { seenSet[k] = 1; });
+    var stock = (stockArr || []).concat(legacy || []);
+    var fresh = stock.filter(function (c) { return !seenSet[keyOf(c)]; });
+    var r = sRand(daySeed() * 7 + opts.salt);
+    for (var i = fresh.length - 1; i > 0; i--) {
+      var j = Math.floor(r() * (i + 1));
+      var t = fresh[i]; fresh[i] = fresh[j]; fresh[j] = t;
+    }
+    var picked = fresh.slice(0, opts.count);
+    while (picked.length < opts.count) picked.push(opts.gen(r, seenSet));
+    picked.forEach(function (c) { seen.push(keyOf(c)); });
+    saveList(opts.seenKey, seen);
+    try { localStorage.setItem(opts.dayKey, JSON.stringify({ day: today, items: picked })); } catch (_) {}
+    return picked;
+  }
+
+  var resultCache = null, replyCache = null;
+  window.aurumPickResults = function (legacy) {
+    if (!resultCache) resultCache = pickDaily(window.AURUM_RESULT_STOCK, legacy, {
+      seenKey: "aurum_seen_results_v1", dayKey: "aurum_day_results_v1", count: 30, salt: 13, gen: genResult
+    });
+    return resultCache;
+  };
+  window.aurumPickReplyPool = function (legacy) {
+    if (!replyCache) replyCache = pickDaily(window.AURUM_REPLY_STOCK, legacy, {
+      seenKey: "aurum_seen_replies_v1", dayKey: "aurum_day_replies_v1", count: 14, salt: 71, gen: genReply
+    });
+    return replyCache;
+  };
+
+  /* ── リモート設定: 前回取得分を即時適用し、今回分を裏で更新 ── */
+  try {
+    var cached = JSON.parse(localStorage.getItem("aurum_remote_config_v1") || "null");
+    if (cached) {
+      if (Array.isArray(cached.results) && cached.results.length) window.AURUM_RESULT_STOCK = cached.results.concat(window.AURUM_RESULT_STOCK);
+      if (Array.isArray(cached.replies) && cached.replies.length) window.AURUM_REPLY_STOCK = cached.replies.concat(window.AURUM_REPLY_STOCK);
+      if (cached.dangerDays) window.AURUM_DANGER_DAYS = cached.dangerDays;
+      if (cached.weeklyReport) window.AURUM_WEEKLY_REPORT = cached.weeklyReport;
+    }
+  } catch (_) {}
+  if (window.AURUM_REMOTE_CONFIG_URL) {
+    try {
+      fetch(window.AURUM_REMOTE_CONFIG_URL, { cache: "no-store" })
+        .then(function (res) { return res.json(); })
+        .then(function (j) { try { localStorage.setItem("aurum_remote_config_v1", JSON.stringify(j)); } catch (_) {} })
+        .catch(function () {});
+    } catch (_) {}
+  }
+})();
+</script>
+
 <script>
 /* CTA 3Dエンブレム */
 (function () {
@@ -15699,7 +15862,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   var camera = new THREE.PerspectiveCamera(42, W / H, 0.1, 100);
   camera.position.set(0, 0, 5.2);
 
-  var renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  } catch (e) { return; }
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.setSize(W, H);
   renderer.setClearColor(0x000000, 0);
@@ -15710,6 +15876,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   var point = new THREE.PointLight(0xf3d078, 3.5, 12);
   point.position.set(2, 2, 3);
   scene.add(point);
+
+  /* 全体をグループ化してマウスパララックスで傾ける */
+  var group = new THREE.Group();
+  scene.add(group);
 
   /* マテリアル */
   var matOuter = new THREE.MeshStandardMaterial({
@@ -15733,7 +15903,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     matOuter
   );
   torusOuter.rotation.x = Math.PI * 0.30;
-  scene.add(torusOuter);
+  group.add(torusOuter);
 
   /* 内リング */
   var torusInner = new THREE.Mesh(
@@ -15742,12 +15912,33 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   );
   torusInner.rotation.x = -Math.PI * 0.18;
   torusInner.rotation.y = Math.PI * 0.12;
-  scene.add(torusInner);
+  group.add(torusInner);
+
+  /* オービット・シャード (金の欠片が周回) */
+  var shardMat = new THREE.MeshStandardMaterial({
+    color: 0xf3d078,
+    emissive: 0xf3d078,
+    emissiveIntensity: 0.7,
+    metalness: 0.9,
+    roughness: 0.2,
+  });
+  var shards = [];
+  for (var si = 0; si < 7; si++) {
+    var shard = new THREE.Mesh(new THREE.TetrahedronGeometry(0.07 + (si % 3) * 0.02), shardMat);
+    shard.userData = {
+      r: 1.62 + (si % 4) * 0.14,
+      speed: 0.5 + (si * 0.13),
+      phase: si * (Math.PI * 2 / 7),
+      tilt: (si % 2 === 0 ? 1 : -1) * (0.25 + si * 0.05)
+    };
+    shards.push(shard);
+    group.add(shard);
+  }
 
   /* 発光コア */
   var coreMat = new THREE.MeshBasicMaterial({ color: 0xfff0a0 });
   var core = new THREE.Mesh(new THREE.SphereGeometry(0.14, 16, 16), coreMat);
-  scene.add(core);
+  group.add(core);
 
   /* コアグロー（Spriteで加算合成） */
   var glowCanvas = document.createElement('canvas');
@@ -15768,7 +15959,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     opacity: 0.85,
   }));
   glowSprite.scale.set(0.72, 0.72, 1);
-  scene.add(glowSprite);
+  group.add(glowSprite);
 
   /* 金粒子 */
   var PARTICLE_COUNT = 96;
@@ -15794,7 +15985,22 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
     opacity: 0.82,
   });
   var particles = new THREE.Points(particleGeo, particleMat);
-  scene.add(particles);
+  group.add(particles);
+
+  /* マウスパララックス + ホバー加速 */
+  var targetRX = 0, targetRY = 0, speedMul = 1, targetSpeed = 1;
+  var hoverEl = container.closest('.glass') || container;
+  hoverEl.addEventListener('pointermove', function (e) {
+    var r = hoverEl.getBoundingClientRect();
+    var nx = ((e.clientX - r.left) / r.width) * 2 - 1;
+    var ny = ((e.clientY - r.top) / r.height) * 2 - 1;
+    targetRY = nx * 0.45;
+    targetRX = ny * 0.32;
+  });
+  hoverEl.addEventListener('pointerenter', function () { targetSpeed = 2.6; });
+  hoverEl.addEventListener('pointerleave', function () {
+    targetSpeed = 1; targetRX = 0; targetRY = 0;
+  });
 
   /* リサイズ対応 */
   function onResize() {
@@ -15814,25 +16020,44 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   function tick() {
     rafId = requestAnimationFrame(tick);
     if (!isVisible) return;
-    var dt = clock.getDelta();
-    torusOuter.rotation.y += 0.20 * dt;
-    torusInner.rotation.y -= 0.15 * dt;
-    torusInner.rotation.z += 0.08 * dt;
+    var dt = Math.min(clock.getDelta(), 0.1);
     var t = clock.elapsedTime;
+    speedMul += (targetSpeed - speedMul) * Math.min(1, dt * 5);
+    group.rotation.x += (targetRX - group.rotation.x) * Math.min(1, dt * 4);
+    group.rotation.y += (targetRY - group.rotation.y) * Math.min(1, dt * 4);
+    torusOuter.rotation.y += 0.34 * speedMul * dt;
+    torusOuter.rotation.z += 0.10 * speedMul * dt;
+    torusInner.rotation.y -= 0.26 * speedMul * dt;
+    torusInner.rotation.z += 0.14 * speedMul * dt;
+    /* シャード周回 */
+    for (var s = 0; s < shards.length; s++) {
+      var u = shards[s].userData;
+      var a = u.phase + t * u.speed * speedMul;
+      shards[s].position.set(
+        Math.cos(a) * u.r,
+        Math.sin(a * 0.9) * u.r * 0.30 * u.tilt,
+        Math.sin(a) * u.r * 0.55
+      );
+      shards[s].rotation.x += dt * 2.2;
+      shards[s].rotation.y += dt * 1.7;
+    }
+    /* グロー脈動 */
+    var pulse = 0.72 + Math.sin(t * 2.1) * 0.07 + (speedMul - 1) * 0.05;
+    glowSprite.scale.set(pulse, pulse, 1);
+    core.scale.setScalar(1 + Math.sin(t * 2.1) * 0.08);
     for (var j = 0; j < PARTICLE_COUNT; j++) {
-      pAngles[j] += pSpeeds[j] * dt;
+      pAngles[j] += pSpeeds[j] * speedMul * dt;
       var r = pRadii[j];
-      var a = pAngles[j];
-      pPositions[j * 3]     = Math.cos(a) * r;
+      var ag = pAngles[j];
+      pPositions[j * 3]     = Math.cos(ag) * r;
       pPositions[j * 3 + 1] = Math.sin(pTilts[j]) * r * 0.38 + Math.sin(t * 0.6 + j) * 0.05;
-      pPositions[j * 3 + 2] = Math.sin(a) * r * 0.42;
+      pPositions[j * 3 + 2] = Math.sin(ag) * r * 0.42;
     }
     particleGeo.attributes.position.needsUpdate = true;
     renderer.render(scene, camera);
   }
 
   function tickReduced() {
-    var t = 0;
     for (var j = 0; j < PARTICLE_COUNT; j++) {
       var r = pRadii[j];
       var a = pAngles[j];
@@ -15857,6 +16082,174 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 
   if (reducedMotion) {
     tickReduced();
+  } else {
+    tick();
+  }
+})();
+</script>
+
+<script>
+/* 黄金流体ウェーブ・ディバイダー */
+(function () {
+  if (typeof THREE === 'undefined') return;
+
+  var container = document.getElementById('aurum-gold-wave');
+  if (!container) return;
+
+  var reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
+  camera.position.set(0, 2.1, 4.6);
+  camera.lookAt(0, 0, 0);
+
+  var renderer;
+  try {
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+  } catch (e) { return; }
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setClearColor(0x000000, 0);
+  container.appendChild(renderer.domElement);
+
+  var uniforms = {
+    uTime:   { value: 0 },
+    uAmp:    { value: 0.8 },
+    uMouse:  { value: new THREE.Vector2(0, 0) },
+  };
+
+  var waveMat = new THREE.ShaderMaterial({
+    uniforms: uniforms,
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+    side: THREE.DoubleSide,
+    vertexShader: [
+      'uniform float uTime;',
+      'uniform float uAmp;',
+      'uniform vec2 uMouse;',
+      'varying float vH;',
+      'varying vec2 vUv;',
+      'void main() {',
+      '  vUv = uv;',
+      '  vec3 p = position;',
+      '  float t = uTime;',
+      '  float mx = uMouse.x * 1.2;',
+      '  float my = uMouse.y * 0.5;',
+      '  float w1 = sin(p.x * 1.15 + t * 0.9) * 0.34;',
+      '  float w2 = sin(p.x * 2.3 - t * 0.6 + p.y * 1.4) * 0.22;',
+      '  float w3 = sin(p.x * 4.7 + t * 1.7 + p.y * 3.1) * 0.09;',
+      '  float w4 = sin((p.x + mx) * 0.6 + t * 0.35) * (0.42 + my * 0.2);',
+      '  float h = (w1 + w2 + w3 + w4) * uAmp;',
+      '  float env = smoothstep(0.0, 0.18, vUv.x) * smoothstep(1.0, 0.82, vUv.x);',
+      '  h *= env;',
+      '  p.z += h;',
+      '  vH = h;',
+      '  gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime;',
+      'varying float vH;',
+      'varying vec2 vUv;',
+      'void main() {',
+      '  vec3 deep = vec3(0.33, 0.24, 0.10);',
+      '  vec3 mid  = vec3(0.77, 0.63, 0.35);',
+      '  vec3 hi   = vec3(0.95, 0.82, 0.47);',
+      '  float hN = clamp(vH * 1.6 + 0.5, 0.0, 1.0);',
+      '  vec3 col = mix(deep, mid, hN);',
+      '  col = mix(col, hi, pow(hN, 3.0));',
+      '  float sheen = pow(max(0.0, sin(vUv.x * 12.566 - uTime * 1.2 + vH * 4.0)), 6.0);',
+      '  col += hi * sheen * 0.35;',
+      '  float edge = smoothstep(0.0, 0.10, vUv.x) * smoothstep(1.0, 0.90, vUv.x) * smoothstep(0.0, 0.25, vUv.y) * smoothstep(1.0, 0.75, vUv.y);',
+      '  float a = edge * (0.45 + hN * 0.55);',
+      '  gl_FragColor = vec4(col, a * 0.85);',
+      '}'
+    ].join('\n'),
+  });
+
+  var wave = new THREE.Mesh(new THREE.PlaneGeometry(14, 4, 180, 36), waveMat);
+  wave.rotation.x = -Math.PI / 2.35;
+  scene.add(wave);
+
+  /* 浮遊する金の火花 */
+  var SPARKS = 220;
+  var sPos = new Float32Array(SPARKS * 3);
+  var sSeed = new Float32Array(SPARKS);
+  for (var i = 0; i < SPARKS; i++) {
+    sPos[i * 3]     = (Math.random() - 0.5) * 11;
+    sPos[i * 3 + 1] = Math.random() * 1.6 - 0.2;
+    sPos[i * 3 + 2] = (Math.random() - 0.5) * 3;
+    sSeed[i] = Math.random() * Math.PI * 2;
+  }
+  var sGeo = new THREE.BufferGeometry();
+  sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+  var sMat = new THREE.PointsMaterial({
+    color: 0xf3d078,
+    size: 0.035,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+    transparent: true,
+    opacity: 0.75,
+  });
+  var sparks = new THREE.Points(sGeo, sMat);
+  scene.add(sparks);
+
+  /* マウス追従 (ページ全体の横位置でゆるく揺らす) */
+  var mouseTX = 0, mouseTY = 0;
+  window.addEventListener('pointermove', function (e) {
+    mouseTX = (e.clientX / window.innerWidth) * 2 - 1;
+    mouseTY = (e.clientY / window.innerHeight) * 2 - 1;
+  }, { passive: true });
+
+  function onResize() {
+    var w = container.offsetWidth || 1;
+    var h = container.offsetHeight || 1;
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+    renderer.setSize(w, h);
+  }
+  onResize();
+  window.addEventListener('resize', onResize);
+
+  var clock = new THREE.Clock();
+  var isVisible = false;
+
+  function tick() {
+    requestAnimationFrame(tick);
+    if (!isVisible) return;
+    var dt = Math.min(clock.getDelta(), 0.1);
+    var t = clock.elapsedTime;
+    uniforms.uTime.value = t;
+    uniforms.uMouse.value.x += (mouseTX - uniforms.uMouse.value.x) * Math.min(1, dt * 2.5);
+    uniforms.uMouse.value.y += (-mouseTY - uniforms.uMouse.value.y) * Math.min(1, dt * 2.5);
+    /* スクロール位置で振幅を高める (近づくほどダイナミックに) */
+    var rect = container.getBoundingClientRect();
+    var prog = 1 - Math.min(1, Math.max(0, rect.top / Math.max(1, window.innerHeight)));
+    uniforms.uAmp.value = 0.55 + prog * 0.85;
+    /* 火花のゆらぎ */
+    for (var i = 0; i < SPARKS; i++) {
+      sPos[i * 3 + 1] += Math.sin(t * 0.8 + sSeed[i]) * 0.0016 + 0.0011;
+      if (sPos[i * 3 + 1] > 1.7) sPos[i * 3 + 1] = -0.2;
+    }
+    sGeo.attributes.position.needsUpdate = true;
+    renderer.render(scene, camera);
+  }
+
+  function renderStatic() {
+    uniforms.uTime.value = 2.5;
+    renderer.render(scene, camera);
+  }
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      isVisible = entry.isIntersecting;
+      if (isVisible) clock.start();
+    });
+  }, { threshold: 0.05 });
+  observer.observe(container);
+
+  if (reducedMotion) {
+    renderStatic();
   } else {
     tick();
   }
