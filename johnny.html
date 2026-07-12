@@ -449,7 +449,21 @@ body{counter-reset:secn}
   *{animation:none!important;transition:none!important}
   .reveal,.stagger>*{opacity:1!important;transform:none!important}
 }
-.hero-bg{background-image:repeating-linear-gradient(-45deg,transparent 0 26px,rgba(216,68,46,.05) 26px 28px),radial-gradient(60% 50% at 70% 12%,rgba(216,68,46,.18),transparent 70%)}.kicker{font-weight:700}.honne .card{border-top:3px solid var(--accent)}
+
+    /* johnny: タブロイド・生々しい太字 */
+    .hero-bg{background-image:repeating-linear-gradient(-45deg,transparent 0 26px,rgba(216,68,46,.05) 26px 28px),radial-gradient(60% 50% at 70% 12%,rgba(216,68,46,.2),transparent 70%)}
+    .honne .card{border-top:3px solid var(--accent)}
+    .kicker{background:var(--accent);color:#0B0908;padding:.4em 1em;display:inline-block;letter-spacing:.14em;font-weight:700}
+    .hero h1 .t2{position:relative;display:inline-block}
+    .hero h1 .t2::after{content:'';position:absolute;left:-.05em;right:-.05em;bottom:.12em;height:.3em;background:color-mix(in srgb,var(--accent) 42%,transparent);z-index:-1;transform:skewX(-6deg)}
+    .card{border-top:3px solid color-mix(in srgb,var(--accent) 45%,transparent)}
+    .card:hover{border-top-color:var(--accent)}
+    .honne .card h3{font-family:var(--fd);font-size:1.25rem;letter-spacing:.02em}
+    .sec h2{position:relative;padding-left:.7em}
+    .sec h2::before{content:'';position:absolute;left:0;top:.14em;bottom:.14em;width:5px;background:var(--accent)}
+    .sec-kicker{color:var(--accent);font-weight:700}
+    .btn{font-weight:700;letter-spacing:.06em}
+  
 </style>
 <script>(function(){if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("anim");window.__animSafety=setTimeout(function(){document.documentElement.classList.remove("anim")},2500)}})();</script>
 </head>

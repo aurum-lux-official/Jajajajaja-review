@@ -449,7 +449,21 @@ body{counter-reset:secn}
   *{animation:none!important;transition:none!important}
   .reveal,.stagger>*{opacity:1!important;transform:none!important}
 }
-.hero-bg{background-image:linear-gradient(rgba(91,141,201,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(91,141,201,.05) 1px,transparent 1px),radial-gradient(60% 50% at 70% 12%,rgba(91,141,201,.14),transparent 70%);background-size:44px 44px,44px 44px,auto}.chip b{font-family:var(--fm)}
+
+    /* andrew: データラボ・計器 */
+    .hero-bg{background-image:linear-gradient(rgba(91,141,201,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(91,141,201,.05) 1px,transparent 1px),radial-gradient(60% 50% at 70% 12%,rgba(91,141,201,.15),transparent 70%);background-size:44px 44px,44px 44px,auto}
+    .chip b{font-family:var(--fm)}
+    .hero-crest-deco::before{content:'';position:absolute;inset:-14%;border:1px solid rgba(91,141,201,.18);border-radius:50%}
+    .chip{position:relative}
+    .chip::before{content:'';position:absolute;top:9px;right:9px;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+    .card{position:relative;background:rgba(13,20,36,.6)}
+    .card::after{content:'';position:absolute;top:8px;left:8px;width:10px;height:10px;border-top:1px solid rgba(91,141,201,.5);border-left:1px solid rgba(91,141,201,.5)}
+    .card:hover{border-color:rgba(91,141,201,.4)}
+    .sec-kicker{font-family:var(--fm);letter-spacing:.28em}
+    .sec h2::after{background:linear-gradient(90deg,var(--accent),transparent)}
+    .sig-table td,.sig-table th{font-variant-numeric:tabular-nums}.rk-profit{font-family:var(--fm)}
+    .btn{font-family:var(--fm);letter-spacing:.1em;font-size:.85rem}
+  
 </style>
 <script>(function(){if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("anim");window.__animSafety=setTimeout(function(){document.documentElement.classList.remove("anim")},2500)}})();</script>
 </head>

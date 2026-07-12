@@ -449,7 +449,24 @@ body{counter-reset:secn}
   *{animation:none!important;transition:none!important}
   .reveal,.stagger>*{opacity:1!important;transform:none!important}
 }
-.kicker{color:var(--accent2);letter-spacing:.5em}.hero--center::after{content:'誠';position:absolute;right:8vw;bottom:10vh;font-family:var(--fd);font-size:8rem;color:var(--accent2);opacity:.12;border:1px solid currentColor;line-height:1.15;padding:.1em .12em}.hero--center .hero-main::before{content:'正直に、丁寧に。';position:absolute;left:-3.5em;top:0;writing-mode:vertical-rl;letter-spacing:.5em;color:var(--mut);font-size:.8rem;opacity:.7}@media(max-width:900px){.hero--center .hero-main::before{content:none}}.hero--center .hero-main{position:relative}.yakusoku .card.dekiru h3{color:var(--accent)}.yakusoku .card.dekinai h3{color:var(--accent2)}.yakusoku .card li{list-style:none;padding:.55em 0;border-bottom:1px solid var(--line);color:var(--mut);font-size:.95rem}
+
+    /* makoto: 和紙・墨・落款 */
+    .kicker{color:var(--accent2);letter-spacing:.5em}
+    .hero--center::after{content:'誠';position:absolute;right:8vw;bottom:10vh;font-family:var(--fd);font-size:9rem;color:var(--accent2);opacity:.13;border:2px solid currentColor;line-height:1.15;padding:.08em .12em;border-radius:3px}
+    .hero--center .hero-main::before{content:'正直に、丁寧に。';position:absolute;left:-3.5em;top:0;writing-mode:vertical-rl;letter-spacing:.5em;color:var(--mut);font-size:.82rem;opacity:.7}
+    @media(max-width:900px){.hero--center .hero-main::before{content:none}}
+    .hero--center .hero-main{position:relative}
+    .yakusoku .card.dekiru h3{color:var(--accent)}.yakusoku .card.dekinai h3{color:var(--accent2)}
+    .yakusoku .card li{list-style:none;padding:.55em 0;border-bottom:1px solid var(--line);color:var(--mut);font-size:.95rem}
+    .hero{background:radial-gradient(60% 50% at 50% 6%,rgba(197,160,89,.09),transparent 60%),var(--bg)}
+    body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:2;opacity:.6;background:radial-gradient(circle at 18% 28%,rgba(160,58,46,.03),transparent 42%),radial-gradient(circle at 82% 72%,rgba(197,160,89,.03),transparent 42%)}
+    .card{border:1px solid rgba(197,160,89,.14);background:var(--panel)}
+    .card:hover{border-color:rgba(197,160,89,.4)}
+    .card h3{font-family:var(--fd);letter-spacing:.1em}.card h3::before{content:'◦';color:var(--accent2);margin-right:.6em}
+    .sec h2{letter-spacing:.14em}.sec h2::after{background:linear-gradient(90deg,var(--gold),var(--accent2) 50%,transparent)}
+    .sec-kicker{color:var(--accent2);letter-spacing:.4em}.btn{letter-spacing:.16em}
+    .quote{font-family:var(--fd);letter-spacing:.08em}
+  
 </style>
 <script>(function(){if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("anim");window.__animSafety=setTimeout(function(){document.documentElement.classList.remove("anim")},2500)}})();</script>
 </head>

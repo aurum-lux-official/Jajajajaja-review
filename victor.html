@@ -449,7 +449,22 @@ body{counter-reset:secn}
   *{animation:none!important;transition:none!important}
   .reveal,.stagger>*{opacity:1!important;transform:none!important}
 }
-.hero-bg::after{content:'◆';position:absolute;right:6vw;top:18vh;font-size:11rem;color:rgba(140,47,57,.10);line-height:1}.sec--risk .risk-list li{border-left:2px solid var(--accent);border-bottom:none;padding-left:1.4em;margin-bottom:.6em}.okite li{font-family:var(--fb);font-size:1.05rem;padding:1em 0;border-bottom:1px solid var(--line);list-style:none}.okite li::before{content:none}.okite .no{font-family:var(--fd);color:var(--accent);margin-right:1em;letter-spacing:.2em}
+
+    /* victor: 紋章学・血赤・重厚 */
+    .hero{background:radial-gradient(58% 50% at 50% 0%,rgba(140,47,57,.15),transparent 60%),var(--bg)}
+    .hero-bg::after{content:'◆';position:absolute;right:6vw;top:15vh;font-size:12rem;color:rgba(140,47,57,.10);line-height:1}
+    .hero-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(38% 58% at 78% 44%,rgba(140,47,57,.16),transparent 66%)}
+    .hero-crest-deco::after{content:'';position:absolute;inset:-16%;border:1px solid rgba(140,47,57,.24);border-radius:50%}
+    .hero-crest-deco::before{content:'';position:absolute;inset:-29%;border:1px dashed rgba(194,96,108,.15);border-radius:50%}
+    .sec--risk .risk-list li{border-left:2px solid var(--accent);border-bottom:none;padding-left:1.4em;margin-bottom:.6em}
+    .okite li{font-family:var(--fb);font-size:1.05rem;padding:1em 0;border-bottom:1px solid var(--line);list-style:none}
+    .okite li::before{content:none}.okite .no{font-family:var(--fd);color:var(--accent);margin-right:1em;letter-spacing:.2em}
+    .card{border-left:2px solid color-mix(in srgb,var(--accent) 42%,transparent);background:linear-gradient(180deg,var(--panel),color-mix(in srgb,var(--accent) 5%,var(--panel)))}
+    .card:hover{border-left-color:var(--accent);box-shadow:-7px 0 32px color-mix(in srgb,var(--accent) 18%,transparent)}
+    .sec h2::after{background:linear-gradient(90deg,var(--accent),var(--gold) 55%,transparent)}
+    .sec-kicker{color:var(--accent2)}
+    .btn{letter-spacing:.14em}.quote{font-family:var(--fd)}
+  
 </style>
 <script>(function(){if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("anim");window.__animSafety=setTimeout(function(){document.documentElement.classList.remove("anim")},2500)}})();</script>
 </head>

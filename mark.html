@@ -449,7 +449,22 @@ body{counter-reset:secn}
   *{animation:none!important;transition:none!important}
   .reveal,.stagger>*{opacity:1!important;transform:none!important}
 }
-.hero-bg{background-image:repeating-linear-gradient(180deg,transparent 0 42px,rgba(79,157,105,.06) 42px 43px),radial-gradient(60% 50% at 70% 12%,rgba(79,157,105,.13),transparent 70%)}.step .num{background:var(--accent);color:#06110B}.checklist li{list-style:none;padding:.9em 0 .9em 2.4em;border-bottom:1px dashed var(--line);position:relative;color:var(--ink)}.checklist li::before{content:'✓';position:absolute;left:.4em;color:var(--accent);font-weight:700}
+
+    /* mark: 設計図・青焼き */
+    .hero-bg{background-image:linear-gradient(rgba(79,157,105,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(79,157,105,.06) 1px,transparent 1px),radial-gradient(60% 50% at 70% 12%,rgba(79,157,105,.13),transparent 70%);background-size:38px 38px,38px 38px,auto}
+    .step .num{background:var(--accent);color:#06110B}
+    .checklist li{list-style:none;padding:.9em 0 .9em 2.4em;border-bottom:1px dashed var(--line);position:relative;color:var(--ink)}
+    .checklist li::before{content:'✓';position:absolute;left:.4em;color:var(--accent);font-weight:700}
+    .hero--split .hero-main{position:relative;padding:8px 0 8px 28px;border-left:1px solid rgba(79,157,105,.3)}
+    .hero--split .hero-main::before{content:'';position:absolute;left:-4px;top:0;width:7px;height:7px;border:1px solid var(--accent);border-radius:50%;background:var(--bg)}
+    .hero--split .hero-main::after{content:'';position:absolute;left:-4px;bottom:0;width:7px;height:7px;border:1px solid var(--accent);border-radius:50%;background:var(--bg)}
+    .card{border:1px solid rgba(79,157,105,.16);border-radius:4px}
+    .card:hover{border-color:rgba(79,157,105,.4)}
+    .card h3{font-family:var(--fd)}
+    .sec-kicker{font-family:var(--fm);letter-spacing:.26em}
+    .sec h2::after{background:linear-gradient(90deg,var(--accent),transparent);height:1px}
+    .tl-dot{border-style:dashed}.btn{border-radius:4px}
+  
 </style>
 <script>(function(){if(!matchMedia("(prefers-reduced-motion: reduce)").matches){document.documentElement.classList.add("anim");window.__animSafety=setTimeout(function(){document.documentElement.classList.remove("anim")},2500)}})();</script>
 </head>
