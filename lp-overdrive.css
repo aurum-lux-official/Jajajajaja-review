@@ -1,0 +1,128 @@
+/* Overdrive: restrained spatial depth and tactile UI shared by the nine LPs. */
+.hero {
+  --od-rx: 0deg;
+  --od-ry: 0deg;
+  --od-px: 0px;
+  --od-py: 0px;
+  isolation: isolate;
+  perspective: 1100px;
+}
+
+.hero-depth {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  right: clamp(-150px, -7vw, -40px);
+  width: min(47vw, 540px);
+  aspect-ratio: 1;
+  pointer-events: none;
+  opacity: .5;
+  transform-style: preserve-3d;
+  transform: translate3d(var(--od-px), calc(-50% + var(--od-py)), 0)
+    rotateX(var(--od-rx)) rotateY(var(--od-ry));
+  transition: transform .38s cubic-bezier(.2,.8,.2,1), opacity .3s ease;
+  filter: drop-shadow(0 24px 55px color-mix(in srgb, var(--accent) 17%, transparent));
+}
+.hero-depth span { position: absolute; inset: 14%; transform-style: preserve-3d; }
+.hero-depth span:nth-child(1) {
+  border: 1px solid color-mix(in srgb, var(--accent2) 42%, transparent);
+  transform: translateZ(55px) rotate(12deg);
+}
+.hero-depth span:nth-child(2) {
+  inset: 25%; border: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+  transform: translateZ(105px) rotate(-18deg);
+}
+.hero-depth span:nth-child(3) {
+  inset: 36%;
+  background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--accent2) 20%, transparent), transparent 68%);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  transform: translateZ(150px) rotate(35deg);
+}
+
+/* Analytical / technical characters: calibrated planes. */
+html[data-character="andrew"] .hero-depth span,
+html[data-character="maden"] .hero-depth span,
+html[data-character="nova"] .hero-depth span { border-radius: 3px; }
+html[data-character="andrew"] .hero-depth::before,
+html[data-character="maden"] .hero-depth::before,
+html[data-character="nova"] .hero-depth::before {
+  content: ""; position: absolute; inset: 3%;
+  background-image: linear-gradient(color-mix(in srgb,var(--accent) 14%,transparent) 1px,transparent 1px),
+    linear-gradient(90deg,color-mix(in srgb,var(--accent) 14%,transparent) 1px,transparent 1px);
+  background-size: 34px 34px;
+  clip-path: polygon(12% 0,100% 17%,83% 100%,0 82%);
+  transform: translateZ(-40px) rotate(-8deg);
+}
+
+/* Elegant / traditional characters: concentric material rings. */
+html:is([data-character="aurelia"],[data-character="makoto"],[data-character="pal"]) .hero-depth span {
+  border-radius: 50%;
+  box-shadow: inset 0 0 34px color-mix(in srgb,var(--accent) 7%,transparent);
+}
+html:is([data-character="aurelia"],[data-character="makoto"],[data-character="pal"]) .hero-depth::after {
+  content: ""; position:absolute; inset: 5%; border-radius: 50%;
+  border: 1px dashed color-mix(in srgb,var(--accent2) 22%,transparent);
+  transform: translateZ(-30px) rotate(17deg);
+}
+
+/* Commanding characters: architectural slashes. */
+html:is([data-character="johnny"],[data-character="victor"]) .hero-depth span {
+  border-radius: 0; clip-path: polygon(24% 0,100% 0,76% 100%,0 100%);
+}
+html:is([data-character="johnny"],[data-character="victor"]) .hero-depth span:nth-child(3) {
+  background: linear-gradient(135deg,color-mix(in srgb,var(--accent) 22%,transparent),transparent 65%);
+}
+
+/* Operational character: stacked decision panels. */
+html[data-character="mark"] .hero-depth span { border-radius: 10px; }
+html[data-character="mark"] .hero-depth span::after {
+  content: ""; position:absolute; left:12%; right:12%; top:24%; height:1px;
+  background: color-mix(in srgb,var(--accent2) 35%,transparent);
+  box-shadow: 0 42px color-mix(in srgb,var(--accent2) 22%,transparent),
+    0 84px color-mix(in srgb,var(--accent2) 14%,transparent);
+}
+
+/* Tactile hierarchy: only decision-heavy components receive lift. */
+:is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details) {
+  position: relative;
+  transition: transform .32s cubic-bezier(.2,.8,.2,1), border-color .25s ease,
+    background-color .25s ease, box-shadow .32s ease;
+}
+:is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details):hover {
+  transform: translate3d(4px,-2px,0);
+  border-color: color-mix(in srgb,var(--accent) 42%,var(--line));
+  background-color: color-mix(in srgb,var(--panel) 92%,var(--accent) 8%);
+  box-shadow: -4px 10px 28px color-mix(in srgb,var(--bg) 72%,transparent);
+}
+:is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details):active { transform: translate3d(2px,0,0) scale(.996); }
+.faq-list details[open] {
+  border-color: color-mix(in srgb,var(--accent) 45%,var(--line));
+  background: linear-gradient(105deg,color-mix(in srgb,var(--accent) 8%,transparent),transparent 62%);
+}
+.faq-list details[open] summary { color: var(--ink); }
+.faq-list details[open] summary::before {
+  content: ""; position:absolute; left:-1px; top:22%; bottom:22%; width:2px;
+  background: linear-gradient(var(--accent2),var(--accent));
+  box-shadow: 0 0 14px color-mix(in srgb,var(--accent) 45%,transparent);
+}
+.sys-row::after,.price-row::after,.cal-row::after {
+  content:""; position:absolute; left:0; bottom:-1px; width:0; height:1px;
+  background:linear-gradient(90deg,var(--accent),transparent);
+  transition:width .48s cubic-bezier(.2,.8,.2,1);
+}
+:is(.sys-row,.price-row,.cal-row):hover::after { width:72%; }
+
+@media (max-width: 760px) {
+  .hero-depth { width: 82vw; right: -38vw; opacity: .2; filter: none; }
+  :is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details):hover { transform:none; box-shadow:none; }
+}
+@media (hover: none), (pointer: coarse) {
+  .hero-depth { transition:none; }
+  :is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details):hover { transform:none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-depth { transform:translate3d(0,-50%,0); transition:opacity .15s linear; }
+  :is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details) { transition:background-color .15s linear,border-color .15s linear; }
+  :is(.sys-row,.price-row,.cal-row,.flow-node,.faq-list details):is(:hover,:active) { transform:none; }
+  .sys-row::after,.price-row::after,.cal-row::after { transition:none; }
+}
