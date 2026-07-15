@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;600;700&display=swap");
 
 /* Shared interaction polish for the nine character LPs. */
 :where(a, button, input, summary):focus-visible {
@@ -18,12 +18,12 @@
 .btn:active { transform: translateY(0) scale(.985); }
 .btn:disabled { cursor: wait; filter: grayscale(.25); opacity: .72; }
 
-/* Keep Japanese labels and numerals consistent across all KPI-style displays. */
-:is(.hero-stats .chip b, .freq-val, .price-row b, .rk-profit, .cal-date, .m-stat) {
-  font-family: "IBM Plex Sans JP", "Avenir Next", "Helvetica Neue", sans-serif !important;
-  font-weight: 700 !important;
+/* Unify Japanese labels and numerals with an elegant Mincho face. */
+:is(.hero-stats .chip b, .freq-val, .price-row b, .rk-profit, .rk-date, .cal-date, .m-stat, .asof) {
+  font-family: "Shippori Mincho", "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif !important;
+  font-weight: 600 !important;
   font-variant-numeric: tabular-nums lining-nums;
-  letter-spacing: .015em;
+  letter-spacing: .035em;
 }
 @media (max-width: 1000px) {
   .nav-menu a::after { left: 24px; right: 100%; bottom: 0; }
