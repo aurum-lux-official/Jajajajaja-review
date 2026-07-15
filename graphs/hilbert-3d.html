@@ -7,11 +7,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --gold:#C5A059;
-  --gold-bright:#E8C87E;
-  --bg:#050505;
-  --navy:#0A0F1C;
-  --ice:#8FBFD9;
+  --gold:#3FB8AF;
+  --gold-bright:#7AD6CF;
+  --bg:#06090B;
+  --navy:#0C1416;
+  --ice:#69B9B3;
   --text:#EDE8DE;
   --dim:#8A8578;
 }
@@ -21,8 +21,8 @@ header{padding:20px 18px 8px;text-align:center}
 header h1{font-family:'Noto Serif JP',serif;font-weight:600;font-size:20px;letter-spacing:.12em;color:var(--gold)}
 header p{font-size:11px;color:var(--dim);letter-spacing:.18em;margin-top:4px}
 .formula{text-align:center;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);
-  padding:10px 14px;margin:10px auto 0;max-width:420px;border-top:1px solid rgba(197,160,89,.25);
-  border-bottom:1px solid rgba(197,160,89,.25);letter-spacing:.04em}
+  padding:10px 14px;margin:10px auto 0;max-width:420px;border-top:1px solid rgba(63,184,175,.25);
+  border-bottom:1px solid rgba(63,184,175,.25);letter-spacing:.04em}
 .formula .re{color:#EDE8DE}.formula .im{color:var(--gold-bright)}
 #stage{position:relative;width:100%;height:52vh;min-height:340px;touch-action:none}
 #stage canvas{display:block}
@@ -32,15 +32,15 @@ header p{font-size:11px;color:var(--dim);letter-spacing:.18em;margin-top:4px}
 .controls{padding:6px 16px 4px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 .controls button{
   font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.06em;
-  background:transparent;color:var(--dim);border:1px solid rgba(197,160,89,.35);
+  background:transparent;color:var(--dim);border:1px solid rgba(63,184,175,.35);
   padding:8px 14px;border-radius:2px;cursor:pointer;transition:all .25s}
 .controls button.active{color:var(--bg);background:var(--gold);border-color:var(--gold)}
 .slider-row{display:flex;align-items:center;gap:12px;max-width:420px;margin:8px auto 0;padding:0 20px}
 .slider-row label{font-size:11px;color:var(--dim);white-space:nowrap;letter-spacing:.08em}
-input[type=range]{flex:1;appearance:none;-webkit-appearance:none;height:2px;background:rgba(197,160,89,.3);outline:none}
+input[type=range]{flex:1;appearance:none;-webkit-appearance:none;height:2px;background:rgba(63,184,175,.3);outline:none}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer}
 .charts{max-width:560px;margin:16px auto 0;padding:0 16px 30px}
-.chart-block{background:var(--navy);border:1px solid rgba(197,160,89,.18);border-radius:3px;padding:12px 12px 8px;margin-bottom:12px}
+.chart-block{background:var(--navy);border:1px solid rgba(63,184,175,.18);border-radius:3px;padding:12px 12px 8px;margin-bottom:12px}
 .chart-block h3{font-size:11px;font-weight:400;color:var(--dim);letter-spacing:.16em;margin-bottom:6px}
 .chart-block canvas{width:100%;height:110px;display:block}
 .note{max-width:560px;margin:0 auto;padding:0 20px 40px;font-size:12px;line-height:1.9;color:var(--dim)}
@@ -73,9 +73,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 
 <div id="stage">
   <div class="legend">
-    <div><span style="background:#C5A059"></span>解析信号 z(t)(螺旋)</div>
+    <div><span style="background:#3FB8AF"></span>解析信号 z(t)(螺旋)</div>
     <div><span style="background:#EDE8DE"></span>実部 x(t) — 壁面投影</div>
-    <div><span style="background:#8FBFD9"></span>虚部 H[x](t) — 床面投影</div>
+    <div><span style="background:#69B9B3"></span>虚部 H[x](t) — 床面投影</div>
   </div>
   <div class="hint">ドラッグで回転 / ピンチでズーム</div>
 </div>
@@ -272,21 +272,21 @@ function plotLine(ctx,data,w,h,color,lw){
 function draw2D(x, hx){
   const a=setupCanvas(document.getElementById('c2d1'));
   a.ctx.clearRect(0,0,a.w,a.h);
-  a.ctx.strokeStyle='rgba(197,160,89,.15)';a.ctx.beginPath();
+  a.ctx.strokeStyle='rgba(63,184,175,.15)';a.ctx.beginPath();
   a.ctx.moveTo(0,a.h/2);a.ctx.lineTo(a.w,a.h/2);a.ctx.stroke();
   plotLine(a.ctx,x,a.w,a.h,'#EDE8DE',1.2);
-  plotLine(a.ctx,hx,a.w,a.h,'#C5A059',1.4);
+  plotLine(a.ctx,hx,a.w,a.h,'#3FB8AF',1.4);
 
   const env=new Float64Array(N);
   for(let i=0;i<N;i++) env[i]=Math.hypot(x[i],hx[i]);
   const b=setupCanvas(document.getElementById('c2d2'));
   b.ctx.clearRect(0,0,b.w,b.h);
-  b.ctx.strokeStyle='rgba(197,160,89,.15)';b.ctx.beginPath();
+  b.ctx.strokeStyle='rgba(63,184,175,.15)';b.ctx.beginPath();
   b.ctx.moveTo(0,b.h/2);b.ctx.lineTo(b.w,b.h/2);b.ctx.stroke();
   plotLine(b.ctx,x,b.w,b.h,'rgba(237,232,222,.3)',1);
-  plotLine(b.ctx,env,b.w,b.h,'#E8C87E',1.6);
+  plotLine(b.ctx,env,b.w,b.h,'#7AD6CF',1.6);
   const negEnv=env.map(v=>-v);
-  plotLine(b.ctx,negEnv,b.w,b.h,'#E8C87E',1.6);
+  plotLine(b.ctx,negEnv,b.w,b.h,'#7AD6CF',1.6);
 }
 
 /* ===== 操作 ===== */

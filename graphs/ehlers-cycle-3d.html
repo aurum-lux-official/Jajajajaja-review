@@ -9,11 +9,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --gold:#C5A059;
-    --gold-bright:#E8C87E;
-    --ink:#050505;
-    --navy:#0A0F1C;
-    --line:rgba(197,160,89,.25);
+    --gold:#5B8DC9;
+    --gold-bright:#9DBEE3;
+    --ink:#070B14;
+    --navy:#0D1424;
+    --line:rgba(91,141,201,.25);
     --text:#EDE6D6;
     --muted:#8B8577;
   }
@@ -74,7 +74,7 @@
   .legend .k{color:var(--gold);font-weight:600}
   .note{
     border-left:2px solid var(--gold);padding:8px 12px;
-    background:rgba(197,160,89,.06);border-radius:0 6px 6px 0;
+    background:rgba(91,141,201,.06);border-radius:0 6px 6px 0;
   }
 </style>
 </head>
@@ -233,12 +233,12 @@ function autocorrelationPeriodogram(filt){
    4. 描画
    ============================================================ */
 const GOLD_SCALE = [
-  [0.00,'#050505'],
-  [0.25,'#0A0F1C'],
-  [0.50,'#3A3020'],
-  [0.72,'#8A6E3A'],
-  [0.88,'#C5A059'],
-  [1.00,'#F2E2B8']
+  [0.00,'#070B14'],
+  [0.25,'#0D1424'],
+  [0.50,'#15263E'],
+  [0.72,'#315B8F'],
+  [0.88,'#5B8DC9'],
+  [1.00,'#DCE8F7']
 ];
 
 const CAMERA_SIDE = {eye:{x:1.7,y:-1.9,z:0.9}};
@@ -278,13 +278,13 @@ function render(){
   // --- 価格チャート（2D） ---
   Plotly.newPlot('price',[{
     y: currentClose, mode:'lines',
-    line:{color:'#C5A059',width:1.4}
+    line:{color:'#5B8DC9',width:1.4}
   }],{
     margin:{l:36,r:10,t:6,b:24},
     paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
     font:{color:'#8B8577',size:10,family:'Inter'},
-    xaxis:{gridcolor:'rgba(197,160,89,.08)',title:''},
-    yaxis:{gridcolor:'rgba(197,160,89,.08)'}
+    xaxis:{gridcolor:'rgba(91,141,201,.08)',title:''},
+    yaxis:{gridcolor:'rgba(91,141,201,.08)'}
   },{displayModeBar:false,responsive:true});
 
   // --- 3Dスペクトラム ---
@@ -304,7 +304,7 @@ function render(){
     {
       type:'scatter3d', mode:'lines',
       x:ridgeX, y:ridgeY, z:ridgeZ,
-      line:{color:'#F2E2B8',width:5},
+      line:{color:'#DCE8F7',width:5},
       name:'ドミナントサイクル',
       hovertemplate:'Bar %{x}<br>DC %{y:.1f}バー<extra></extra>'
     }
@@ -313,9 +313,9 @@ function render(){
     paper_bgcolor:'rgba(0,0,0,0)',
     showlegend:false,
     scene:{
-      xaxis:{title:'Time (bar)',color:'#8B8577',gridcolor:'rgba(197,160,89,.12)',backgroundcolor:'rgba(0,0,0,0)'},
-      yaxis:{title:'Period',color:'#8B8577',gridcolor:'rgba(197,160,89,.12)',backgroundcolor:'rgba(0,0,0,0)'},
-      zaxis:{title:'Power',range:[0,1.05],color:'#8B8577',gridcolor:'rgba(197,160,89,.12)',backgroundcolor:'rgba(0,0,0,0)'},
+      xaxis:{title:'Time (bar)',color:'#8B8577',gridcolor:'rgba(91,141,201,.12)',backgroundcolor:'rgba(0,0,0,0)'},
+      yaxis:{title:'Period',color:'#8B8577',gridcolor:'rgba(91,141,201,.12)',backgroundcolor:'rgba(0,0,0,0)'},
+      zaxis:{title:'Power',range:[0,1.05],color:'#8B8577',gridcolor:'rgba(91,141,201,.12)',backgroundcolor:'rgba(0,0,0,0)'},
       camera:CAMERA_SIDE,
       aspectratio:{x:1.6,y:1,z:0.55}
     }

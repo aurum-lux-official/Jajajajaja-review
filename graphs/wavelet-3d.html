@@ -7,10 +7,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
 <style>
   :root{
-    --bg:#050505;
-    --panel:#0A0F1C;
-    --gold:#C5A059;
-    --gold-dim:rgba(197,160,89,.35);
+    --bg:#0C0A10;
+    --panel:#17131C;
+    --gold:#D9A798;
+    --gold-dim:rgba(217,167,152,.35);
     --text:#EDE8DC;
     --sub:#8a8577;
   }
@@ -57,7 +57,7 @@
   }
   .controls button.active{
     background:var(--gold);
-    color:#050505;
+    color:#0C0A10;
     border-color:var(--gold);
     font-weight:600;
   }
@@ -160,11 +160,11 @@ function cwt(x){
 }
 
 const goldScale=[
-  [0.0,'#050505'],
-  [0.25,'#0A0F1C'],
-  [0.5,'#3d3320'],
-  [0.75,'#8f7433'],
-  [1.0,'#C5A059']
+  [0.0,'#0C0A10'],
+  [0.25,'#17131C'],
+  [0.5,'#38252A'],
+  [0.75,'#B57668'],
+  [1.0,'#D9A798']
 ];
 
 function render(type){
@@ -179,26 +179,26 @@ function render(type){
     lighting:{ambient:.6,diffuse:.7,specular:.25,roughness:.6},
     contours:{z:{show:true,usecolormap:true,project:{z:true}}}
   }],{
-    paper_bgcolor:'#050505',
+    paper_bgcolor:'#0C0A10',
     margin:{l:0,r:0,t:6,b:0},
     scene:{
-      xaxis:{title:'時間 (s)',color:'#8a8577',gridcolor:'#1c1c1c'},
-      yaxis:{title:'周波数 (Hz)',color:'#8a8577',gridcolor:'#1c1c1c',type:'log'},
-      zaxis:{title:'|CWT|',color:'#8a8577',gridcolor:'#1c1c1c'},
-      bgcolor:'#050505',
+      xaxis:{title:'時間 (s)',color:'#8a8577',gridcolor:'#2A202C'},
+      yaxis:{title:'周波数 (Hz)',color:'#8a8577',gridcolor:'#2A202C',type:'log'},
+      zaxis:{title:'|CWT|',color:'#8a8577',gridcolor:'#2A202C'},
+      bgcolor:'#0C0A10',
       camera:{eye:{x:1.6,y:-1.7,z:0.9}}
     }
   },{responsive:true,displayModeBar:false});
 
   Plotly.react('signal',[{
     x:t,y:x,mode:'lines',
-    line:{color:'#C5A059',width:1.4}
+    line:{color:'#D9A798',width:1.4}
   }],{
-    paper_bgcolor:'#050505',
-    plot_bgcolor:'#050505',
+    paper_bgcolor:'#0C0A10',
+    plot_bgcolor:'#0C0A10',
     margin:{l:44,r:16,t:8,b:34},
-    xaxis:{title:{text:'時間 (s)',font:{size:10,color:'#8a8577'}},color:'#8a8577',gridcolor:'#141414'},
-    yaxis:{title:{text:'原信号',font:{size:10,color:'#8a8577'}},color:'#8a8577',gridcolor:'#141414'}
+    xaxis:{title:{text:'時間 (s)',font:{size:10,color:'#8a8577'}},color:'#8a8577',gridcolor:'#211820'},
+    yaxis:{title:{text:'原信号',font:{size:10,color:'#8a8577'}},color:'#8a8577',gridcolor:'#211820'}
   },{responsive:true,displayModeBar:false});
 }
 
