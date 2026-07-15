@@ -2,7 +2,7 @@
   "use strict";
   var key=(location.pathname.match(/\/([^/]+)\.html$/i)||[])[1];
   var catalog={
-    andrew:{product:"AURUM",graph:"ehlers-cycle-3d.html",graphName:"EHLERS CYCLE SPECTRUM",systems:["Axiom Flow","Vector Pulse","Atlas Grid"]},
+    andrew:{product:"ARANY",graph:"ehlers-cycle-3d.html",graphName:"EHLERS CYCLE SPECTRUM",systems:["Axiom Flow","Vector Pulse","Atlas Grid"]},
     aurelia:{product:"ORO",graph:"wavelet-3d.html",graphName:"WAVELET SCALOGRAM",systems:["Luminous Flow","Rosé Pulse","Ivory Lattice"]},
     johnny:{product:"CHRYSOS",graph:"fourier-epicycles-3d-gold.html",graphName:"FOURIER EPICYCLES",systems:["Redline Flow","Ignition Pulse","Autobahn Grid"]},
     maden:{product:"ALTIN",graph:"hilbert-3d.html",graphName:"HILBERT TRANSFORM",systems:["Deepwave Flow","Teal Signal","Forge Grid"]},
@@ -29,7 +29,7 @@
     var lead=screens.querySelector(".sec-lead");if(lead)lead.textContent=item.product+"の分析思想を、価格・周期・流動性の関係として立体表示します。";
     var old=screens.querySelector(".shots-soon");
     var viz=document.createElement("div");viz.className="logic-viz reveal";
-    viz.innerHTML='<iframe src="./graphs/'+item.graph+'?v=2" title="'+item.product+' '+item.graphName+' ロジック概念可視化" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="logic-viz-meta"><b>'+item.product+' / '+item.graphName+'</b><span>ロジックの考え方を説明する概念可視化です。実際の取引履歴・収益・将来の成果を示すものではありません。</span></div>';
+    viz.innerHTML='<iframe src="./graphs/'+item.graph+'?v=3" title="'+item.product+' '+item.graphName+' ロジック概念可視化" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="logic-viz-meta"><b>'+item.product+' / '+item.graphName+'</b><span>ロジックの考え方を説明する概念可視化です。実際の取引履歴・収益・将来の成果を示すものではありません。</span></div>';
     if(old)old.replaceWith(viz);else screens.appendChild(viz);
   }
 })();
