@@ -15,6 +15,15 @@
 .btn:hover { transform: translateY(-2px); filter: saturate(1.08) brightness(1.04); }
 .btn:active { transform: translateY(0) scale(.985); }
 .btn:disabled { cursor: wait; filter: grayscale(.25); opacity: .72; }
+
+/* Keep the three hero KPIs visually consistent across every character theme. */
+.hero-stats .chip b {
+  font-family: "Avenir Next Condensed", "DIN Alternate", "Roboto Condensed", "Arial Narrow", sans-serif !important;
+  font-weight: 700 !important;
+  font-stretch: condensed;
+  font-variant-numeric: tabular-nums lining-nums;
+  letter-spacing: .025em;
+}
 @media (max-width: 1000px) {
   .nav-menu a::after { left: 24px; right: 100%; bottom: 0; }
   .nav-menu a[aria-current="location"]::after { right: 24px; }
