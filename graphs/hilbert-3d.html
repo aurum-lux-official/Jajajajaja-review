@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Hilbert Transform — 解析信号の3D可視化</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#C5A059;
+  --gold-bright:#E8C87E;
+  --bg:#050505;
+  --navy:#0A0F1C;
+  --ice:#8FBFD9;
+  --text:#EDE8DE;
+  --dim:#8A8578;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;overflow-x:hidden}
+header{padding:20px 18px 8px;text-align:center}
+header h1{font-family:'Noto Serif JP',serif;font-weight:600;font-size:20px;letter-spacing:.12em;color:var(--gold)}
+header p{font-size:11px;color:var(--dim);letter-spacing:.18em;margin-top:4px}
+.formula{text-align:center;font-family:'Inter',sans-serif;font-size:13px;color:var(--text);
+  padding:10px 14px;margin:10px auto 0;max-width:420px;border-top:1px solid rgba(197,160,89,.25);
+  border-bottom:1px solid rgba(197,160,89,.25);letter-spacing:.04em}
+.formula .re{color:#EDE8DE}.formula .im{color:var(--gold-bright)}
+#stage{position:relative;width:100%;height:52vh;min-height:340px;touch-action:none}
+#stage canvas{display:block}
+.hint{position:absolute;bottom:8px;left:0;right:0;text-align:center;font-size:10px;color:var(--dim);letter-spacing:.14em;pointer-events:none}
+.legend{position:absolute;top:10px;left:12px;font-size:10px;line-height:1.9;letter-spacing:.08em;pointer-events:none}
+.legend span{display:inline-block;width:16px;height:2px;vertical-align:middle;margin-right:6px}
+.controls{padding:6px 16px 4px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.controls button{
+  font-family:'Inter',sans-serif;font-size:12px;letter-spacing:.06em;
+  background:transparent;color:var(--dim);border:1px solid rgba(197,160,89,.35);
+  padding:8px 14px;border-radius:2px;cursor:pointer;transition:all .25s}
+.controls button.active{color:var(--bg);background:var(--gold);border-color:var(--gold)}
+.slider-row{display:flex;align-items:center;gap:12px;max-width:420px;margin:8px auto 0;padding:0 20px}
+.slider-row label{font-size:11px;color:var(--dim);white-space:nowrap;letter-spacing:.08em}
+input[type=range]{flex:1;appearance:none;-webkit-appearance:none;height:2px;background:rgba(197,160,89,.3);outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--gold);cursor:pointer}
+.charts{max-width:560px;margin:16px auto 0;padding:0 16px 30px}
+.chart-block{background:var(--navy);border:1px solid rgba(197,160,89,.18);border-radius:3px;padding:12px 12px 8px;margin-bottom:12px}
+.chart-block h3{font-size:11px;font-weight:400;color:var(--dim);letter-spacing:.16em;margin-bottom:6px}
+.chart-block canvas{width:100%;height:110px;display:block}
+.note{max-width:560px;margin:0 auto;padding:0 20px 40px;font-size:12px;line-height:1.9;color:var(--dim)}
+.note b{color:var(--gold);font-weight:500}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>HILBERT TRANSFORM</h1>
+  <p>解析信号 — ANALYTIC SIGNAL IN 3D</p>
+</header>
+
+<div class="formula">
+  z(t) = <span class="re">x(t)</span> + i·<span class="im">H[x](t)</span>
+</div>
+
+<div class="controls" id="presets">
+  <button data-p="sine" class="active">正弦波</button>
+  <button data-p="chirp">チャープ</button>
+  <button data-p="am">AM変調</button>
+  <button data-p="multi">合成波</button>
+</div>
+
+<div class="slider-row">
+  <label>周波数</label>
+  <input type="range" id="freq" min="1" max="8" step="0.5" value="3">
+  <label id="freqVal">3.0</label>
+</div>
+
+<div id="stage">
+  <div class="legend">
+    <div><span style="background:#C5A059"></span>解析信号 z(t)(螺旋)</div>
+    <div><span style="background:#EDE8DE"></span>実部 x(t) — 壁面投影</div>
+    <div><span style="background:#8FBFD9"></span>虚部 H[x](t) — 床面投影</div>
+  </div>
+  <div class="hint">ドラッグで回転 / ピンチでズーム</div>
+</div>
+
+<div class="controls">
+  <button id="rotBtn" class="active">自動回転</button>
+  <button id="projBtn" class="active">投影を表示</button>
+</div>
+
+<div class="charts">
+  <div class="chart-block">
+    <h3>原信号 x(t)(白) と ヒルベルト変換 H[x](t)(金)— 位相が90°ずれる</h3>
+    <canvas id="c2d1"></canvas>
+  </div>
+  <div class="chart-block">
+    <h3>瞬時振幅(包絡線)|z(t)| = √( x² + H[x]² )</h3>
+    <canvas id="c2d2"></canvas>
+  </div>
+</div>
+
+<div class="note">
+  ヒルベルト変換は信号の全周波数成分の位相を<b>−90°</b>回転させる変換。
+  原信号を実部、変換結果を虚部として複素平面に置くと<b>解析信号</b>になり、
+  時間軸を加えた3D空間では<b>螺旋</b>を描く。
+  螺旋の半径が<b>瞬時振幅(包絡線)</b>、回転速度が<b>瞬時周波数</b>に対応する。
+  AM変調を選ぶと包絡線抽出の意味が、チャープを選ぶと瞬時周波数の変化(螺旋の巻きが徐々に密になる)が直感的に見える。
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ===== FFTベースのヒルベルト変換 ===== */
+const N = 512;
+
+function fft(re, im, inv){
+  const n = re.length;
+  for(let i=1,j=0;i<n;i++){
+    let bit=n>>1;
+    for(;j&bit;bit>>=1) j^=bit;
+    j^=bit;
+    if(i<j){ [re[i],re[j]]=[re[j],re[i]]; [im[i],im[j]]=[im[j],im[i]]; }
+  }
+  for(let len=2;len<=n;len<<=1){
+    const ang=(inv?1:-1)*2*Math.PI/len;
+    const wr=Math.cos(ang), wi=Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let cr=1, ci=0;
+      for(let k=0;k<len/2;k++){
+        const ur=re[i+k], ui=im[i+k];
+        const vr=re[i+k+len/2]*cr - im[i+k+len/2]*ci;
+        const vi=re[i+k+len/2]*ci + im[i+k+len/2]*cr;
+        re[i+k]=ur+vr; im[i+k]=ui+vi;
+        re[i+k+len/2]=ur-vr; im[i+k+len/2]=ui-vi;
+        const ncr=cr*wr-ci*wi; ci=cr*wi+ci*wr; cr=ncr;
+      }
+    }
+  }
+  if(inv){ for(let i=0;i<n;i++){ re[i]/=n; im[i]/=n; } }
+}
+
+function analyticSignal(x){
+  const re=x.slice(), im=new Float64Array(N).fill(0);
+  fft(re,im,false);
+  // 正の周波数を2倍、負をゼロに(DCとナイキストはそのまま)
+  for(let k=1;k<N/2;k++){ re[k]*=2; im[k]*=2; }
+  for(let k=N/2+1;k<N;k++){ re[k]=0; im[k]=0; }
+  fft(re,im,true);
+  return {re, im}; // re=x(t), im=H[x](t)
+}
+
+/* ===== 信号プリセット ===== */
+let preset='sine', freq=3;
+function makeSignal(){
+  const x=new Float64Array(N);
+  for(let i=0;i<N;i++){
+    const t=i/N;
+    switch(preset){
+      case 'sine':  x[i]=Math.sin(2*Math.PI*freq*t); break;
+      case 'chirp': x[i]=Math.sin(2*Math.PI*(freq*t + 2.5*freq*t*t)); break;
+      case 'am':    x[i]=(0.6+0.4*Math.sin(2*Math.PI*1.5*t))*Math.sin(2*Math.PI*freq*2*t); break;
+      case 'multi': x[i]=0.6*Math.sin(2*Math.PI*freq*t)+0.35*Math.sin(2*Math.PI*freq*2.7*t+1.1); break;
+    }
+  }
+  return x;
+}
+
+/* ===== Three.js シーン ===== */
+const stage=document.getElementById('stage');
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x050505);
+scene.fog=new THREE.Fog(0x050505, 8, 22);
+
+const camera=new THREE.PerspectiveCamera(45, 1, .1, 100);
+camera.position.set(6.5, 3.2, 7.5);
+camera.lookAt(0,0,0);
+
+const renderer=new THREE.WebGLRenderer({antialias:true, alpha:false});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));
+stage.appendChild(renderer.domElement);
+
+function resize(){
+  const w=stage.clientWidth, h=stage.clientHeight;
+  renderer.setSize(w,h);
+  camera.aspect=w/h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize',resize);
+
+scene.add(new THREE.AmbientLight(0xffffff,.35));
+const key=new THREE.PointLight(0xC5A059,1.2,40); key.position.set(4,6,5); scene.add(key);
+const fill=new THREE.PointLight(0x8FBFD9,.5,40); fill.position.set(-5,-3,-4); scene.add(fill);
+
+const group=new THREE.Group();
+scene.add(group);
+
+/* 軸・壁面 */
+const L=4.4, R=1.6;
+const gridMat={color:0x1A2233};
+const gridFloor=new THREE.GridHelper(2*R+.8, 8, 0x263149, 0x141B2B);
+gridFloor.position.y=-R-.4;
+group.add(gridFloor);
+
+const gridWall=new THREE.GridHelper(2*R+.8, 8, 0x263149, 0x141B2B);
+gridWall.rotation.x=Math.PI/2;
+gridWall.position.z=-R-.4;
+group.add(gridWall);
+// 壁・床を時間軸方向に伸ばすためスケール調整
+gridFloor.scale.x = gridWall.scale.x = (2*L)/(2*R+.8);
+
+function axisLine(a,b,color){
+  const g=new THREE.BufferGeometry().setFromPoints([a,b]);
+  return new THREE.Line(g,new THREE.LineBasicMaterial({color}));
+}
+group.add(axisLine(new THREE.Vector3(-L,0,0),new THREE.Vector3(L,0,0),0x3A4258)); // t軸
+group.add(axisLine(new THREE.Vector3(-L,-R,0),new THREE.Vector3(-L,R,0),0x3A4258));
+group.add(axisLine(new THREE.Vector3(-L,0,-R),new THREE.Vector3(-L,0,R),0x3A4258));
+
+/* 螺旋と投影(更新可能オブジェクト) */
+let tube=null, projReal=null, projImag=null, capLine=null;
+
+function rebuild(){
+  const x=makeSignal();
+  const {re,im}=analyticSignal(x);
+
+  const pts=[], ptsR=[], ptsI=[];
+  for(let i=0;i<N;i++){
+    const t=-L + (2*L)*i/(N-1);
+    pts.push(new THREE.Vector3(t, re[i]*R*.9, im[i]*R*.9));
+    ptsR.push(new THREE.Vector3(t, re[i]*R*.9, -R-.39));   // 壁面: 実部=原信号
+    ptsI.push(new THREE.Vector3(t, -R-.39, im[i]*R*.9));   // 床面: 虚部=ヒルベルト変換
+  }
+
+  if(tube){ group.remove(tube); tube.geometry.dispose(); }
+  const curve=new THREE.CatmullRomCurve3(pts);
+  const tg=new THREE.TubeGeometry(curve, 500, 0.045, 10, false);
+  const tm=new THREE.MeshStandardMaterial({
+    color:0xC5A059, emissive:0x6E5522, emissiveIntensity:.55,
+    metalness:.85, roughness:.28
+  });
+  tube=new THREE.Mesh(tg,tm);
+  group.add(tube);
+
+  if(projReal){ group.remove(projReal); projReal.geometry.dispose(); }
+  projReal=new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(ptsR),
+    new THREE.LineBasicMaterial({color:0xEDE8DE, transparent:true, opacity:.55}));
+  group.add(projReal);
+
+  if(projImag){ group.remove(projImag); projImag.geometry.dispose(); }
+  projImag=new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints(ptsI),
+    new THREE.LineBasicMaterial({color:0x8FBFD9, transparent:true, opacity:.55}));
+  group.add(projImag);
+
+  projReal.visible = projImag.visible = showProj;
+
+  draw2D(x, im);
+}
+
+/* ===== 2Dチャート ===== */
+function setupCanvas(c){
+  const dpr=Math.min(window.devicePixelRatio,2);
+  const r=c.getBoundingClientRect();
+  c.width=r.width*dpr; c.height=110*dpr;
+  const ctx=c.getContext('2d'); ctx.scale(dpr,dpr);
+  return {ctx, w:r.width, h:110};
+}
+function plotLine(ctx,data,w,h,color,lw){
+  ctx.strokeStyle=color; ctx.lineWidth=lw; ctx.beginPath();
+  for(let i=0;i<N;i++){
+    const px=i/(N-1)*w, py=h/2 - data[i]*(h/2-8);
+    i?ctx.lineTo(px,py):ctx.moveTo(px,py);
+  }
+  ctx.stroke();
+}
+function draw2D(x, hx){
+  const a=setupCanvas(document.getElementById('c2d1'));
+  a.ctx.clearRect(0,0,a.w,a.h);
+  a.ctx.strokeStyle='rgba(197,160,89,.15)';a.ctx.beginPath();
+  a.ctx.moveTo(0,a.h/2);a.ctx.lineTo(a.w,a.h/2);a.ctx.stroke();
+  plotLine(a.ctx,x,a.w,a.h,'#EDE8DE',1.2);
+  plotLine(a.ctx,hx,a.w,a.h,'#C5A059',1.4);
+
+  const env=new Float64Array(N);
+  for(let i=0;i<N;i++) env[i]=Math.hypot(x[i],hx[i]);
+  const b=setupCanvas(document.getElementById('c2d2'));
+  b.ctx.clearRect(0,0,b.w,b.h);
+  b.ctx.strokeStyle='rgba(197,160,89,.15)';b.ctx.beginPath();
+  b.ctx.moveTo(0,b.h/2);b.ctx.lineTo(b.w,b.h/2);b.ctx.stroke();
+  plotLine(b.ctx,x,b.w,b.h,'rgba(237,232,222,.3)',1);
+  plotLine(b.ctx,env,b.w,b.h,'#E8C87E',1.6);
+  const negEnv=env.map(v=>-v);
+  plotLine(b.ctx,negEnv,b.w,b.h,'#E8C87E',1.6);
+}
+
+/* ===== 操作 ===== */
+let autoRot=true, showProj=true;
+let dragging=false, px=0, py=0, rotY=0.5, rotX=0.28, dist=camera.position.length();
+
+function applyCam(){
+  rotX=Math.max(-1.2,Math.min(1.2,rotX));
+  dist=Math.max(5,Math.min(18,dist));
+  camera.position.set(
+    dist*Math.cos(rotX)*Math.sin(rotY),
+    dist*Math.sin(rotX),
+    dist*Math.cos(rotX)*Math.cos(rotY));
+  camera.lookAt(0,0,0);
+}
+applyCam();
+
+stage.addEventListener('pointerdown',e=>{dragging=true;px=e.clientX;py=e.clientY;});
+window.addEventListener('pointerup',()=>dragging=false);
+window.addEventListener('pointermove',e=>{
+  if(!dragging)return;
+  rotY+=(e.clientX-px)*.006; rotX+=(e.clientY-py)*.006;
+  px=e.clientX;py=e.clientY;applyCam();
+});
+stage.addEventListener('wheel',e=>{e.preventDefault();dist+=e.deltaY*.01;applyCam();},{passive:false});
+
+let pinch0=0;
+stage.addEventListener('touchstart',e=>{
+  if(e.touches.length===2){
+    pinch0=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+  }
+},{passive:true});
+stage.addEventListener('touchmove',e=>{
+  if(e.touches.length===2){
+    const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+    dist*=pinch0/d; pinch0=d; applyCam();
+  }
+},{passive:true});
+
+document.querySelectorAll('#presets button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#presets button').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+    preset=b.dataset.p; rebuild();
+  });
+});
+document.getElementById('freq').addEventListener('input',e=>{
+  freq=parseFloat(e.target.value);
+  document.getElementById('freqVal').textContent=freq.toFixed(1);
+  rebuild();
+});
+document.getElementById('rotBtn').addEventListener('click',e=>{
+  autoRot=!autoRot; e.target.classList.toggle('active',autoRot);
+});
+document.getElementById('projBtn').addEventListener('click',e=>{
+  showProj=!showProj; e.target.classList.toggle('active',showProj);
+  if(projReal)projReal.visible=showProj;
+  if(projImag)projImag.visible=showProj;
+});
+
+/* ===== ループ ===== */
+resize();
+rebuild();
+(function loop(){
+  requestAnimationFrame(loop);
+  if(autoRot && !dragging){ rotY+=0.0025; applyCam(); }
+  renderer.render(scene,camera);
+})();
+window.addEventListener('resize',()=>{resize();rebuild();});
+</script>
+</body>
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ehlers Cycle Spectrum 3D — AURUM LUX Analytics</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --gold:#C5A059;
+    --gold-bright:#E8C87E;
+    --ink:#050505;
+    --navy:#0A0F1C;
+    --line:rgba(197,160,89,.25);
+    --text:#EDE6D6;
+    --muted:#8B8577;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{
+    background:linear-gradient(180deg,var(--ink) 0%,var(--navy) 100%);
+    color:var(--text);
+    font-family:'Inter','Noto Serif JP',sans-serif;
+    min-height:100vh;
+  }
+  header{
+    padding:28px 20px 14px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-size:10px;letter-spacing:.35em;color:var(--gold);
+    text-transform:uppercase;margin-bottom:8px;font-weight:600;
+  }
+  h1{
+    font-family:'Noto Serif JP',serif;font-weight:600;
+    font-size:clamp(20px,5vw,30px);line-height:1.3;
+  }
+  h1 em{font-style:normal;color:var(--gold-bright)}
+  .sub{font-size:12px;color:var(--muted);margin-top:6px;line-height:1.7}
+
+  .panel{padding:14px 12px}
+  .chart-card{
+    border:1px solid var(--line);border-radius:10px;
+    background:rgba(5,5,5,.55);overflow:hidden;margin-bottom:14px;
+  }
+  .chart-title{
+    display:flex;align-items:baseline;gap:10px;
+    padding:12px 14px 4px;
+  }
+  .chart-title b{
+    font-family:'Noto Serif JP',serif;font-weight:600;font-size:14px;
+  }
+  .chart-title span{font-size:11px;color:var(--muted)}
+  #price{width:100%;height:180px}
+  #spectrum{width:100%;height:64vh;min-height:420px}
+
+  .controls{
+    display:flex;gap:10px;flex-wrap:wrap;padding:0 2px 14px;
+  }
+  button{
+    background:transparent;color:var(--gold);
+    border:1px solid var(--gold);border-radius:6px;
+    padding:10px 18px;font-size:13px;font-family:'Inter',sans-serif;
+    letter-spacing:.08em;cursor:pointer;transition:all .25s;
+  }
+  button:hover,button:active{background:var(--gold);color:var(--ink)}
+  button.ghost{border-color:var(--line);color:var(--muted)}
+
+  .legend{
+    display:grid;grid-template-columns:1fr;gap:10px;
+    padding:4px 2px 30px;font-size:12px;line-height:1.8;color:var(--muted);
+  }
+  .legend .k{color:var(--gold);font-weight:600}
+  .note{
+    border-left:2px solid var(--gold);padding:8px 12px;
+    background:rgba(197,160,89,.06);border-radius:0 6px 6px 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">AURUM LUX — Cycle Analytics</div>
+  <h1>Ehlers <em>自己相関ピリオドグラム</em> 3D</h1>
+  <div class="sub">John Ehlers『Cycle Analytics for Traders』のアルゴリズムを忠実に実装。<br>ルーフィングフィルタ → 自己相関 → DFT → パワースペクトラムの流れを3D曲面で表示します。</div>
+</header>
+
+<div class="panel">
+
+  <div class="chart-card">
+    <div class="chart-title"><b>合成価格データ</b><span>周期15→40バーへ変動するサイクル＋トレンド＋ノイズ</span></div>
+    <div id="price"></div>
+  </div>
+
+  <div class="chart-card">
+    <div class="chart-title"><b>サイクル・スペクトラム</b><span>指でドラッグ回転／ピンチでズーム</span></div>
+    <div id="spectrum"></div>
+  </div>
+
+  <div class="controls">
+    <button id="regen">データ再生成</button>
+    <button id="topview" class="ghost">真上から見る（ヒートマップ視点）</button>
+    <button id="sideview" class="ghost">標準視点に戻す</button>
+  </div>
+
+  <div class="legend">
+    <div><span class="k">X軸（Time）</span>：バー番号（時間経過）</div>
+    <div><span class="k">Y軸（Period）</span>：サイクル周期（10〜48バー）</div>
+    <div><span class="k">Z軸（Power）</span>：正規化スペクトラルパワー（0〜1）。山の稜線＝その時点で市場を支配しているサイクル周期</div>
+    <div><span class="k">金色の稜線</span>：ドミナントサイクル（重心法で算出）の軌跡。価格データの周期が15→40バーへ移るのに追従して山が奥へ移動していくのが見えます</div>
+    <div class="note">実運用では価格の終値配列を <code>generatePrice()</code> の代わりに渡せば、そのままMT4/MT5のエクスポートデータやAPIデータで動きます。</div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   1. 合成価格データ生成（チャープサイクル：周期15→40バー）
+   ============================================================ */
+const N = 420;               // バー数
+const MIN_P = 10, MAX_P = 48; // 解析する周期レンジ
+
+function generatePrice(){
+  const close = new Array(N);
+  let phase = 0, price = 100;
+  for(let i=0;i<N;i++){
+    const period = 15 + 25 * (i/(N-1));      // 15 → 40 バーへ線形変化
+    phase += 2*Math.PI/period;
+    const cycle = 3.0*Math.sin(phase);
+    const trend = 0.015*i;
+    const noise = (Math.random()-0.5)*1.2;
+    close[i] = price + trend + cycle + noise;
+  }
+  return close;
+}
+
+/* ============================================================
+   2. Ehlers ルーフィングフィルタ（HP 48bar + SuperSmoother 10bar)
+   ============================================================ */
+function roofingFilter(close){
+  const n = close.length;
+  const hp = new Array(n).fill(0);
+  const filt = new Array(n).fill(0);
+
+  const rad = Math.sqrt(2)/2 * 2*Math.PI/48;
+  const alpha1 = (Math.cos(rad)+Math.sin(rad)-1)/Math.cos(rad);
+
+  const a1 = Math.exp(-Math.sqrt(2)*Math.PI/10);
+  const b1 = 2*a1*Math.cos(Math.sqrt(2)*Math.PI/10);
+  const c2 = b1, c3 = -a1*a1, c1 = 1-c2-c3;
+
+  for(let i=2;i<n;i++){
+    hp[i] = Math.pow(1-alpha1/2,2)*(close[i]-2*close[i-1]+close[i-2])
+          + 2*(1-alpha1)*hp[i-1] - Math.pow(1-alpha1,2)*hp[i-2];
+    filt[i] = c1*(hp[i]+hp[i-1])/2 + c2*filt[i-1] + c3*filt[i-2];
+  }
+  return filt;
+}
+
+/* ============================================================
+   3. 自己相関ピリオドグラム（Ehlers, Ch.8）
+   ============================================================ */
+function autocorrelationPeriodogram(filt){
+  const n = filt.length;
+  const avgLength = 3;
+  const numPeriods = MAX_P - MIN_P + 1;
+
+  // R[t][period] を蓄積するための状態
+  const Rprev = new Array(MAX_P+1).fill(0);
+  let maxPwr = 0;
+
+  const powerGrid = [];   // [time][period] 正規化パワー
+  const domCycle = [];    // 各時点のドミナントサイクル
+
+  for(let t=MAX_P+avgLength; t<n; t++){
+
+    // --- 自己相関（Pearson, 長さ avgLength） ---
+    const corr = new Array(MAX_P+1).fill(0);
+    for(let lag=0; lag<=MAX_P; lag++){
+      const M = avgLength;
+      let sx=0, sy=0, sxx=0, syy=0, sxy=0;
+      for(let k=0;k<M;k++){
+        const x = filt[t-k];
+        const y = filt[t-k-lag];
+        sx+=x; sy+=y; sxx+=x*x; syy+=y*y; sxy+=x*y;
+      }
+      const den = (M*sxx-sx*sx)*(M*syy-sy*sy);
+      corr[lag] = den>0 ? (M*sxy-sx*sy)/Math.sqrt(den) : 0;
+    }
+
+    // --- 自己相関のDFT → 生パワー ---
+    const pwrRow = new Array(numPeriods).fill(0);
+    let rowMax = 0;
+    for(let period=MIN_P; period<=MAX_P; period++){
+      let cosPart=0, sinPart=0;
+      for(let lag=avgLength; lag<=MAX_P; lag++){
+        cosPart += corr[lag]*Math.cos(2*Math.PI*lag/period);
+        sinPart += corr[lag]*Math.sin(2*Math.PI*lag/period);
+      }
+      const sqSum = cosPart*cosPart + sinPart*sinPart;
+      // EMAスムージング（Ehlers: .2/.8）
+      Rprev[period] = 0.2*sqSum*sqSum + 0.8*Rprev[period];
+    }
+
+    // --- AGC正規化（fast attack / slow decay） ---
+    maxPwr *= 0.995;
+    for(let period=MIN_P; period<=MAX_P; period++){
+      if(Rprev[period] > maxPwr) maxPwr = Rprev[period];
+    }
+    for(let period=MIN_P; period<=MAX_P; period++){
+      const p = maxPwr>0 ? Rprev[period]/maxPwr : 0;
+      pwrRow[period-MIN_P] = p;
+      if(p>rowMax) rowMax = p;
+    }
+
+    // --- ドミナントサイクル（重心法：Pwr>0.5の周期の加重平均） ---
+    let spx=0, sp=0;
+    for(let period=MIN_P; period<=MAX_P; period++){
+      const p = pwrRow[period-MIN_P];
+      if(p>0.5){ spx += period*p; sp += p; }
+    }
+    domCycle.push(sp>0 ? spx/sp : (domCycle.length?domCycle[domCycle.length-1]:20));
+    powerGrid.push(pwrRow);
+  }
+
+  return { powerGrid, domCycle, startBar: MAX_P+avgLength };
+}
+
+/* ============================================================
+   4. 描画
+   ============================================================ */
+const GOLD_SCALE = [
+  [0.00,'#050505'],
+  [0.25,'#0A0F1C'],
+  [0.50,'#3A3020'],
+  [0.72,'#8A6E3A'],
+  [0.88,'#C5A059'],
+  [1.00,'#F2E2B8']
+];
+
+const CAMERA_SIDE = {eye:{x:1.7,y:-1.9,z:0.9}};
+const CAMERA_TOP  = {eye:{x:0,y:-0.05,z:2.4}};
+
+let currentClose = null;
+
+function render(){
+  currentClose = generatePrice();
+  const filt = roofingFilter(currentClose);
+  const {powerGrid, domCycle, startBar} = autocorrelationPeriodogram(filt);
+
+  // 間引き（モバイル性能対策：時間方向を2バーごと）
+  const step = 2;
+  const times = [], zRows = [], ridgeX=[], ridgeY=[], ridgeZ=[];
+  const periods = [];
+  for(let p=MIN_P;p<=MAX_P;p++) periods.push(p);
+
+  for(let i=0;i<powerGrid.length;i+=step){
+    times.push(startBar+i);
+  }
+  // z は [period][time]
+  for(let pi=0; pi<periods.length; pi++){
+    const row=[];
+    for(let i=0;i<powerGrid.length;i+=step) row.push(powerGrid[i][pi]);
+    zRows.push(row);
+  }
+  // 稜線（ドミナントサイクル軌跡）
+  for(let i=0;i<powerGrid.length;i+=step){
+    const dc = domCycle[i];
+    const pi = Math.min(periods.length-1, Math.max(0, Math.round(dc)-MIN_P));
+    ridgeX.push(startBar+i);
+    ridgeY.push(dc);
+    ridgeZ.push(powerGrid[i][pi]+0.03);
+  }
+
+  // --- 価格チャート（2D） ---
+  Plotly.newPlot('price',[{
+    y: currentClose, mode:'lines',
+    line:{color:'#C5A059',width:1.4}
+  }],{
+    margin:{l:36,r:10,t:6,b:24},
+    paper_bgcolor:'rgba(0,0,0,0)', plot_bgcolor:'rgba(0,0,0,0)',
+    font:{color:'#8B8577',size:10,family:'Inter'},
+    xaxis:{gridcolor:'rgba(197,160,89,.08)',title:''},
+    yaxis:{gridcolor:'rgba(197,160,89,.08)'}
+  },{displayModeBar:false,responsive:true});
+
+  // --- 3Dスペクトラム ---
+  Plotly.newPlot('spectrum',[
+    {
+      type:'surface',
+      x: times, y: periods, z: zRows,
+      colorscale: GOLD_SCALE,
+      cmin:0, cmax:1,
+      showscale:false,
+      opacity:0.98,
+      lighting:{ambient:.55,diffuse:.7,specular:.35,roughness:.55,fresnel:.2},
+      lightposition:{x:200,y:-100,z:300},
+      contours:{ z:{show:true,usecolormap:true,project:{z:false},width:1} },
+      hovertemplate:'Bar %{x}<br>周期 %{y}バー<br>Power %{z:.2f}<extra></extra>'
+    },
+    {
+      type:'scatter3d', mode:'lines',
+      x:ridgeX, y:ridgeY, z:ridgeZ,
+      line:{color:'#F2E2B8',width:5},
+      name:'ドミナントサイクル',
+      hovertemplate:'Bar %{x}<br>DC %{y:.1f}バー<extra></extra>'
+    }
+  ],{
+    margin:{l:0,r:0,t:0,b:0},
+    paper_bgcolor:'rgba(0,0,0,0)',
+    showlegend:false,
+    scene:{
+      xaxis:{title:'Time (bar)',color:'#8B8577',gridcolor:'rgba(197,160,89,.12)',backgroundcolor:'rgba(0,0,0,0)'},
+      yaxis:{title:'Period',color:'#8B8577',gridcolor:'rgba(197,160,89,.12)',backgroundcolor:'rgba(0,0,0,0)'},
+      zaxis:{title:'Power',range:[0,1.05],color:'#8B8577',gridcolor:'rgba(197,160,89,.12)',backgroundcolor:'rgba(0,0,0,0)'},
+      camera:CAMERA_SIDE,
+      aspectratio:{x:1.6,y:1,z:0.55}
+    }
+  },{displayModeBar:false,responsive:true});
+}
+
+document.getElementById('regen').addEventListener('click', render);
+document.getElementById('topview').addEventListener('click', ()=>{
+  Plotly.relayout('spectrum',{'scene.camera':CAMERA_TOP});
+});
+document.getElementById('sideview').addEventListener('click', ()=>{
+  Plotly.relayout('spectrum',{'scene.camera':CAMERA_SIDE});
+});
+
+render();
+</script>
+</body>
+</html>

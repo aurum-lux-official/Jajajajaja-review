@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Fourier Epicycles — 3D Gold</title>
+<style>
+  /* ============================================================
+     CONFIG: AURUM LUX パレット
+     gold:#C5A059  black:#050505  navy:#0A0F1C
+     ============================================================ */
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#050505; }
+  body { font-family:'Inter','Noto Sans JP',-apple-system,sans-serif; color:#EDE6D6; }
+  #canvas-wrap { position:fixed; inset:0; }
+  canvas { display:block; }
+
+  .overlay-top {
+    position:fixed; top:0; left:0; right:0;
+    padding:calc(env(safe-area-inset-top,0px) + 20px) 20px 0;
+    text-align:center; pointer-events:none; z-index:10;
+  }
+  .overlay-top .en {
+    font-size:13.5px; line-height:1.55; font-weight:500; color:#F2ECDD;
+    letter-spacing:.02em; text-shadow:0 2px 14px rgba(0,0,0,.9);
+  }
+  .overlay-top .en em { font-style:normal; color:#C5A059; }
+  .overlay-top .formula {
+    margin-top:8px; font-size:12px; color:rgba(197,160,89,.85);
+    font-family:'Georgia','Times New Roman',serif; font-style:italic; letter-spacing:.03em;
+  }
+
+  .overlay-bottom {
+    position:fixed; left:0; right:0;
+    bottom:calc(env(safe-area-inset-bottom,0px) + 14px);
+    display:flex; flex-direction:column; gap:10px; align-items:center;
+    z-index:10; padding:0 16px;
+  }
+  .slider-box {
+    display:flex; gap:14px; align-items:center;
+    background:rgba(10,15,28,.72); border:1px solid rgba(197,160,89,.22);
+    border-radius:14px; padding:10px 16px;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    max-width:420px; width:100%;
+  }
+  .slider-item { flex:1; }
+  .slider-item label {
+    display:flex; justify-content:space-between;
+    font-size:10px; color:rgba(237,230,214,.6); letter-spacing:.05em; margin-bottom:4px;
+  }
+  .slider-item label b { color:#C5A059; font-weight:600; font-variant-numeric:tabular-nums; }
+  input[type=range]{ width:100%; height:22px; appearance:none; -webkit-appearance:none; background:transparent; }
+  input[type=range]::-webkit-slider-runnable-track{
+    height:3px; background:linear-gradient(90deg,#3a3223,#C5A059); border-radius:2px;
+  }
+  input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:#C5A059; border:2px solid #050505; margin-top:-6.5px;
+    box-shadow:0 0 10px rgba(197,160,89,.55);
+  }
+  .ctrl-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .btn {
+    background:rgba(10,15,28,.72); border:1px solid rgba(197,160,89,.35);
+    color:#C5A059; font-size:11.5px; letter-spacing:.04em;
+    padding:8px 14px; border-radius:999px; cursor:pointer;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    transition:border-color .25s,color .25s,background .25s; user-select:none;
+  }
+  .btn.active { background:rgba(197,160,89,.16); border-color:#C5A059; color:#EFD9A7; }
+  .btn:active { transform:scale(.97); }
+  .hint { font-size:10px; color:rgba(237,230,214,.35); letter-spacing:.08em; pointer-events:none; }
+  @media (max-height:640px){ .overlay-top .en{font-size:12px;} .slider-box{padding:7px 14px;} }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap"></div>
+
+<div class="overlay-top">
+  <div class="en">Rotating circles build a <em>square wave</em> — one harmonic at a time.</div>
+  <div class="formula">f(x) = 4/π · Σ 1/(2n−1) · sin((2n−1)x)</div>
+</div>
+
+<div class="overlay-bottom">
+  <div class="slider-box">
+    <div class="slider-item">
+      <label>調和項数 n <b id="valN">6</b></label>
+      <input type="range" id="slN" min="1" max="12" step="1" value="6">
+    </div>
+    <div class="slider-item">
+      <label>速度 <b id="valSp">1.0×</b></label>
+      <input type="range" id="slSp" min="0.2" max="2.5" step="0.1" value="1.0">
+    </div>
+  </div>
+  <div class="ctrl-row">
+    <button class="btn active" id="btnSpin">カメラ回転</button>
+    <button class="btn" id="btnFlat">正面(2D)ビュー</button>
+  </div>
+  <div class="hint">ドラッグで回転 / ピンチでズーム</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   CONFIG — フーリエ・エピサイクル 3D (矩形波)
+   f(t) = Σ_{k=1..N} 4/((2k−1)π) · sin((2k−1)t)
+   円はXY平面で回転、描かれた波形は −Z(奥)へ流れる
+   ============================================================ */
+const CONFIG = {
+  baseRadius: 4/Math.PI,     // 第1調和項の半径
+  traceLen: 460,             // 波形の保持ポイント数
+  traceSpeed: 0.028,         // 1フレームあたりの奥行き移動量
+  waveDepth: 11,             // 波形が流れる奥行きの長さ
+  circleSegs: 96,
+};
+
+let state = { N: 6, speed: 1.0, spin: true, flat: false, t: 0 };
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduceMotion) state.spin = false;
+
+/* ---------- ゴールド階調 (円ごとの色: 明→暗) ---------- */
+function goldTone(i, total){
+  // シャンパン #F5E6C4 → ブランドゴールド #C5A059 → ブロンズ #5C4A26
+  const stops = [
+    [0.961,0.902,0.769],
+    [0.773,0.627,0.349],
+    [0.361,0.290,0.149]
+  ];
+  const v = total <= 1 ? 0 : i/(total-1);
+  const p = v*(stops.length-1), s = Math.floor(p), f = p-s;
+  const a = stops[s], b = stops[Math.min(s+1,stops.length-1)];
+  return new THREE.Color(a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f);
+}
+
+/* ---------- Three.js セットアップ ---------- */
+const wrap = document.getElementById('canvas-wrap');
+const renderer = new THREE.WebGLRenderer({ antialias:true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x050505, 1);
+wrap.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x050505, 0.022);
+const camera = new THREE.PerspectiveCamera(45, innerWidth/innerHeight, 0.1, 100);
+
+/* ---------- エピサイクル構築 ---------- */
+const epiGroup = new THREE.Group();   // 円の集合 (XY平面, z=0)
+scene.add(epiGroup);
+
+let circleMeshes = [];   // {ring, arm, dot}
+function buildEpicycles(){
+  circleMeshes.forEach(c=>{
+    epiGroup.remove(c.ring); epiGroup.remove(c.arm); epiGroup.remove(c.dot);
+    c.ring.geometry.dispose(); c.arm.geometry.dispose(); c.dot.geometry.dispose();
+  });
+  circleMeshes = [];
+
+  for (let k=0; k<state.N; k++){
+    const n = 2*k+1;
+    const r = CONFIG.baseRadius * (4/Math.PI) / n * (Math.PI/4) * 4/Math.PI; // = 4/(nπ) 相当を整形
+    const radius = (4/(n*Math.PI)) * 2.2; // 表示スケール
+    const col = goldTone(k, state.N);
+
+    // 円周ライン
+    const pts = [];
+    for (let i=0; i<=CONFIG.circleSegs; i++){
+      const a = i/CONFIG.circleSegs * Math.PI*2;
+      pts.push(new THREE.Vector3(Math.cos(a)*radius, Math.sin(a)*radius, 0));
+    }
+    const ring = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(pts),
+      new THREE.LineBasicMaterial({ color:col, transparent:true, opacity:0.55 })
+    );
+
+    // 半径アーム
+    const arm = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(radius,0,0)]),
+      new THREE.LineBasicMaterial({ color:col, transparent:true, opacity:0.95 })
+    );
+
+    // 先端ドット
+    const dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.045, 12, 12),
+      new THREE.MeshBasicMaterial({ color:col })
+    );
+
+    epiGroup.add(ring); epiGroup.add(arm); epiGroup.add(dot);
+    circleMeshes.push({ ring, arm, dot, radius, n });
+  }
+}
+
+/* ---------- 3Dトレース (波形が奥へ流れるリボン) ---------- */
+const tracePositions = new Float32Array(CONFIG.traceLen * 3);
+const traceColors = new Float32Array(CONFIG.traceLen * 3);
+const traceGeo = new THREE.BufferGeometry();
+traceGeo.setAttribute('position', new THREE.BufferAttribute(tracePositions, 3));
+traceGeo.setAttribute('color', new THREE.BufferAttribute(traceColors, 3));
+const traceLine = new THREE.Line(traceGeo, new THREE.LineBasicMaterial({
+  vertexColors:true, transparent:true, opacity:0.98
+}));
+scene.add(traceLine);
+
+// トレースの縦落としライン (先端→波形始点の接続、動画の水平線に相当)
+const linkGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+const linkLine = new THREE.Line(linkGeo, new THREE.LineBasicMaterial({
+  color:0xEFD9A7, transparent:true, opacity:0.4
+}));
+scene.add(linkLine);
+
+let traceData = []; // {y, z}
+function resetTrace(){ traceData = []; }
+
+/* ---------- 床グリッド & 軸 ---------- */
+const grid = new THREE.GridHelper(26, 26, 0x211b0f, 0x15110a);
+grid.position.y = -3.2;
+scene.add(grid);
+
+// 波形が流れるZ軸ガイド
+const axisMat = new THREE.LineBasicMaterial({ color:0x4a3d22, transparent:true, opacity:0.8 });
+const zAxis = new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints([
+    new THREE.Vector3(0,0,0), new THREE.Vector3(0,0,-CONFIG.waveDepth-1.5)
+  ]), axisMat);
+scene.add(zAxis);
+
+/* ---------- カメラ操作 ---------- */
+let camTheta = 0.55, camPhi = 1.25, camDist = 12.5;
+const target = new THREE.Vector3(0, 0, -3.4);
+let flatBlend = 0; // 0=3D, 1=正面
+
+function updateCamera(){
+  camPhi = Math.min(Math.max(camPhi, 0.2), 1.5);
+  camDist = Math.min(Math.max(camDist, 5), 26);
+  // 正面ビューへの補間
+  flatBlend += ((state.flat?1:0) - flatBlend) * 0.06;
+  const th = camTheta * (1-flatBlend);
+  const ph = camPhi + (Math.PI/2 - camPhi) * flatBlend * 0.9;
+  const tz = target.z * (1-flatBlend*0.7);
+  camera.position.set(
+    camDist * Math.sin(ph) * Math.sin(th),
+    camDist * Math.cos(ph) * (1-flatBlend*0.85),
+    tz + camDist * Math.sin(ph) * Math.cos(th)
+  );
+  camera.lookAt(0, 0, tz);
+}
+
+let dragging=false, lastX=0, lastY=0, pinchDist=0;
+const el = renderer.domElement;
+el.addEventListener('pointerdown', e=>{ dragging=true; lastX=e.clientX; lastY=e.clientY; });
+addEventListener('pointerup', ()=> dragging=false);
+addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  camTheta -= (e.clientX-lastX)*0.006;
+  camPhi   -= (e.clientY-lastY)*0.004;
+  lastX=e.clientX; lastY=e.clientY;
+  if(state.flat){ state.flat=false; btnFlat.classList.remove('active'); }
+});
+el.addEventListener('touchstart', e=>{
+  if(e.touches.length===2){
+    pinchDist = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+  }
+},{passive:true});
+el.addEventListener('touchmove', e=>{
+  if(e.touches.length===2){
+    const d = Math.hypot(e.touches[0].clientX-e.touches[1].clientX, e.touches[0].clientY-e.touches[1].clientY);
+    camDist *= pinchDist/d; pinchDist=d; dragging=false;
+  }
+},{passive:true});
+el.addEventListener('wheel', e=>{ camDist *= 1+Math.sign(e.deltaY)*0.08; },{passive:true});
+
+/* ---------- UI ---------- */
+const slN = document.getElementById('slN');
+const slSp = document.getElementById('slSp');
+slN.addEventListener('input', ()=>{
+  state.N = parseInt(slN.value);
+  document.getElementById('valN').textContent = state.N;
+  buildEpicycles(); resetTrace();
+});
+slSp.addEventListener('input', ()=>{
+  state.speed = parseFloat(slSp.value);
+  document.getElementById('valSp').textContent = state.speed.toFixed(1)+'×';
+});
+const btnSpin = document.getElementById('btnSpin');
+const btnFlat = document.getElementById('btnFlat');
+btnSpin.classList.toggle('active', state.spin);
+btnSpin.addEventListener('click', ()=>{
+  state.spin = !state.spin;
+  btnSpin.classList.toggle('active', state.spin);
+});
+btnFlat.addEventListener('click', ()=>{
+  state.flat = !state.flat;
+  btnFlat.classList.toggle('active', state.flat);
+  if(state.flat){ state.spin=false; btnSpin.classList.remove('active'); }
+});
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ---------- メインループ ---------- */
+buildEpicycles();
+
+const champagne = new THREE.Color(0xF5E6C4);
+const bronze = new THREE.Color(0x5C4A26);
+
+function loop(){
+  requestAnimationFrame(loop);
+  state.t += 0.016 * state.speed;
+
+  // --- エピサイクル位置更新 ---
+  let cx = 0, cy = 0;
+  circleMeshes.forEach(c=>{
+    c.ring.position.set(cx, cy, 0);
+    const ang = c.n * state.t;
+    const nx = cx + Math.cos(ang)*c.radius;
+    const ny = cy + Math.sin(ang)*c.radius;
+    // アーム更新
+    const ap = c.arm.geometry.attributes.position;
+    ap.setXYZ(0, cx, cy, 0); ap.setXYZ(1, nx, ny, 0);
+    ap.needsUpdate = true;
+    c.dot.position.set(nx, ny, 0);
+    cx = nx; cy = ny;
+  });
+
+  // --- トレース更新: 先端Yを記録し全体を奥へ ---
+  traceData.forEach(p=> p.z -= CONFIG.traceSpeed * state.speed);
+  traceData.unshift({ y: cy, z: -1.6 });
+  while(traceData.length > CONFIG.traceLen) traceData.pop();
+  traceData = traceData.filter(p=> p.z > -CONFIG.waveDepth-1.6);
+
+  const cnt = traceData.length;
+  for(let i=0; i<CONFIG.traceLen; i++){
+    const p = traceData[Math.min(i, cnt-1)] || {y:0,z:-1.6};
+    tracePositions[i*3]   = 0;
+    tracePositions[i*3+1] = p.y;
+    tracePositions[i*3+2] = p.z;
+    // 奥へ行くほどブロンズへフェード
+    const f = Math.min(Math.abs(p.z+1.6)/CONFIG.waveDepth, 1);
+    const col = champagne.clone().lerp(bronze, f);
+    traceColors[i*3] = col.r; traceColors[i*3+1] = col.g; traceColors[i*3+2] = col.b;
+  }
+  traceGeo.attributes.position.needsUpdate = true;
+  traceGeo.attributes.color.needsUpdate = true;
+  traceGeo.setDrawRange(0, Math.max(cnt,1));
+  traceGeo.computeBoundingSphere();
+
+  // 先端接続ライン
+  const lp = linkGeo.attributes.position;
+  lp.setXYZ(0, cx, cy, 0);
+  lp.setXYZ(1, 0, cy, -1.6);
+  lp.needsUpdate = true;
+
+  if(state.spin && !dragging && !state.flat) camTheta += 0.0028;
+  updateCamera();
+  renderer.render(scene, camera);
+}
+loop();
+</script>
+</body>
+</html>

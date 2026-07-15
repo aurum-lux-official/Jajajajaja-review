@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>VWAP Reversion Model — 3D</title>
+<style>
+  /* ============================================================
+     CONFIG: AURUM LUX パレット
+     gold:#C5A059  black:#050505  navy:#0A0F1C
+     ============================================================ */
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { width:100%; height:100%; overflow:hidden; background:#050505; }
+  body { font-family:'Inter','Noto Sans JP',-apple-system,sans-serif; color:#EDE6D6; }
+
+  #canvas-wrap { position:fixed; inset:0; }
+  canvas { display:block; }
+
+  /* ---------- 上部タイトル ---------- */
+  .overlay-top {
+    position:fixed; top:0; left:0; right:0;
+    padding:calc(env(safe-area-inset-top, 0px) + 22px) 20px 0;
+    text-align:center; pointer-events:none; z-index:10;
+  }
+  .overlay-top .en {
+    font-size:14px; line-height:1.55; font-weight:500;
+    color:#F2ECDD; letter-spacing:.01em;
+    text-shadow:0 2px 14px rgba(0,0,0,.85);
+    max-width:520px; margin:0 auto;
+  }
+  .overlay-top .en em { font-style:normal; color:#C5A059; }
+  .overlay-top .ja {
+    margin-top:8px; font-size:11px; color:rgba(237,230,214,.55);
+    letter-spacing:.05em;
+  }
+
+  /* ---------- 下部コントロール ---------- */
+  .overlay-bottom {
+    position:fixed; left:0; right:0;
+    bottom:calc(env(safe-area-inset-bottom, 0px) + 14px);
+    display:flex; flex-direction:column; gap:10px; align-items:center;
+    z-index:10; padding:0 16px;
+  }
+  .ctrl-row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  .btn {
+    background:rgba(10,15,28,.72); border:1px solid rgba(197,160,89,.35);
+    color:#C5A059; font-size:11.5px; letter-spacing:.04em;
+    padding:8px 14px; border-radius:999px; cursor:pointer;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    transition:border-color .25s, color .25s, background .25s;
+    user-select:none;
+  }
+  .btn.active { background:rgba(197,160,89,.16); border-color:#C5A059; color:#EFD9A7; }
+  .btn:active { transform:scale(.97); }
+
+  .slider-box {
+    display:flex; gap:14px; align-items:center;
+    background:rgba(10,15,28,.72); border:1px solid rgba(197,160,89,.22);
+    border-radius:14px; padding:10px 16px;
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    max-width:420px; width:100%;
+  }
+  .slider-item { flex:1; }
+  .slider-item label {
+    display:flex; justify-content:space-between;
+    font-size:10px; color:rgba(237,230,214,.6); letter-spacing:.05em; margin-bottom:4px;
+  }
+  .slider-item label b { color:#C5A059; font-weight:600; font-variant-numeric:tabular-nums; }
+  input[type=range] {
+    width:100%; height:22px; appearance:none; -webkit-appearance:none; background:transparent;
+  }
+  input[type=range]::-webkit-slider-runnable-track {
+    height:3px; background:linear-gradient(90deg,#3a3223,#C5A059); border-radius:2px;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance:none; width:16px; height:16px; border-radius:50%;
+    background:#C5A059; border:2px solid #050505; margin-top:-6.5px;
+    box-shadow:0 0 10px rgba(197,160,89,.55);
+  }
+
+  .hint {
+    font-size:10px; color:rgba(237,230,214,.35); letter-spacing:.08em; pointer-events:none;
+  }
+
+  @media (max-height:640px){
+    .overlay-top .en { font-size:12.5px; }
+    .slider-box { padding:7px 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div id="canvas-wrap"></div>
+
+<div class="overlay-top">
+  <div class="en">When price stretches too far from <em>VWAP</em>,<br>probability mass shifts toward mean reversion.</div>
+  <div class="ja">価格がVWAPから乖離するほど、確率質量は平均回帰側へ移動する</div>
+</div>
+
+<div class="overlay-bottom">
+  <div class="slider-box">
+    <div class="slider-item">
+      <label>初期乖離 <b id="valX0">+2.6σ</b></label>
+      <input type="range" id="slX0" min="0.5" max="3.8" step="0.1" value="2.6">
+    </div>
+    <div class="slider-item">
+      <label>回帰速度 θ <b id="valTh">0.45</b></label>
+      <input type="range" id="slTh" min="0.1" max="1.2" step="0.05" value="0.45">
+    </div>
+  </div>
+  <div class="ctrl-row">
+    <button class="btn active" id="btnGold">AURUM GOLD</button>
+    <button class="btn" id="btnViridis">VIRIDIS(参考)</button>
+    <button class="btn active" id="btnSpin">自動回転</button>
+  </div>
+  <div class="hint">ドラッグで回転 / ピンチでズーム</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   CONFIG — VWAPリバージョン確率密度サーフェス
+   モデル: OU過程 (平均回帰過程) の遷移密度
+     μ(t)   = x0 · e^(−θt)          … ピークがVWAP(0σ)へ回帰
+     var(t) = σ²/(2θ)·(1−e^(−2θt))  … 分散は定常値へ収束
+   ============================================================ */
+const CONFIG = {
+  xRange: [-4, 4],        // Deviation from VWAP (σ)
+  tRange: [0.12, 10],     // Time Since Deviation
+  seg: 110,               // サーフェス解像度
+  sigma: 1.05,            // 拡散係数
+  surfaceW: 8,            // 3D空間上の幅 (X)
+  surfaceD: 8,            // 3D空間上の奥行 (Y=time)
+  heightScale: 3.1,       // Z高さスケール
+};
+
+let state = { x0: 2.6, theta: 0.45, palette: 'gold', spin: true };
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+if (reduceMotion) state.spin = false;
+
+/* ---------- カラーマップ ---------- */
+// Viridis近似 (参考動画準拠)
+function viridis(v){
+  const c = [
+    [0.267,0.005,0.329],[0.283,0.141,0.458],[0.254,0.265,0.530],
+    [0.207,0.372,0.553],[0.164,0.471,0.558],[0.128,0.567,0.551],
+    [0.135,0.659,0.518],[0.267,0.749,0.441],[0.478,0.821,0.318],
+    [0.741,0.873,0.150],[0.993,0.906,0.144]
+  ];
+  const p = Math.min(Math.max(v,0),1)*(c.length-1);
+  const i = Math.floor(p), f = p - i;
+  const a = c[i], b = c[Math.min(i+1,c.length-1)];
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+// AURUM LUX ゴールドランプ: navy → gold → champagne
+function goldRamp(v){
+  const c = [
+    [0.024,0.043,0.086],  // #0A0F1C deep navy
+    [0.145,0.125,0.078],  // dark bronze
+    [0.420,0.330,0.160],  // antique gold
+    [0.773,0.627,0.349],  // #C5A059 brand gold
+    [0.965,0.898,0.720]   // champagne highlight
+  ];
+  const p = Math.min(Math.max(v,0),1)*(c.length-1);
+  const i = Math.floor(p), f = p - i;
+  const a = c[i], b = c[Math.min(i+1,c.length-1)];
+  return [a[0]+(b[0]-a[0])*f, a[1]+(b[1]-a[1])*f, a[2]+(b[2]-a[2])*f];
+}
+
+/* ---------- OU遷移密度 ---------- */
+function density(x, t, x0, theta, sigma){
+  const mu = x0 * Math.exp(-theta * t);
+  const va = (sigma*sigma/(2*theta)) * (1 - Math.exp(-2*theta*t)) + 0.012;
+  const d = x - mu;
+  return Math.exp(-(d*d)/(2*va)) / Math.sqrt(2*Math.PI*va);
+}
+
+/* ---------- Three.js セットアップ ---------- */
+const wrap = document.getElementById('canvas-wrap');
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.setClearColor(0x050505, 1);
+wrap.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x050505, 0.026);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth/innerHeight, 0.1, 100);
+
+// 回転用グループ (Z-up的な見せ方: サーフェスを寝かせて回す)
+const rig = new THREE.Group();
+scene.add(rig);
+
+/* ---------- サーフェス生成 ---------- */
+const geo = new THREE.PlaneGeometry(CONFIG.surfaceW, CONFIG.surfaceD, CONFIG.seg, CONFIG.seg);
+geo.rotateX(-Math.PI/2); // XZ平面に寝かせ、Yを高さに
+const colors = new Float32Array(geo.attributes.position.count * 3);
+geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+const mat = new THREE.MeshBasicMaterial({ vertexColors:true, side:THREE.DoubleSide });
+const surface = new THREE.Mesh(geo, mat);
+rig.add(surface);
+
+// ワイヤーフレーム (グリッド線の質感)
+const wireMat = new THREE.MeshBasicMaterial({
+  color:0x000000, wireframe:true, transparent:true, opacity:0.18
+});
+const wire = new THREE.Mesh(geo, wireMat);
+wire.scale.set(1.0005,1.0005,1.0005);
+rig.add(wire);
+
+/* ---------- サーフェス更新 ---------- */
+function rebuild(){
+  const pos = geo.attributes.position;
+  const col = geo.attributes.color;
+  const [xMin,xMax] = CONFIG.xRange;
+  const [tMin,tMax] = CONFIG.tRange;
+
+  // 正規化用の最大密度
+  let maxD = 0;
+  for (let ti=0; ti<=40; ti++){
+    const t = tMin + (tMax-tMin)*ti/40;
+    const mu = state.x0 * Math.exp(-state.theta*t);
+    maxD = Math.max(maxD, density(mu, t, state.x0, state.theta, CONFIG.sigma));
+  }
+
+  const ramp = state.palette === 'gold' ? goldRamp : viridis;
+  const n = CONFIG.seg + 1;
+
+  for (let iy=0; iy<n; iy++){
+    for (let ix=0; ix<n; ix++){
+      const idx = iy*n + ix;
+      const u = ix/(n-1);            // → deviation
+      const v = iy/(n-1);            // → time (手前=t小)
+      const x = xMin + (xMax-xMin)*u;
+      const t = tMin + (tMax-tMin)*v;
+      const d = density(x, t, state.x0, state.theta, CONFIG.sigma) / maxD;
+      const h = Math.pow(d, 0.82) * CONFIG.heightScale; // 尾根を少し強調
+      pos.setY(idx, h);
+      const [r,g,b] = ramp(Math.min(d*1.06, 1));
+      col.setXYZ(idx, r, g, b);
+    }
+  }
+  pos.needsUpdate = true;
+  col.needsUpdate = true;
+  geo.computeBoundingSphere();
+}
+
+/* ---------- 軸・グリッド ---------- */
+const axisGroup = new THREE.Group();
+rig.add(axisGroup);
+
+function makeTextSprite(text, size, color){
+  const cv = document.createElement('canvas');
+  const ctx = cv.getContext('2d');
+  const fs = 46;
+  ctx.font = `500 ${fs}px Inter, sans-serif`;
+  cv.width = Math.ceil(ctx.measureText(text).width) + 24;
+  cv.height = fs + 24;
+  const c2 = cv.getContext('2d');
+  c2.font = `500 ${fs}px Inter, sans-serif`;
+  c2.fillStyle = color;
+  c2.textBaseline = 'middle';
+  c2.fillText(text, 12, cv.height/2);
+  const tex = new THREE.CanvasTexture(cv);
+  tex.minFilter = THREE.LinearFilter;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map:tex, transparent:true, depthWrite:false }));
+  const s = size / fs;
+  sp.scale.set(cv.width*s, cv.height*s, 1);
+  return sp;
+}
+
+function buildAxes(){
+  while(axisGroup.children.length) axisGroup.remove(axisGroup.children[0]);
+  const W = CONFIG.surfaceW, D = CONFIG.surfaceD;
+  const gridCol = 0x2a2417, lineCol = 0x4a3d22;
+
+  // 床グリッド
+  const grid = new THREE.GridHelper(Math.max(W,D)+1, 9, gridCol, gridCol);
+  grid.position.y = -0.01;
+  grid.material.transparent = true;
+  grid.material.opacity = 0.5;
+  axisGroup.add(grid);
+
+  // 外枠ライン
+  const edges = new THREE.LineSegments(
+    new THREE.EdgesGeometry(new THREE.BoxGeometry(W, 0.001, D)),
+    new THREE.LineBasicMaterial({ color:lineCol, transparent:true, opacity:0.8 })
+  );
+  axisGroup.add(edges);
+
+  // 軸ラベル
+  const labCol = 'rgba(197,160,89,0.95)';
+  const tickCol = 'rgba(237,230,214,0.55)';
+
+  const lx = makeTextSprite('Deviation from VWAP (σ)', 0.34, labCol);
+  lx.position.set(0, 0.02, D/2 + 0.9);
+  axisGroup.add(lx);
+
+  const lt = makeTextSprite('Time Since Deviation', 0.34, labCol);
+  lt.position.set(W/2 + 1.15, 0.02, 0);
+  axisGroup.add(lt);
+
+  const lz = makeTextSprite('Probability Density', 0.3, labCol);
+  lz.position.set(-W/2 - 0.7, CONFIG.heightScale*0.85, -D/2);
+  axisGroup.add(lz);
+
+  // Xティック (σ)
+  [-4,-2,0,2,4].forEach(v=>{
+    const tx = (v - CONFIG.xRange[0])/(CONFIG.xRange[1]-CONFIG.xRange[0]) * W - W/2;
+    const s = makeTextSprite(v>0?`+${v}`:`${v}`, 0.24, tickCol);
+    s.position.set(tx, 0.02, D/2 + 0.42);
+    axisGroup.add(s);
+  });
+  // Tティック
+  [0,5,10].forEach(v=>{
+    const tz = (v - 0)/(CONFIG.tRange[1]) * D - D/2;
+    const s = makeTextSprite(`${v}`, 0.24, tickCol);
+    s.position.set(W/2 + 0.42, 0.02, tz);
+    axisGroup.add(s);
+  });
+
+  // 0σライン (VWAP基準線) — ゴールドで強調
+  const zeroX = (0 - CONFIG.xRange[0])/(CONFIG.xRange[1]-CONFIG.xRange[0]) * W - W/2;
+  const zl = new THREE.Line(
+    new THREE.BufferGeometry().setFromPoints([
+      new THREE.Vector3(zeroX, 0.015, -D/2),
+      new THREE.Vector3(zeroX, 0.015,  D/2)
+    ]),
+    new THREE.LineBasicMaterial({ color:0xC5A059, transparent:true, opacity:0.85 })
+  );
+  axisGroup.add(zl);
+  const vw = makeTextSprite('VWAP', 0.26, 'rgba(239,217,167,1)');
+  vw.position.set(zeroX, 0.05, -D/2 - 0.45);
+  axisGroup.add(vw);
+}
+
+/* ---------- カメラ / 操作 ---------- */
+let camTheta = -0.65, camPhi = 1.12, camDist = 12.2;
+const target = new THREE.Vector3(0, 0.9, 0);
+
+function updateCamera(){
+  camPhi = Math.min(Math.max(camPhi, 0.25), 1.45);
+  camDist = Math.min(Math.max(camDist, 6), 22);
+  camera.position.set(
+    target.x + camDist * Math.sin(camPhi) * Math.sin(camTheta),
+    target.y + camDist * Math.cos(camPhi),
+    target.z + camDist * Math.sin(camPhi) * Math.cos(camTheta)
+  );
+  camera.lookAt(target);
+}
+
+let dragging = false, lastX = 0, lastY = 0, pinchDist = 0;
+const el = renderer.domElement;
+
+el.addEventListener('pointerdown', e=>{ dragging = true; lastX = e.clientX; lastY = e.clientY; });
+addEventListener('pointerup', ()=> dragging = false);
+addEventListener('pointermove', e=>{
+  if(!dragging) return;
+  camTheta -= (e.clientX - lastX) * 0.006;
+  camPhi   -= (e.clientY - lastY) * 0.004;
+  lastX = e.clientX; lastY = e.clientY;
+});
+el.addEventListener('touchstart', e=>{
+  if(e.touches.length === 2){
+    pinchDist = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+},{passive:true});
+el.addEventListener('touchmove', e=>{
+  if(e.touches.length === 2){
+    const d = Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+    camDist *= pinchDist / d;
+    pinchDist = d;
+    dragging = false;
+  }
+},{passive:true});
+el.addEventListener('wheel', e=>{ camDist *= 1 + Math.sign(e.deltaY)*0.08; }, {passive:true});
+
+/* ---------- UI ---------- */
+const slX0 = document.getElementById('slX0');
+const slTh = document.getElementById('slTh');
+slX0.addEventListener('input', ()=>{
+  state.x0 = parseFloat(slX0.value);
+  document.getElementById('valX0').textContent = `+${state.x0.toFixed(1)}σ`;
+  rebuild();
+});
+slTh.addEventListener('input', ()=>{
+  state.theta = parseFloat(slTh.value);
+  document.getElementById('valTh').textContent = state.theta.toFixed(2);
+  rebuild();
+});
+
+const btnGold = document.getElementById('btnGold');
+const btnVir  = document.getElementById('btnViridis');
+const btnSpin = document.getElementById('btnSpin');
+btnGold.addEventListener('click', ()=>{
+  state.palette = 'gold';
+  btnGold.classList.add('active'); btnVir.classList.remove('active');
+  rebuild();
+});
+btnVir.addEventListener('click', ()=>{
+  state.palette = 'viridis';
+  btnVir.classList.add('active'); btnGold.classList.remove('active');
+  rebuild();
+});
+btnSpin.classList.toggle('active', state.spin);
+btnSpin.addEventListener('click', ()=>{
+  state.spin = !state.spin;
+  btnSpin.classList.toggle('active', state.spin);
+});
+
+addEventListener('resize', ()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* ---------- ループ ---------- */
+buildAxes();
+rebuild();
+function loop(){
+  requestAnimationFrame(loop);
+  if(state.spin && !dragging) camTheta += 0.0032;
+  updateCamera();
+  renderer.render(scene, camera);
+}
+loop();
+</script>
+</body>
+</html>
