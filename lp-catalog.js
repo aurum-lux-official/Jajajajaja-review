@@ -17,6 +17,13 @@
   document.title=item.product+" — "+document.title;
   var brand=document.querySelector(".nav .brand");
   if(brand){brand.textContent=item.product;brand.setAttribute("aria-label",item.product+" トップへ");}
+  var nav=document.querySelector(".nav"),menu=document.getElementById("nav-menu"),burger=document.getElementById("nav-burger"),apply=nav&&nav.querySelector(':scope > .btn');
+  if(apply)apply.textContent="EA申請";
+  if(menu){
+    menu.innerHTML='<a href="#system">SYSTEM</a><a href="#performance">PERFORMANCE</a><a href="#ranking">RESULTS</a><a href="#systems3">LINEUP</a><a href="#pricing">PRICING</a><a href="#risk">RISK</a><a href="#guide">SUPPORT</a><a href="#faq">FAQ</a><a class="nav-calendar" href="#calendar">EA稼働危険日カレンダー</a>';
+    menu.setAttribute("aria-label","メインメニュー");
+  }
+  if(burger){burger.setAttribute("aria-controls","nav-menu");burger.textContent="メニュー";}
   var main=document.querySelector(".hero-main");
   if(main){var mark=document.createElement("p");mark.className="product-mark";mark.textContent=item.product;main.insertBefore(mark,main.querySelector(".kicker"));}
   document.querySelectorAll(".sys3-name").forEach(function(el,i){if(!item.systems[i])return;var tag=el.querySelector(".sys3-tag");el.textContent=item.systems[i];if(tag)el.appendChild(tag);});
@@ -31,5 +38,20 @@
     var viz=document.createElement("div");viz.className="logic-viz reveal";
     viz.innerHTML='<iframe src="./graphs/'+item.graph+'?v=3" title="'+item.product+' '+item.graphName+' ロジック概念可視化" loading="lazy" referrerpolicy="no-referrer"></iframe><div class="logic-viz-meta"><b>'+item.product+' / '+item.graphName+'</b><span>ロジックの考え方を説明する概念可視化です。実際の取引履歴・収益・将来の成果を示すものではありません。</span></div>';
     if(old)old.replaceWith(viz);else screens.appendChild(viz);
+  }
+  var calendar=document.getElementById("calendar");
+  if(calendar){
+    var view=document.createElement("div");view.className="calendar-view";view.id="calendar-view";view.hidden=true;view.setAttribute("role","dialog");view.setAttribute("aria-modal","true");view.setAttribute("aria-labelledby","calendar-view-title");
+    var head=document.createElement("div");head.className="calendar-view-head";head.innerHTML='<button class="calendar-view-close" type="button">← LPへ戻る</button><p class="calendar-view-title" id="calendar-view-title">EA稼働危険日カレンダー</p>';
+    view.appendChild(head);view.appendChild(calendar);document.body.appendChild(view);
+    var close=view.querySelector(".calendar-view-close");
+    function closeMenu(){if(menu)menu.classList.remove("open");if(burger)burger.setAttribute("aria-expanded","false");document.body.classList.remove("menu-open");}
+    function openCalendar(event){if(event)event.preventDefault();closeMenu();view.hidden=false;document.body.classList.add("calendar-open");view.scrollTop=0;close.focus();}
+    function closeCalendar(){view.hidden=true;document.body.classList.remove("calendar-open");if(burger)burger.focus();}
+    if(menu)menu.addEventListener("click",function(event){var link=event.target.closest("a");if(!link)return;if(link.classList.contains("nav-calendar"))openCalendar(event);else closeMenu();});
+    if(burger)burger.addEventListener("click",function(){setTimeout(function(){document.body.classList.toggle("menu-open",menu&&menu.classList.contains("open"));},0);});
+    close.addEventListener("click",closeCalendar);
+    view.addEventListener("click",function(event){if(event.target===view)closeCalendar();});
+    document.addEventListener("keydown",function(event){if(event.key==="Escape"&&!view.hidden)closeCalendar();});
   }
 })();
