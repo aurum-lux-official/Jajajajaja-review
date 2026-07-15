@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+JP:wght@600;700&display=swap");
+
 /* Shared interaction polish for the nine character LPs. */
 :where(a, button, input, summary):focus-visible {
   outline: 2px solid var(--accent2);
@@ -16,13 +18,12 @@
 .btn:active { transform: translateY(0) scale(.985); }
 .btn:disabled { cursor: wait; filter: grayscale(.25); opacity: .72; }
 
-/* Keep the three hero KPIs visually consistent across every character theme. */
-.hero-stats .chip b {
-  font-family: "Avenir Next Condensed", "DIN Alternate", "Roboto Condensed", "Arial Narrow", sans-serif !important;
+/* Keep Japanese labels and numerals consistent across all KPI-style displays. */
+:is(.hero-stats .chip b, .freq-val, .price-row b, .rk-profit, .cal-date, .m-stat) {
+  font-family: "IBM Plex Sans JP", "Avenir Next", "Helvetica Neue", sans-serif !important;
   font-weight: 700 !important;
-  font-stretch: condensed;
   font-variant-numeric: tabular-nums lining-nums;
-  letter-spacing: .025em;
+  letter-spacing: .015em;
 }
 @media (max-width: 1000px) {
   .nav-menu a::after { left: 24px; right: 100%; bottom: 0; }
