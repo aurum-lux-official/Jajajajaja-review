@@ -2,21 +2,23 @@
   "use strict";
   var key=(location.pathname.match(/\/([^/]+)\.html$/i)||[])[1];
   var catalog={
-    andrew:{product:"AURUM",origin:"LATIN · GOLD",graph:"ehlers-cycle-3d.html",graphName:"EHLERS CYCLE SPECTRUM",systems:["Axiom Flow","Vector Pulse","Atlas Grid"]},
-    aurelia:{product:"ORO",origin:"ITALIAN · GOLD",graph:"wavelet-3d.html",graphName:"WAVELET SCALOGRAM",systems:["Luminous Flow","Rosé Pulse","Ivory Lattice"]},
-    johnny:{product:"GOLD",origin:"ENGLISH · GOLD",graph:"fourier-epicycles-3d-gold.html",graphName:"FOURIER EPICYCLES",systems:["Redline Flow","Ignition Pulse","Autobahn Grid"]},
-    maden:{product:"ALTIN",origin:"TURKISH · GOLD",graph:"hilbert-3d.html",graphName:"HILBERT TRANSFORM",systems:["Deepwave Flow","Teal Signal","Forge Grid"]},
-    makoto:{product:"KIN",origin:"JAPANESE · 金",graph:"adaptive-envelope.html",graphName:"ADAPTIVE ENVELOPE",systems:["Kintsugi Flow","Hayate Pulse","Seigai Grid"]},
-    mark:{product:"GULD",origin:"SWEDISH · GOLD",graph:"liquidity-vector.html",graphName:"LIQUIDITY VECTOR",systems:["Compass Flow","Nordic Pulse","Ledger Grid"]},
-    nova:{product:"ZOLOTO",origin:"RUSSIAN · ЗОЛОТО",graph:"spectral-resonance.html",graphName:"SPECTRAL RESONANCE",systems:["Quantum Flow","Nebula Pulse","Cosmos Grid"]},
-    pal:{product:"SONA",origin:"HINDI · सोना",graph:"market-topology.html",graphName:"MARKET TOPOLOGY",systems:["Friendly Flow","Sunny Pulse","Harbor Grid"]},
-    victor:{product:"OR",origin:"FRENCH · GOLD",graph:"vwap-reversion-3d.html",graphName:"VWAP REVERSION",systems:["Sovereign Flow","Rouge Pulse","Citadel Grid"]}
+    andrew:{product:"AURUM",graph:"ehlers-cycle-3d.html",graphName:"EHLERS CYCLE SPECTRUM",systems:["Axiom Flow","Vector Pulse","Atlas Grid"]},
+    aurelia:{product:"ORO",graph:"wavelet-3d.html",graphName:"WAVELET SCALOGRAM",systems:["Luminous Flow","Rosé Pulse","Ivory Lattice"]},
+    johnny:{product:"GOLD",graph:"fourier-epicycles-3d-gold.html",graphName:"FOURIER EPICYCLES",systems:["Redline Flow","Ignition Pulse","Autobahn Grid"]},
+    maden:{product:"ALTIN",graph:"hilbert-3d.html",graphName:"HILBERT TRANSFORM",systems:["Deepwave Flow","Teal Signal","Forge Grid"]},
+    makoto:{product:"KIN",graph:"adaptive-envelope.html",graphName:"ADAPTIVE ENVELOPE",systems:["Kintsugi Flow","Hayate Pulse","Seigai Grid"]},
+    mark:{product:"GULD",graph:"liquidity-vector.html",graphName:"LIQUIDITY VECTOR",systems:["Compass Flow","Nordic Pulse","Ledger Grid"]},
+    nova:{product:"ZOLOTO",graph:"spectral-resonance.html",graphName:"SPECTRAL RESONANCE",systems:["Quantum Flow","Nebula Pulse","Cosmos Grid"]},
+    pal:{product:"SONA",graph:"market-topology.html",graphName:"MARKET TOPOLOGY",systems:["Friendly Flow","Sunny Pulse","Harbor Grid"]},
+    victor:{product:"OR",graph:"vwap-reversion-3d.html",graphName:"VWAP REVERSION",systems:["Sovereign Flow","Rouge Pulse","Citadel Grid"]}
   };
   var item=catalog[key]; if(!item)return;
   document.documentElement.dataset.product=item.product;
   document.title=item.product+" — "+document.title;
+  var brand=document.querySelector(".nav .brand");
+  if(brand){brand.textContent=item.product;brand.setAttribute("aria-label",item.product+" トップへ");}
   var main=document.querySelector(".hero-main");
-  if(main){var mark=document.createElement("p");mark.className="product-mark";mark.innerHTML=item.product+" <em>"+item.origin+"</em>";main.insertBefore(mark,main.querySelector(".kicker"));}
+  if(main){var mark=document.createElement("p");mark.className="product-mark";mark.textContent=item.product;main.insertBefore(mark,main.querySelector(".kicker"));}
   document.querySelectorAll(".sys3-name").forEach(function(el,i){if(!item.systems[i])return;var tag=el.querySelector(".sys3-tag");el.textContent=item.systems[i];if(tag)el.appendChild(tag);});
   document.querySelectorAll('.sysopt input[name="System"]').forEach(function(input,i){
     if(!item.systems[i])return;var span=input.nextElementSibling;var tag=span&&span.querySelector("em");if(span){span.textContent=item.systems[i];if(tag)span.appendChild(tag);}input.value=item.systems[i];input.dataset.displayName=item.systems[i];
