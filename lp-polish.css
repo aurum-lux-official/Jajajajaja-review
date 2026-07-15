@@ -1,0 +1,25 @@
+/* Shared interaction polish for the nine character LPs. */
+:where(a, button, input, summary):focus-visible {
+  outline: 2px solid var(--accent2);
+  outline-offset: 4px;
+}
+.nav-menu a { position: relative; }
+.nav-menu a::after {
+  content: ""; position: absolute; left: 0; right: 100%; bottom: -.55em; height: 1px;
+  background: linear-gradient(90deg, var(--accent), var(--gold));
+  transition: right .35s cubic-bezier(.22, 1, .36, 1);
+}
+.nav-menu a:is(:hover, [aria-current="location"]) { color: var(--ink); }
+.nav-menu a:is(:hover, [aria-current="location"])::after { right: 0; }
+.btn { transition: transform .22s ease, box-shadow .22s ease, filter .22s ease; }
+.btn:hover { transform: translateY(-2px); filter: saturate(1.08) brightness(1.04); }
+.btn:active { transform: translateY(0) scale(.985); }
+.btn:disabled { cursor: wait; filter: grayscale(.25); opacity: .72; }
+@media (max-width: 1000px) {
+  .nav-menu a::after { left: 24px; right: 100%; bottom: 0; }
+  .nav-menu a[aria-current="location"]::after { right: 24px; }
+}
+@media (hover: none) { .btn:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .nav-menu a::after, .btn { transition: none; }
+}
